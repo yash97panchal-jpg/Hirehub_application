@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="container" style="padding: 80px 20px; max-width: 460px;">
+    <div class="card animate-fade-up">
+        <h2 class="card-title" style="font-size: 24px; text-align: center; margin-bottom: 24px;">Welcome Back</h2>
+        
+        <form method="POST">
+            {% csrf_token %}
+            {% if form.errors %}
+                <div class="badge badge-danger" style="margin-bottom: 16px; width: 100%; justify-content: center;">Invalid username or password</div>
+            {% endif %}
+            
+            <div class="field">
+                <label>Username</label>
+                <input type="text" name="username" required>
+            </div>
+            <div class="field">
+                <label>Password</label>
+                <input type="password" name="password" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 16px;">Login</button>
+        </form>
+        
+        <p style="text-align: center; margin-top: 24px; font-size: 14px;">Don't have an account? <a href="{% url 'register' %}">Sign up here</a></p>
+    </div>
+</section>
+{% endblock %}

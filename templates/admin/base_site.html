@@ -1,0 +1,190 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | HireHub Admin{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    /* Override Django Admin specifics to match HireHub theme */
+    :root {
+        /* Base Brand Colors */
+        --navy-900:#12173a;
+        --navy-800:#1b2350;
+        --navy-700:#232c66;
+        --orange-600:#ff7a1a;
+        --orange-500:#ff9a2e;
+        --bg: #eef1f8;
+        --surface: #ffffff;
+        --surface-alt: #f4f6fb;
+        --text: #1b2350;
+        --text-muted: #5a6180;
+        --border: #e1e5f2;
+        --success:#2fa86a;
+        --danger: #e5484d;
+        --radius-md: 14px;
+        --shadow-sm: 0 2px 6px rgba(27,35,80,.08);
+        --font-body: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+
+        /* Admin Theme Mapping */
+        --primary: var(--navy-800);
+        --secondary: var(--navy-700);
+        --accent: var(--orange-500);
+        --primary-fg: #fff;
+        --body-fg: var(--text);
+        --body-bg: var(--bg);
+        --body-quiet-color: var(--text-muted);
+        --body-loud-color: var(--text);
+        --header-color: #fff;
+        --header-branding-color: var(--accent);
+        --header-bg: var(--navy-900);
+        --header-link-color: var(--primary-fg);
+        --breadcrumbs-fg: var(--text);
+        --breadcrumbs-link-fg: var(--primary);
+        --breadcrumbs-bg: var(--surface);
+        --link-fg: var(--accent);
+        --link-hover-color: var(--accent-hover);
+        --link-selected-fg: #fff;
+        --hairline-color: var(--border);
+        --border-color: var(--border);
+        --error-fg: var(--danger);
+        --message-success-bg: var(--success);
+        --darkened-bg: var(--surface-alt);
+        --selected-bg: rgba(255,154,46,.12);
+        --selected-row: rgba(255,154,46,.08);
+        --button-fg: #fff;
+        --button-bg: var(--primary);
+        --button-hover-bg: var(--primary-hover);
+        --default-button-bg: var(--accent);
+        --default-button-hover-bg: var(--accent-hover);
+    }
+    
+    :root[data-theme="dark"] {
+        --bg: #0c0f1f;
+        --surface: #141a33;
+        --surface-alt: #1a2140;
+        --text: #f2f4ff;
+        --text-muted: #9aa2c7;
+        --border: #262e52;
+        --primary: #e9ecff;
+        --body-bg: var(--bg);
+        --body-fg: var(--text);
+        --body-quiet-color: var(--text-muted);
+        --header-bg: #141a33;
+        --breadcrumbs-bg: var(--surface);
+    }
+    
+    body {
+        font-family: var(--font-body);
+        color: var(--text);
+        background: var(--bg);
+    }
+
+    #header {
+        background: var(--bg-elevated);
+        border-bottom: 1px solid var(--border);
+        color: var(--text);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    #branding h1, #branding h1 a:link, #branding h1 a:visited {
+        color: var(--navy-800);
+        font-weight: 800;
+    }
+    
+    #user-tools, #user-tools a:link, #user-tools a:visited {
+        color: var(--text-muted);
+    }
+
+    .module {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 24px;
+        overflow: hidden;
+    }
+
+    div.breadcrumbs {
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        color: var(--text-muted);
+    }
+    
+    a:link, a:visited { color: var(--accent); }
+    a:hover { color: var(--accent-hover); }
+
+    /* Theme Toggle Switch */
+    .theme-toggle{
+        width:52px; height:28px; border-radius:999px; position:relative; cursor:pointer;
+        background:linear-gradient(135deg,var(--navy-700),var(--navy-900));
+        box-shadow:inset 0 2px 6px rgba(0,0,0,.3);
+    }
+    .theme-toggle .knob{
+        position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:50%;
+        background:linear-gradient(135deg,var(--orange-500),var(--orange-600));
+        box-shadow:0 3px 8px rgba(0,0,0,.35);
+        transition:left .35s cubic-bezier(.68,-0.4,.27,1.4);
+    }
+    :root[data-theme="dark"] .theme-toggle .knob{ left:27px; }
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">Hire<span style="background:linear-gradient(90deg,var(--orange-500),var(--orange-600));-webkit-background-clip:text;background-clip:text;color:transparent;">Hub</span> Admin</a></h1>
+{% endblock %}
+
+{% block usertools %}
+<div id="user-tools" style="display: flex; align-items: center; gap: 16px;">
+    {% block welcome-msg %}
+        Welcome,
+        <strong>{% firstof user.get_short_name user.get_username %}</strong>.
+    {% endblock %}
+    
+    <div class="theme-toggle" id="admin-theme-toggle" title="Toggle Dark/Light Mode" style="transform: scale(0.8);">
+        <div class="knob"></div>
+    </div>
+    
+    {% block userlinks %}
+        {% if site_url %}
+            <a href="{{ site_url }}">View site</a> /
+        {% endif %}
+        {% if user.is_active and user.is_staff %}
+            {% url 'django-admindocs-docroot' as docsroot %}
+            {% if docsroot %}
+                <a href="{{ docsroot }}">Documentation</a> /
+            {% endif %}
+        {% endif %}
+        {% if user.has_usable_password %}
+        <a href="{% url 'admin:password_change' %}">Change password</a> /
+        {% endif %}
+        <a href="{% url 'admin:logout' %}">Log out</a>
+    {% endblock %}
+</div>
+{% endblock %}
+
+{% block footer %}
+{{ block.super }}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const html = document.documentElement;
+        const themeToggle = document.getElementById('admin-theme-toggle');
+
+        // Check for saved theme
+        const savedTheme = localStorage.getItem('hirehub_theme') || 'light';
+        html.setAttribute('data-theme', savedTheme);
+
+        // Toggle functionality
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                const currentTheme = html.getAttribute('data-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                html.setAttribute('data-theme', newTheme);
+                localStorage.setItem('hirehub_theme', newTheme);
+            });
+        }
+    });
+</script>
+{% endblock %}

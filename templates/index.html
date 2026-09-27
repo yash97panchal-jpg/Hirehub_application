@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container stack gap-md" style="align-items: center;">
+        <h1 class="animate-fade-up">Find the Right Opportunity. <br><span class="brand-accent">Build Your Future.</span></h1>
+        <p class="animate-fade-up" style="animation-delay: 0.1s;">Connect with top recruiters and discover thousands of jobs and internships tailored to your skills and career goals.</p>
+        
+        <div class="row gap-md animate-fade-up" style="animation-delay: 0.2s;">
+            <a href="{% url 'jobs' %}" class="btn btn-accent" style="padding: 14px 28px; font-size: 16px;">Search Jobs</a>
+            <a href="{% url 'admin:index' %}" class="btn btn-outline" style="padding: 14px 28px; font-size: 16px;">Post a Job (Admin)</a>
+        </div>
+    </div>
+</section>
+
+<!-- Stats / Featured Section (Demo) -->
+<section class="container" style="padding: 80px 20px;">
+    <div class="row gap-lg" style="justify-content: center; flex-wrap: wrap;">
+        <!-- Card 1 -->
+        <div class="card animate-float" style="width: 320px; animation-delay: 0s;">
+            <div class="row gap-md" style="margin-bottom: 16px;">
+                <div class="job-logo">S</div>
+                <div>
+                    <h3 class="card-title" style="margin: 0; font-size: 16px;">Software Engineer</h3>
+                    <p style="margin: 0; font-size: 13px;">Stark Industries</p>
+                </div>
+            </div>
+            <div class="row gap-sm" style="margin-bottom: 24px;">
+                <span class="card-tag">Full-Time</span>
+                <span class="card-tag">Remote</span>
+            </div>
+            <a href="#" class="btn btn-outline" style="width: 100%;">View Details</a>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="card animate-float" style="width: 320px; animation-delay: 0.2s;">
+            <div class="row gap-md" style="margin-bottom: 16px;">
+                <div class="job-logo" style="background: linear-gradient(135deg, var(--success), #1b633e);">W</div>
+                <div>
+                    <h3 class="card-title" style="margin: 0; font-size: 16px;">Frontend Intern</h3>
+                    <p style="margin: 0; font-size: 13px;">Wayne Enterprises</p>
+                </div>
+            </div>
+            <div class="row gap-sm" style="margin-bottom: 24px;">
+                <span class="card-tag">Internship</span>
+                <span class="card-tag">On-Site</span>
+            </div>
+            <a href="#" class="btn btn-outline" style="width: 100%;">View Details</a>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="card animate-float" style="width: 320px; animation-delay: 0.4s;">
+            <div class="row gap-md" style="margin-bottom: 16px;">
+                <div class="job-logo" style="background: linear-gradient(135deg, var(--info), #1e40af);">A</div>
+                <div>
+                    <h3 class="card-title" style="margin: 0; font-size: 16px;">Data Analyst</h3>
+                    <p style="margin: 0; font-size: 13px;">Acme Corp</p>
+                </div>
+            </div>
+            <div class="row gap-sm" style="margin-bottom: 24px;">
+                <span class="card-tag">Contract</span>
+                <span class="card-tag">Hybrid</span>
+            </div>
+            <a href="#" class="btn btn-outline" style="width: 100%;">View Details</a>
+        </div>
+    </div>
+</section>
+{% endblock %}
