@@ -1,0 +1,10 @@
+{
+  "description": "Connects job seekers, recruiters, and admins with advanced job search, ATS resume scoring, profile building, and real-time communication tools.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

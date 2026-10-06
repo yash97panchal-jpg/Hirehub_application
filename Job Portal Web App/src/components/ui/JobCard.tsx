@@ -1,0 +1,181 @@
+import { useState, useRef } from "react"
+import { Link } from "react-router-dom"
+import { motion } from "framer-motion"
+import {
+  MapPin,
+  Clock,
+  DollarSign,
+  Bookmark,
+  BookmarkCheck,
+  Users,
+  Zap,
+} from "lucide-react"
+import Badge from "./Badge"
+import type { Job } from "../../types"
+
+interface JobCardProps {
+  job: Job
+  compact?: boolean
+}
+
+function formatSalary(job: Job) {
+  if (!job.salaryMin && !job.salaryMax) return null
+  const cur = job.currency === "USD" ? "$" : ""
+  if (job.type === "Internship") {
+    return `${cur}${job.salaryMin}–${job.salaryMax}/hr`
+  }
+  const fmt = (n: number) =>
+    n >= 1000 ? `${cur}${(n / 1000).toFixed(0)}k` : `${cur}${n}`
+  if (job.salaryMin && job.salaryMax)
+    return `${fmt(job.salaryMin)} – ${fmt(job.salaryMax)}`
+  if (job.salaryMax) return `Up to ${fmt(job.salaryMax)}`
+  return `From ${fmt(job.salaryMin!)}`
+}
+
+const typeColors: Record<string, string> = {
+  "Full-time": "primary",
+  "Part-time": "default",
+  Internship: "accent",
+  Contract: "warning",
+  Freelance: "warning",
+  Remote: "success",
+  Hybrid: "default",
+  "On-site": "default",
+}
+
+export default function JobCard({ job, compact = false }: JobCardProps) {
+  const [saved, setSaved] = useState(false)
+  const cardRef = useRef<HTMLDivElement>(null)
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const card = cardRef.current
+    if (!card) return
+    const rect = card.getBoundingClientRect()
+    const x = (e.clientX - rect.left) / rect.width - 0.5
+    const y = (e.clientY - rect.top) / rect.height - 0.5
+    card.style.transform = `perspective(800px) rotateY(${x * 6}deg) rotateX(${-y * 6}deg) translateZ(4px)`
+  }
+
+  const handleMouseLeave = () => {
+    if (cardRef.current) cardRef.current.style.transform = ""
+  }
+
+  const salary = formatSalary(job)
+  const daysAgo = Math.floor(
+    (Date.now() - new Date(job.postedAt).getTime()) / 86400000,
+  )
+
+  return (
+    <motion.div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="tilt-card bg-[var(--card)] rounded-2xl border border-[var(--border)] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-elevated)] hover:border-[var(--primary)] transition-all duration-200 p-5 group"
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {/* Top row */}
+      <div className="flex items-start justify-between gap-3 mb-4">
+        <Link
+          to={`/companies/${job.company.id}`}
+          className="flex items-center gap-3 min-w-0"
+        >
+          <div className="w-12 h-12 rounded-xl overflow-hidden bg-[var(--muted)] shrink-0 ring-1 ring-[var(--border)]">
+            {job.company.logo ? (
+              <img
+                src={job.company.logo}
+                alt={job.company.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-lg font-bold text-[var(--primary)]">
+                {job.company.name.charAt(0)}
+              </div>
+            )}
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-semibold text-[var(--muted-foreground)] truncate">
+              {job.company.name}
+            </p>
+            <div className="flex items-center gap-1 text-xs text-[var(--muted-foreground)]">
+              <MapPin size={10} />
+              <span className="truncate">{job.location}</span>
+            </div>
+          </div>
+        </Link>
+        <button
+          onClick={() => setSaved((v) => !v)}
+          className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[var(--muted)] transition-colors"
+          aria-label={saved ? "Unsave job" : "Save job"}
+        >
+          {saved ? (
+            <BookmarkCheck size={16} className="text-[var(--primary)]" />
+          ) : (
+            <Bookmark
+              size={16}
+              className="text-[var(--muted-foreground)] group-hover:text-[var(--primary)] transition-colors"
+            />
+          )}
+        </button>
+      </div>
+
+      {/* Badges */}
+      <div className="flex flex-wrap gap-1.5 mb-3">
+        <Badge variant={typeColors[job.type] as any}>{job.type}</Badge>
+        {job.isFeatured && (
+          <Badge variant="accent">
+            <Zap size={10} className="mr-0.5" />
+            Featured
+          </Badge>
+        )}
+        {job.isUrgent && <Badge variant="error">Urgent</Badge>}
+      </div>
+
+      {/* Title */}
+      <Link to={`/jobs/${job.id}`}>
+        <h3 className="font-poppins font-semibold text-[var(--foreground)] text-base leading-snug mb-2 group-hover:text-[var(--primary)] transition-colors line-clamp-2">
+          {job.title}
+        </h3>
+      </Link>
+
+      {!compact && (
+        <div className="flex flex-wrap gap-1.5 mb-4">
+          {job.skills.slice(0, 3).map((skill) => (
+            <span
+              key={skill}
+              className="text-xs px-2 py-0.5 rounded-md bg-[var(--muted)] text-[var(--muted-foreground)]"
+            >
+              {skill}
+            </span>
+          ))}
+          {job.skills.length > 3 && (
+            <span className="text-xs px-2 py-0.5 rounded-md bg-[var(--muted)] text-[var(--muted-foreground)]">
+              +{job.skills.length - 3}
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Footer */}
+      <div className="flex items-center justify-between pt-3 border-t border-[var(--border)]">
+        <div className="flex items-center gap-3 text-xs text-[var(--muted-foreground)]">
+          {salary && (
+            <span className="flex items-center gap-1 font-semibold text-[var(--foreground)]">
+              <DollarSign size={12} className="text-[var(--success)]" />
+              {salary}
+            </span>
+          )}
+          <span className="flex items-center gap-1">
+            <Users size={11} />
+            {job.applicationCount} applied
+          </span>
+        </div>
+        <span className="flex items-center gap-1 text-xs text-[var(--muted-foreground)]">
+          <Clock size={11} />
+          {daysAgo === 0 ? "Today" : `${daysAgo}d ago`}
+        </span>
+      </div>
+    </motion.div>
+  )
+}
