@@ -1,6 +1,7 @@
 import { useState } from "react"
 
 import symbolLogo from "../../imports/symbol_only.jpeg"
+import { BlackHoleHeroSection } from "../../components/ui/blackhole-hero-section"
 
 import { Link, useNavigate } from "react-router-dom"
 
@@ -129,7 +130,7 @@ export default function Login() {
       login(
         {
           id: "user-" + Date.now(),
-          name: data.email.split('@')[0],
+          name: data.email.split("@")[0],
           email: data.email,
           role: "job_seeker",
           skills: [],
@@ -150,56 +151,51 @@ export default function Login() {
   return (
     <div className="min-h-screen flex">
       {/* Left panel */}
-      <div
-        className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center p-12 relative overflow-hidden"
-        style={{
-          background:
-            "linear-gradient(135deg, #101F3E 0%, var(--primary) 100%)",
-        }}
-      >
-        <div
-          className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0)",
-
-            backgroundSize: "32px 32px",
-          }}
-        />
-        <div className="relative z-10 text-center max-w-md">
-          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-white shadow-lg border border-[var(--border)] mb-6 shrink-0 overflow-hidden">
-            <img
-              src={symbolLogo}
-              alt="HireHub Logo"
-              className="w-16 h-16 object-contain"
-            />
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        <BlackHoleHeroSection
+          focus={[0.5, 0.6]}
+          scrim="bottom"
+          scrimStrength={0.7}
+          distance={20}
+          elevation={-5.5}
+          fov={50}
+          glow={1}
+          steps={300}
+          resolution={0.7}
+          className="absolute inset-0 z-0"
+        >
+          <div className="relative z-10 flex flex-col items-center justify-center h-full text-center p-12 max-w-md mx-auto">
+            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-white shadow-lg border border-[var(--border)] mb-6 shrink-0 overflow-hidden mx-auto">
+              <img
+                src={symbolLogo}
+                alt="HireHub Logo"
+                className="w-16 h-16 object-contain"
+              />
+            </div>
+            <h2 className="font-poppins text-4xl font-black text-white mb-4">
+              Welcome back to HireHub
+            </h2>
+            <p className="text-white/80 text-lg leading-relaxed">
+              Access 12,400+ active jobs, track your applications, and get
+              AI-powered career insights.
+            </p>
+            <div className="mt-10 grid grid-cols-2 gap-4 w-full">
+              {[
+                "85,000+ Users",
+                "12.4k+ Jobs",
+                "41k Placements",
+                "4.9★ Rating",
+              ].map((stat) => (
+                <div
+                  key={stat}
+                  className="rounded-full bg-white/10 px-4 py-3 text-white font-semibold text-sm backdrop-blur-md border border-white/10"
+                >
+                  {stat}
+                </div>
+              ))}
+            </div>
           </div>
-          <h2 className="font-poppins text-4xl font-black text-white mb-4">
-            Welcome back to HireHub
-          </h2>
-          <p className="text-white/80 text-lg leading-relaxed">
-            Access 12,400+ active jobs, track your applications, and get
-            AI-powered career insights.
-          </p>
-          <div className="mt-10 grid grid-cols-2 gap-4">
-            {[
-              "85,000+ Users",
-
-              "12.4k+ Jobs",
-
-              "41k Placements",
-
-              "4.9★ Rating",
-            ].map((stat) => (
-              <div
-                key={stat}
-                className="rounded-full bg-white/10 px-4 py-3 text-white font-semibold text-sm"
-              >
-                {stat}
-              </div>
-            ))}
-          </div>
-        </div>
+        </BlackHoleHeroSection>
       </div>
 
       {/* Right panel */}
