@@ -369,10 +369,10 @@ export default function Navbar() {
                     className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-xl hover:bg-[var(--muted)] transition-colors"
                   >
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary-deep)] flex items-center justify-center text-white text-sm font-bold shrink-0">
-                      {user.name.charAt(0).toUpperCase()}
+                      {user?.name ? user.name.charAt(0).toUpperCase() : (user?.email?.charAt(0).toUpperCase() || "U")}
                     </div>
                     <span className="hidden sm:block text-sm font-medium text-[var(--foreground)] max-w-[100px] truncate">
-                      {user.name.split(" ")[0]}
+                      {user?.name ? user.name.split(" ")[0] : (user?.email?.split("@")[0] || "User")}
                     </span>
                     <ChevronDown
                       size={14}
@@ -393,10 +393,10 @@ export default function Navbar() {
                       >
                         <div className="p-3 border-b border-[var(--border)]">
                           <p className="text-sm font-semibold text-[var(--foreground)]">
-                            {user.name}
+                            {user?.name || user?.email || "User"}
                           </p>
                           <p className="text-xs text-[var(--muted-foreground)] truncate">
-                            {user.email}
+                            {user?.email || ""}
                           </p>
                         </div>
                         <div className="p-1.5">
@@ -420,7 +420,7 @@ export default function Navbar() {
                               icon: FileText,
                               to: "/resume-builder",
                             },
-                            ...(user.role === "recruiter"
+                            ...(user?.role === "recruiter"
                               ? [
                                   {
                                     label: "Recruiter Panel",
@@ -429,7 +429,7 @@ export default function Navbar() {
                                   },
                                 ]
                               : []),
-                            ...(user.role === "admin"
+                            ...(user?.role === "admin"
                               ? [
                                   {
                                     label: "Admin Panel",
@@ -519,7 +519,7 @@ export default function Navbar() {
                     { label: "Live Messages", to: "/messages", icon: MessageSquare },
                     { label: "Skill Tests", to: "/skills", icon: Award },
                     { label: "Pricing", to: "/pricing", icon: DollarSign },
-                    ...(user.role === "recruiter"
+                    ...(user?.role === "recruiter"
                       ? [{ label: "Talent Search", to: "/recruiter/talent-search", icon: Users }]
                       : []),
                     { label: "ATS Checker", to: "/ats-checker", icon: FileText },
@@ -544,9 +544,9 @@ export default function Navbar() {
                   <div className="mt-2 pt-2 border-t border-[var(--border)]">
                     <Link
                       to={
-                        user.role === "admin"
+                        user?.role === "admin"
                           ? "/admin"
-                          : user.role === "recruiter"
+                          : user?.role === "recruiter"
                             ? "/recruiter"
                             : "/dashboard"
                       }

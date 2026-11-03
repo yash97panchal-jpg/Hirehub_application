@@ -44,7 +44,7 @@ const growthData = [
   { month: "Sep", users: 85000, jobs: 12400 },
 ]
 
-const categoryData = mockStats.jobsByCategory.slice(0, 5)
+const categoryData = mockStats?.jobsByCategory ? mockStats.jobsByCategory.slice(0, 5) : []
 const COLORS = [
   "var(--primary)",
   "var(--accent)",
@@ -479,18 +479,18 @@ export default function AdminDashboard() {
                 </thead>
                 <tbody className="divide-y divide-[var(--border)]">
                   {jobs.map((job) => {
-                    const jobApplications = applications.filter((app) => app.job.id === job.id);
+                    const jobApplications = applications.filter((app) => app?.job?.id === job.id);
                     return (
                       <tr key={job.id} className="hover:bg-[var(--muted)]/50">
                         <td className="px-6 py-4">
-                          <p className="font-semibold text-[var(--foreground)]">{job.title}</p>
-                          <p className="text-xs text-[var(--muted-foreground)]">{job.type} &bull; {job.location}</p>
+                          <p className="font-semibold text-[var(--foreground)]">{job.title || "Untitled Position"}</p>
+                          <p className="text-xs text-[var(--muted-foreground)]">{job.type || "Full-time"} &bull; {job.location || "Remote"}</p>
                         </td>
                         <td className="px-6 py-4">
                           <p className="font-medium text-[var(--foreground)]">{job.company?.name || "Unknown Company"}</p>
                         </td>
                         <td className="px-6 py-4 text-[var(--muted-foreground)]">
-                          {new Date(job.postedAt).toLocaleDateString()}
+                          {job.postedAt ? new Date(job.postedAt).toLocaleDateString() : "Recent"}
                         </td>
                         <td className="px-6 py-4">
                           {jobApplications.length > 0 ? (
@@ -501,8 +501,8 @@ export default function AdminDashboard() {
                                     <Users size={12} className="text-[var(--primary)]" />
                                   </div>
                                   <div>
-                                    <p className="font-medium text-[var(--foreground)]">{app.applicant.name}</p>
-                                    <p className="text-[var(--muted-foreground)]">{app.status}</p>
+                                    <p className="font-medium text-[var(--foreground)]">{app.applicant?.name || "Candidate"}</p>
+                                    <p className="text-[var(--muted-foreground)]">{app.status || "Applied"}</p>
                                   </div>
                                 </div>
                               ))}

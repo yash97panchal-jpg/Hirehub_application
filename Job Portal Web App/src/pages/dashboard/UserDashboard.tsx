@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import {
@@ -21,6 +22,7 @@ import { useAuthStore } from "../../store/authStore"
 import { mockNotifications, mockJobs } from "../../data/mockData"
 import { useJobStore } from "../../store/jobStore"
 import { useSavedJobsStore } from "../../store/savedJobsStore"
+import { useApplicationStore } from "../../store/applicationStore"
 import { isLocalhost } from "../../utils/env"
 import Badge from "../../components/ui/Badge"
 import Button from "../../components/ui/Button"
@@ -73,12 +75,30 @@ export default function UserDashboard() {
   const { user } = useAuthStore()
   const { jobs: storeJobs } = useJobStore()
   const { savedJobIds } = useSavedJobsStore()
+  const { applications: storeApplications } = useApplicationStore()
 
-  const recentApplications = [
-    { job: storeJobs[0], status: "Shortlisted" as const, appliedAt: "2026-09-28" },
-    { job: storeJobs[1], status: "Viewed" as const, appliedAt: "2026-09-25" },
-    { job: storeJobs[2], status: "Applied" as const, appliedAt: "2026-09-22" },
-  ]
+  // Real candidate applications from applicationStore or safe fallback on localhost
+  const recentApplications = useMemo(() => {
+    if (storeApplications && storeApplications.length > 0) {
+      return storeApplications
+        .filter((a) => a && a.job)
+        .slice(0, 3)
+        .map((a) => ({
+          id: a.id,
+          job: a.job,
+          status: a.status || "Applied",
+          appliedAt: a.appliedAt || new Date().toISOString(),
+        }))
+    }
+    if (isLocalhost() && storeJobs && storeJobs.length >= 3) {
+      return [
+        { id: "demo-1", job: storeJobs[0], status: "Shortlisted" as const, appliedAt: "2026-09-28" },
+        { id: "demo-2", job: storeJobs[1], status: "Viewed" as const, appliedAt: "2026-09-25" },
+        { id: "demo-3", job: storeJobs[2], status: "Applied" as const, appliedAt: "2026-09-22" },
+      ]
+    }
+    return []
+  }, [storeApplications, storeJobs])
 
   return (
     <div className="min-h-screen bg-[var(--background)] pt-20">
@@ -178,51 +198,65 @@ export default function UserDashboard() {
                 View all <ChevronRight size={14} />
               </Link>
             </div>
-            <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] overflow-hidden shadow-[var(--shadow-card)]">
-              {recentApplications.map((app, i) => (
-                <div
-                  key={i}
-                  className={`p-4 flex items-center gap-4 ${
-                    i < recentApplications.length - 1
-                      ? "border-b border-[var(--border)]"
-                      : ""
-                  }`}
+            {recentApplications.length === 0 ? (
+              <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-8 text-center shadow-[var(--shadow-card)]">
+                <FileText size={36} className="mx-auto text-[var(--muted-foreground)] mb-3 opacity-40" />
+                <p className="text-sm font-semibold text-[var(--foreground)]">No applications submitted yet</p>
+                <p className="text-xs text-[var(--muted-foreground)] mt-1 mb-4">Explore thousands of open positions and apply directly.</p>
+                <Link
+                  to="/jobs"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--primary)] text-white text-xs font-semibold hover:bg-[var(--primary-hover)] transition-colors"
                 >
-                  <div className="w-11 h-11 rounded-xl overflow-hidden bg-[var(--muted)] shrink-0 ring-1 ring-[var(--border)]">
-                    {app.job.company.logo && (
-                      <img
-                        src={app.job.company.logo}
-                        alt={app.job.company.name}
-                        className="w-full h-full object-cover"
-                      />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm text-[var(--foreground)] truncate">
-                      {app.job.title}
-                    </p>
-                    <p className="text-xs text-[var(--muted-foreground)]">
-                      {app.job.company.name} · {app.job.location}
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-end gap-1 shrink-0">
-                    <Badge
-                      variant={statusVariant[app.status] || "default"}
-                      size="sm"
-                    >
-                      {app.status}
-                    </Badge>
-                    <span className="text-xs text-[var(--muted-foreground)]">
-                      {Math.floor(
-                        (Date.now() - new Date(app.appliedAt).getTime()) /
-                          86400000,
+                  Browse Jobs <ArrowRight size={13} />
+                </Link>
+              </div>
+            ) : (
+              <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] overflow-hidden shadow-[var(--shadow-card)]">
+                {recentApplications.map((app, i) => (
+                  <div
+                    key={app.id || i}
+                    className={`p-4 flex items-center gap-4 ${
+                      i < recentApplications.length - 1
+                        ? "border-b border-[var(--border)]"
+                        : ""
+                    }`}
+                  >
+                    <div className="w-11 h-11 rounded-xl overflow-hidden bg-[var(--muted)] shrink-0 ring-1 ring-[var(--border)] flex items-center justify-center font-bold text-[var(--primary)]">
+                      {app.job?.company?.logo ? (
+                        <img
+                          src={app.job?.company?.logo}
+                          alt={app.job?.company?.name || "Company"}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span>{app.job?.company?.name?.charAt(0) || "J"}</span>
                       )}
-                      d ago
-                    </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm text-[var(--foreground)] truncate">
+                        {app.job?.title || "Application"}
+                      </p>
+                      <p className="text-xs text-[var(--muted-foreground)]">
+                        {app.job?.company?.name || "Company"} · {app.job?.location || "Remote"}
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <Badge
+                        variant={statusVariant[app.status] || "default"}
+                        size="sm"
+                      >
+                        {app.status}
+                      </Badge>
+                      <span className="text-xs text-[var(--muted-foreground)]">
+                        {app.appliedAt
+                          ? `${Math.max(0, Math.floor((Date.now() - new Date(app.appliedAt).getTime()) / 86400000))}d ago`
+                          : "Recently"}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
             {/* Recommended Jobs */}
             <div className="flex items-center justify-between mt-2">

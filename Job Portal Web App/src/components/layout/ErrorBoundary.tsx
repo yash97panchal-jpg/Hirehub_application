@@ -59,15 +59,36 @@ export class ErrorBoundary extends Component<Props, State> {
             <h1 className="font-poppins text-2xl font-bold text-[var(--foreground)] mb-2">
               {title}
             </h1>
-            <p className="text-[var(--muted-foreground)] mb-6">
+            <p className="text-[var(--muted-foreground)] mb-6 text-sm">
               {description}
             </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="px-6 py-3 rounded-xl bg-[var(--primary)] text-white font-semibold hover:bg-[var(--primary-hover)] transition-colors w-full"
-            >
-              Refresh Page
-            </button>
+            {this.state.errorMsg && (
+              <div className="mb-6 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-500 font-mono text-left overflow-x-auto max-h-24">
+                {this.state.errorMsg}
+              </div>
+            )}
+            <div className="space-y-2">
+              <button
+                onClick={() => window.location.reload()}
+                className="px-6 py-3 rounded-xl bg-[var(--primary)] text-white font-semibold hover:bg-[var(--primary-hover)] transition-colors w-full"
+              >
+                Refresh Page
+              </button>
+              <button
+                onClick={() => {
+                  try {
+                    localStorage.clear()
+                    sessionStorage.clear()
+                  } catch {
+                    // Ignore
+                  }
+                  window.location.href = "/"
+                }}
+                className="px-6 py-2.5 rounded-xl border border-[var(--border)] text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors w-full"
+              >
+                Reset App State & Return Home
+              </button>
+            </div>
           </div>
         </div>
       )

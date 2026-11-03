@@ -307,7 +307,7 @@ export default function Login() {
             <div className="mb-3 p-3 rounded-2xl bg-[var(--primary)]/15 border border-[var(--primary)]/30 text-xs">
               <div className="flex items-center justify-between mb-2">
                 <span className="font-bold text-[var(--foreground)]">
-                  Active Session: {user.name}
+                  Active Session: {user?.name || user?.email || "User"}
                 </span>
                 <button
                   type="button"
