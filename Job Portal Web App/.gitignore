@@ -33,3 +33,4 @@ logs/
 /.opencode-skills/
 
 .vercel
+.env*
