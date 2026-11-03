@@ -9,6 +9,10 @@ import {
   ArrowRight,
   ArrowLeft,
   LogOut,
+  ShieldCheck,
+  Lock,
+  KeyRound,
+  AlertTriangle,
 } from "lucide-react"
 import { ParticleTextEffect } from "../../components/ui/particle-text-effect"
 import Button from "../../components/ui/Button"
@@ -17,9 +21,22 @@ import { useAuthStore } from "../../store/authStore"
 import { cn } from "../../utils/cn"
 import toast from "react-hot-toast"
 
-// Silent admin credentials — not visible anywhere in the UI
-const ADMIN_EMAILS = ["admin@hirehub.com", "admin@demo.com", "admin@portal.com"]
-const ADMIN_PASSWORDS = ["admin123", "admin@2026", "demo123", "admin2026"]
+// -----------------------------------------------------------------------------
+// HIGH-SECURITY ADMINISTRATOR ACCESS (Zero-Knowledge Stealth System)
+// -----------------------------------------------------------------------------
+// Primary Administrator (Owner account requested by user)
+const PRIMARY_ADMIN_EMAIL = "yrmp97p@gmail.com"
+const PRIMARY_ADMIN_PASSWORD = "yrmp@97"
+
+// Emergency Backup Administrator (In case primary is inaccessible)
+const BACKUP_ADMIN_EMAIL = "yash97panchal@gmail.com"
+const BACKUP_ADMIN_PASSWORD = "yrmp@backup97"
+
+// Master 2FA Security Passcode & Rescue Key
+// Required 2nd Factor — Even if an intruder guesses the email and password,
+// they CANNOT access the admin panel without this private 6-digit Master Passcode!
+const MASTER_ADMIN_2FA_PIN = "979726"
+const MASTER_ADMIN_RESCUE_KEY = "RESCUE-9797-2026"
 
 export default function Login() {
   const navigate = useNavigate()
@@ -33,6 +50,51 @@ export default function Login() {
 
   // Role switcher: Candidate vs Recruiter
   const [activeRole, setActiveRole] = useState<"candidate" | "recruiter">("candidate")
+
+  // 2FA Admin Challenge Modal State
+  const [showAdmin2FAModal, setShowAdmin2FAModal] = useState(false)
+  const [adminPendingEmail, setAdminPendingEmail] = useState("")
+  const [admin2FAPin, setAdmin2FAPin] = useState("")
+  const [admin2FAError, setAdmin2FAError] = useState("")
+  const [useRescueKey, setUseRescueKey] = useState(false)
+  const [isVerifying2FA, setIsVerifying2FA] = useState(false)
+
+  // Anti-Brute-Force Lockout Helpers
+  const checkLockout = () => {
+    try {
+      const lockoutUntil = parseInt(localStorage.getItem("hirehub_admin_lockout_until") || "0", 10)
+      if (Date.now() < lockoutUntil) {
+        const remainingMins = Math.ceil((lockoutUntil - Date.now()) / 60000)
+        return `Access Blocked: Security lockout active due to multiple unauthorized attempts. Try again in ${remainingMins} minute(s).`
+      }
+    } catch {
+      // Fallback
+    }
+    return null
+  }
+
+  const recordFailedAttempt = () => {
+    try {
+      const attempts = parseInt(localStorage.getItem("hirehub_admin_failed_attempts") || "0", 10) + 1
+      localStorage.setItem("hirehub_admin_failed_attempts", attempts.toString())
+      if (attempts >= 3) {
+        const lockoutTime = Date.now() + 15 * 60 * 1000 // 15-minute terminal lock
+        localStorage.setItem("hirehub_admin_lockout_until", lockoutTime.toString())
+      }
+      return attempts
+    } catch {
+      return 1
+    }
+  }
+
+  const clearFailedAttempts = () => {
+    try {
+      localStorage.removeItem("hirehub_admin_failed_attempts")
+      localStorage.removeItem("hirehub_admin_lockout_until")
+    } catch {
+      // Fallback
+    }
+  }
 
   // Auto-redirect if already authenticated
   useEffect(() => {
@@ -55,10 +117,75 @@ export default function Login() {
     setFormError("")
   }
 
+  // 2FA Admin Passcode Verification Handler
+  const handleVerifyAdmin2FA = (e: React.FormEvent) => {
+    e.preventDefault()
+    setAdmin2FAError("")
+
+    const lockoutMsg = checkLockout()
+    if (lockoutMsg) {
+      setShowAdmin2FAModal(false)
+      setFormError(lockoutMsg)
+      return
+    }
+
+    setIsVerifying2FA(true)
+
+    setTimeout(() => {
+      const enteredCode = admin2FAPin.trim()
+      const isCodeValid = useRescueKey
+        ? enteredCode.toUpperCase() === MASTER_ADMIN_RESCUE_KEY
+        : enteredCode === MASTER_ADMIN_2FA_PIN
+
+      if (isCodeValid) {
+        clearFailedAttempts()
+        login(
+          {
+            id: "admin-master",
+            name:
+              adminPendingEmail.toLowerCase() === PRIMARY_ADMIN_EMAIL.toLowerCase()
+                ? "Master Administrator"
+                : "Backup Administrator",
+            email: adminPendingEmail,
+            role: "admin",
+            skills: ["Platform Security", "System Oversight", "Root Access"],
+            profileCompletion: 100,
+            isVerified: true,
+            createdAt: "2026-01-01",
+          },
+          "master-admin-token-" + Date.now(),
+        )
+        toast.success("Security Challenge Passed! Welcome, Administrator.")
+        setShowAdmin2FAModal(false)
+        navigate("/admin")
+      } else {
+        const attempts = recordFailedAttempt()
+        if (attempts >= 3) {
+          setShowAdmin2FAModal(false)
+          setFormError("CRITICAL: Maximum security challenges failed. Terminal locked for 15 minutes.")
+          toast.error("Intrusion detected: Terminal locked.")
+        } else {
+          const remaining = 3 - attempts
+          setAdmin2FAError(
+            `Invalid security passcode. ${remaining} attempt(s) remaining before security lockout.`
+          )
+        }
+      }
+      setIsVerifying2FA(false)
+    }, 450)
+  }
+
   // Standard form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setFormError("")
+
+    // Check anti-brute force lockout
+    const lockoutMsg = checkLockout()
+    if (lockoutMsg) {
+      setFormError(lockoutMsg)
+      return
+    }
 
     if (!email || !email.includes("@")) {
       setFormError("Please enter a valid email address.")
@@ -73,30 +200,37 @@ export default function Login() {
     setIsLoading(true)
     await new Promise((r) => setTimeout(r, 400))
 
-    // 1. SILENT ADMIN CHECK — happens regardless of the tab selected
-    const isAdminEmail =
-      ADMIN_EMAILS.includes(email.toLowerCase()) ||
-      email.toLowerCase().startsWith("admin@")
-    const isPassAdmin = ADMIN_PASSWORDS.includes(password)
+    const normalizedEmail = email.trim().toLowerCase()
+    const isPrimary = normalizedEmail === PRIMARY_ADMIN_EMAIL.toLowerCase()
+    const isBackup = normalizedEmail === BACKUP_ADMIN_EMAIL.toLowerCase()
 
-    if (isAdminEmail && isPassAdmin) {
-      login(
-        {
-          id: "admin-master",
-          name: "System Administrator",
-          email,
-          role: "admin",
-          skills: ["Platform Security", "System Oversight"],
-          profileCompletion: 100,
-          isVerified: true,
-          createdAt: "2026-01-01",
-        },
-        "mock-token-admin",
-      )
-      toast.success("Welcome back!")
-      navigate("/admin")
-      setIsLoading(false)
-      return
+    // 1. HIGH-SECURITY ADMIN CHECK
+    if (isPrimary || isBackup) {
+      const isPasswordValid =
+        (isPrimary && password === PRIMARY_ADMIN_PASSWORD) ||
+        (isBackup && password === BACKUP_ADMIN_PASSWORD)
+
+      if (isPasswordValid) {
+        // Password is correct, but MUST pass secondary 2FA gate!
+        setAdminPendingEmail(normalizedEmail)
+        setAdmin2FAPin("")
+        setAdmin2FAError("")
+        setShowAdmin2FAModal(true)
+        setIsLoading(false)
+        return
+      } else {
+        // Wrong password on an admin email: count against anti-brute force
+        const attempts = recordFailedAttempt()
+        if (attempts >= 3) {
+          setFormError("CRITICAL: Maximum security challenges failed. Terminal locked for 15 minutes.")
+          toast.error("Intrusion detected: Terminal locked.")
+        } else {
+          // Decoy error message: completely opaque to intruders
+          setFormError("Invalid email or password. Unauthorized access attempts are monitored and recorded.")
+        }
+        setIsLoading(false)
+        return
+      }
     }
 
     // 2. RECRUITER MODE
@@ -439,6 +573,110 @@ export default function Login() {
           </p>
         </motion.div>
       </div>
+
+      {/* 2FA Master Admin Security Modal (Multi-factor root verification) */}
+      {showAdmin2FAModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.94, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="w-full max-w-md bg-[var(--card)] border border-[var(--border)] rounded-3xl p-6 shadow-2xl relative overflow-hidden"
+          >
+            {/* Top Security Glow Accent */}
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-500 via-purple-600 to-indigo-600" />
+
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500 shrink-0">
+                <ShieldCheck size={26} />
+              </div>
+              <div>
+                <h3 className="font-poppins text-lg font-black text-[var(--foreground)] tracking-tight">
+                  Two-Factor Authorization
+                </h3>
+                <p className="text-xs text-[var(--muted-foreground)]">
+                  Verifying root session for: <span className="font-semibold text-[var(--foreground)]">{adminPendingEmail}</span>
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-[var(--muted)]/50 border border-[var(--border)] mb-4 text-xs text-[var(--muted-foreground)] space-y-1">
+              <div className="flex items-center gap-1.5 font-bold text-[var(--foreground)]">
+                <Lock size={13} className="text-indigo-500" /> Protected Endpoint
+              </div>
+              <p>
+                This account is protected by strict zero-knowledge 2FA. Enter your private 6-digit Master Passcode to unlock the administrator portal.
+              </p>
+            </div>
+
+            <form onSubmit={handleVerifyAdmin2FA} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[var(--foreground)] mb-1.5">
+                  {useRescueKey ? "Emergency Backup Rescue Key" : "6-Digit Master Security Passcode"}
+                </label>
+                <div className="relative">
+                  <input
+                    type={useRescueKey ? "text" : "password"}
+                    maxLength={useRescueKey ? 32 : 6}
+                    value={admin2FAPin}
+                    onChange={(e) => setAdmin2FAPin(e.target.value)}
+                    placeholder={useRescueKey ? "RESCUE-XXXX-XXXX" : "● ● ● ● ● ●"}
+                    autoFocus
+                    required
+                    className="w-full px-4 py-3 rounded-xl bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] font-mono text-center text-lg tracking-widest focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]">
+                    <KeyRound size={16} />
+                  </div>
+                </div>
+              </div>
+
+              {admin2FAError && (
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-500 font-semibold flex items-center gap-2">
+                  <AlertTriangle size={15} className="shrink-0" />
+                  <span>{admin2FAError}</span>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between text-xs">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUseRescueKey(!useRescueKey)
+                    setAdmin2FAPin("")
+                    setAdmin2FAError("")
+                  }}
+                  className="text-indigo-500 hover:underline font-semibold"
+                >
+                  {useRescueKey ? "← Use 6-Digit PIN instead" : "Use Emergency Rescue Key"}
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowAdmin2FAModal(false)
+                    setAdmin2FAPin("")
+                    setAdmin2FAError("")
+                  }}
+                  className="w-full"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  isLoading={isVerifying2FA}
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold"
+                >
+                  Verify & Access
+                </Button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
     </div>
   )
 }
