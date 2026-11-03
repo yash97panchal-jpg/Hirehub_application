@@ -1,21 +1,21 @@
 import { lazy, Suspense, useEffect } from "react"
-import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom"
 import { Toaster } from "react-hot-toast"
 import Navbar from "./components/layout/Navbar"
 import Footer from "./components/layout/Footer"
 import ProtectedRoute from "./components/layout/ProtectedRoute"
+import { ErrorBoundary } from "./components/layout/ErrorBoundary"
 import { useThemeStore } from "./store/themeStore"
+import symbolLogo from "./imports/symbol_only.jpeg"
 
 const Home = lazy(() => import("./pages/Home"))
 const Jobs = lazy(() => import("./pages/Jobs"))
 const JobDetail = lazy(() => import("./pages/JobDetail"))
 const Companies = lazy(() => import("./pages/Companies"))
 const ATSChecker = lazy(() => import("./pages/ATSChecker"))
-const Roadmap = lazy(() => import("./pages/Roadmap"))
 const SalaryInsights = lazy(() => import("./pages/SalaryInsights"))
 const Notifications = lazy(() => import("./pages/Notifications"))
 const Profile = lazy(() => import("./pages/Profile"))
-const Messages = lazy(() => import("./pages/Messages"))
 const Settings = lazy(() => import("./pages/Settings"))
 const Blog = lazy(() => import("./pages/Blog"))
 const ResumeBuilder = lazy(() => import("./pages/ResumeBuilder"))
@@ -29,12 +29,30 @@ const Cookies = lazy(() => import("./pages/Cookies"))
 const Login = lazy(() => import("./pages/auth/Login"))
 const Register = lazy(() => import("./pages/auth/Register"))
 const UserDashboard = lazy(() => import("./pages/dashboard/UserDashboard"))
+const SavedJobs = lazy(() => import("./pages/dashboard/SavedJobs"))
+const ApplicationTracker = lazy(
+  () => import("./pages/dashboard/ApplicationTracker"),
+)
+const JobAlerts = lazy(() => import("./pages/dashboard/JobAlerts"))
 const RecruiterDashboard = lazy(
   () => import("./pages/dashboard/RecruiterDashboard"),
 )
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"))
 const Onboarding = lazy(() => import("./pages/Onboarding"))
 const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"))
+const PostJob = lazy(() => import("./pages/dashboard/PostJob"))
+const ApplicantManagement = lazy(
+  () => import("./pages/dashboard/ApplicantManagement"),
+)
+const CompanyProfile = lazy(() => import("./pages/dashboard/CompanyProfile"))
+const CompanyPage = lazy(() => import("./pages/CompanyPage"))
+const Messages = lazy(() => import("./pages/Messages"))
+const SkillAssessment = lazy(() => import("./pages/SkillAssessment"))
+const TalentSearch = lazy(() => import("./pages/recruiter/TalentSearch"))
+
+import PWAInstallPrompt from "./components/layout/PWAInstallPrompt"
+import CookieConsent from "./components/layout/CookieConsent"
+import BackToTop from "./components/layout/BackToTop"
 
 function PageLoader() {
   return (
@@ -47,17 +65,18 @@ function PageLoader() {
   )
 }
 
-const NO_FOOTER_PATHS = ["/login", "/register", "/forgot-password", "/admin", "/recruiter"]
-
 function Layout({ children }: { children: React.ReactNode }) {
-  const path = window.location.pathname
-  const showFooter = !NO_FOOTER_PATHS.some((p) => path.startsWith(p))
+  const location = useLocation()
+  const isAuth = ["/login", "/register", "/forgot-password"].includes(location.pathname)
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+    <div className="min-h-screen flex flex-col bg-[var(--background)] text-[var(--foreground)]">
       <Navbar />
-      <main>{children}</main>
-      {showFooter && <Footer />}
+      <main className="flex-1 flex flex-col">{children}</main>
+      {!isAuth && <Footer />}
+      <CookieConsent />
+      <PWAInstallPrompt />
+      <BackToTop />
     </div>
   )
 }
@@ -70,10 +89,11 @@ export default function App() {
   }, [theme])
 
   return (
-    <BrowserRouter>
-      <Toaster
-        position="top-right"
-        toastOptions={{
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Toaster
+          position="top-right"
+          toastOptions={{
           style: {
             background: "var(--card)",
             color: "var(--foreground)",
@@ -89,42 +109,111 @@ export default function App() {
       <Layout>
         <Suspense fallback={<PageLoader />}>
           <Routes>
-            {/* Protected General Pages */}
-            <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-            <Route path="/jobs" element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
-            <Route path="/jobs/:id" element={<ProtectedRoute><JobDetail /></ProtectedRoute>} />
-            <Route path="/companies" element={<ProtectedRoute><Companies /></ProtectedRoute>} />
-            <Route path="/internships" element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
-            <Route path="/ats-checker" element={<ProtectedRoute><ATSChecker /></ProtectedRoute>} />
-            <Route path="/roadmap" element={<ProtectedRoute><Roadmap /></ProtectedRoute>} />
-            <Route path="/salary-insights" element={<ProtectedRoute><SalaryInsights /></ProtectedRoute>} />
-            <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-            <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            <Route path="/blog" element={<ProtectedRoute><Blog /></ProtectedRoute>} />
-            <Route path="/resume-builder" element={<ProtectedRoute><ResumeBuilder /></ProtectedRoute>} />
-            <Route path="/pricing" element={<ProtectedRoute><Pricing /></ProtectedRoute>} />
-            <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
-            <Route path="/contact" element={<ProtectedRoute><Contact /></ProtectedRoute>} />
-            <Route path="/faq" element={<ProtectedRoute><FAQ /></ProtectedRoute>} />
-            <Route path="/privacy" element={<ProtectedRoute><Privacy /></ProtectedRoute>} />
-            <Route path="/terms" element={<ProtectedRoute><Terms /></ProtectedRoute>} />
-            <Route path="/cookies" element={<ProtectedRoute><Cookies /></ProtectedRoute>} />
-            
+            {/* Public Discovery Pages (Standard Web Portal Entry) */}
+            <Route path="/" element={<Home />} />
+            <Route path="/jobs" element={<Jobs />} />
+            <Route path="/jobs/:id" element={<JobDetail />} />
+            <Route path="/companies" element={<Companies />} />
+            <Route path="/companies/:id" element={<CompanyPage />} />
+            <Route path="/internships" element={<Jobs />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/cookies" element={<Cookies />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/pricing" element={<Pricing />} />
+
+            {/* Authenticated Career Tools & Dashboards */}
+            <Route
+              path="/ats-checker"
+              element={
+                <ProtectedRoute>
+                  <ATSChecker />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/salary-insights"
+              element={
+                <ProtectedRoute>
+                  <SalaryInsights />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/resume-builder"
+              element={
+                <ProtectedRoute>
+                  <ResumeBuilder />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Authenticated User Features */}
+            <Route
+              path="/messages"
+              element={
+                <ProtectedRoute>
+                  <Messages />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/skills"
+              element={
+                <ProtectedRoute>
+                  <SkillAssessment />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/skill-assessment"
+              element={
+                <ProtectedRoute>
+                  <SkillAssessment />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/notifications"
+              element={
+                <ProtectedRoute>
+                  <Notifications />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              }
+            />
+
             {/* Public Auth */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
 
             {/* Onboarding */}
-            <Route 
-              path="/onboarding" 
+            <Route
+              path="/onboarding"
               element={
                 <ProtectedRoute>
                   <Onboarding />
                 </ProtectedRoute>
-              } 
+              }
             />
 
             {/* User protected */}
@@ -137,6 +226,30 @@ export default function App() {
               }
             />
             <Route
+              path="/dashboard/saved"
+              element={
+                <ProtectedRoute>
+                  <SavedJobs />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/applications"
+              element={
+                <ProtectedRoute>
+                  <ApplicationTracker />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/alerts"
+              element={
+                <ProtectedRoute>
+                  <JobAlerts />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/dashboard/*"
               element={
                 <ProtectedRoute>
@@ -145,7 +258,6 @@ export default function App() {
               }
             />
 
-            {/* Recruiter protected */}
             <Route
               path="/recruiter"
               element={
@@ -155,10 +267,42 @@ export default function App() {
               }
             />
             <Route
-              path="/recruiter/*"
+              path="/recruiter/jobs"
               element={
                 <ProtectedRoute role="recruiter">
                   <RecruiterDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/recruiter/post-job"
+              element={
+                <ProtectedRoute role="recruiter">
+                  <PostJob />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/recruiter/applicants"
+              element={
+                <ProtectedRoute role="recruiter">
+                  <ApplicantManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/recruiter/talent-search"
+              element={
+                <ProtectedRoute role="recruiter">
+                  <TalentSearch />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/recruiter/company-profile"
+              element={
+                <ProtectedRoute role="recruiter">
+                  <CompanyProfile />
                 </ProtectedRoute>
               }
             />
@@ -185,8 +329,9 @@ export default function App() {
             <Route
               path="*"
               element={
-                <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
-                  <div className="text-center">
+                <div className="min-h-screen flex items-center justify-center bg-[var(--background)] p-4">
+                  <div className="text-center max-w-md bg-[var(--card)] p-8 rounded-3xl border border-[var(--border)] shadow-[var(--shadow-card)]">
+                    <img src={symbolLogo} alt="HireHub Symbol" className="w-16 h-16 mx-auto mb-6 object-contain rounded-full border border-[var(--border)]" />
                     <div className="font-poppins text-8xl font-black text-[var(--muted)] mb-4">
                       404
                     </div>
@@ -196,12 +341,12 @@ export default function App() {
                     <p className="text-[var(--muted-foreground)] mb-6">
                       The page you're looking for doesn't exist.
                     </p>
-                    <a
-                      href="/"
-                      className="px-6 py-3 rounded-xl bg-[var(--primary)] text-white font-semibold hover:bg-[var(--primary-hover)] transition-colors"
+                    <Link
+                      to="/"
+                      className="px-6 py-3 rounded-xl bg-[var(--primary)] text-white font-semibold hover:bg-[var(--primary-hover)] transition-colors block w-full"
                     >
                       Go Home
-                    </a>
+                    </Link>
                   </div>
                 </div>
               }
@@ -210,5 +355,7 @@ export default function App() {
         </Suspense>
       </Layout>
     </BrowserRouter>
+    </ErrorBoundary>
   )
 }
+

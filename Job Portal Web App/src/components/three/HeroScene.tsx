@@ -24,30 +24,30 @@ function FloatingBriefcase() {
   return (
     <Float speed={2} rotationIntensity={0.4} floatIntensity={0.8}>
       <group ref={groupRef} position={[0, 0, 0]}>
-        {/* Briefcase body */}
+        {/* Briefcase body - Marigold */}
         <Box args={[1.4, 1, 0.4]} position={[0, -0.1, 0]}>
           <meshStandardMaterial
-            color="var(--primary)"
+            color="#F59E0B"
             metalness={0.6}
             roughness={0.2}
           />
         </Box>
-        {/* Handle */}
+        {/* Handle - Marigold amber */}
         <Torus
           args={[0.35, 0.06, 16, 32, Math.PI]}
           position={[0, 0.5, 0]}
           rotation={[0, 0, 0]}
         >
           <meshStandardMaterial
-            color="var(--primary-hover)"
+            color="#D97706"
             metalness={0.8}
             roughness={0.1}
           />
         </Torus>
-        {/* Latch */}
+        {/* Latch - Deep Aubergine */}
         <Box args={[0.25, 0.12, 0.08]} position={[0, -0.05, 0.25]}>
           <meshStandardMaterial
-            color="var(--accent)"
+            color="#2C1038"
             metalness={0.9}
             roughness={0.1}
           />
@@ -83,16 +83,13 @@ function OrbitingParticles() {
   return (
     <points ref={particlesRef}>
       <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          args={[positions, 3]}
-        />
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
       <pointsMaterial
         size={0.05}
-        color="var(--accent)"
+        color="#F1F5F9"
         transparent
-        opacity={0.8}
+        opacity={0.85}
         sizeAttenuation
       />
     </points>
@@ -111,10 +108,10 @@ function AccentSphere() {
   return (
     <Sphere ref={ref} args={[0.18, 32, 32]} position={[1.2, 1.4, 0.3]}>
       <meshStandardMaterial
-        color="var(--accent)"
+        color="#F59E0B"
         metalness={0.7}
         roughness={0.1}
-        emissive="var(--accent)"
+        emissive="#F59E0B"
         emissiveIntensity={0.3}
       />
     </Sphere>
@@ -132,10 +129,10 @@ function GlowRing() {
   return (
     <Torus ref={ref} args={[2.2, 0.02, 16, 100]} position={[0, 0, 0]}>
       <meshStandardMaterial
-        color="var(--primary)"
+        color="#F59E0B"
         transparent
         opacity={0.4}
-        emissive="var(--primary)"
+        emissive="#F59E0B"
         emissiveIntensity={0.5}
       />
     </Torus>
@@ -152,11 +149,11 @@ function DistortBlob() {
   return (
     <Sphere ref={ref} args={[1.6, 64, 64]} position={[0, 0, -0.5]}>
       <MeshDistortMaterial
-        color="var(--primary)"
+        color="#3A174E"
         distort={0.25}
         speed={2}
         transparent
-        opacity={0.08}
+        opacity={0.18}
         wireframe={false}
       />
     </Sphere>
@@ -176,9 +173,9 @@ export default function HeroScene() {
       <pointLight
         position={[-3, 3, 3]}
         intensity={0.8}
-        color="var(--primary)"
+        color="#F59E0B"
       />
-      <pointLight position={[3, -2, 2]} intensity={0.6} color="var(--accent)" />
+      <pointLight position={[3, -2, 2]} intensity={0.6} color="#3A174E" />
       <Environment preset="city" />
       <FloatingBriefcase />
       <OrbitingParticles />

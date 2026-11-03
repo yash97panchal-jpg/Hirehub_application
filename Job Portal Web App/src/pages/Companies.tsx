@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import {
@@ -8,9 +8,13 @@ import {
   Users,
   Briefcase,
   CheckCircle,
+  Building,
 } from "lucide-react"
 import Badge from "../components/ui/Badge"
 import { mockCompanies } from "../data/mockData"
+import { useJobStore } from "../store/jobStore"
+import { isLocalhost } from "../utils/env"
+import type { Company } from "../types"
 
 const industries = [
   "All",
@@ -27,8 +31,23 @@ export default function Companies() {
   const [search, setSearch] = useState("")
   const [industry, setIndustry] = useState("All")
   const [size, setSize] = useState("All")
+  const { jobs } = useJobStore()
 
-  const filtered = mockCompanies.filter((c) => {
+  // On localhost show mock companies. On live server, extract real companies from posted jobs.
+  const companiesList = useMemo<Company[]>(() => {
+    if (isLocalhost()) {
+      return mockCompanies
+    }
+    const map = new Map<string, Company>()
+    jobs.forEach((j) => {
+      if (j.company && j.company.id && !map.has(j.company.id)) {
+        map.set(j.company.id, j.company)
+      }
+    })
+    return Array.from(map.values())
+  }, [jobs])
+
+  const filtered = companiesList.filter((c) => {
     if (search && !c.name.toLowerCase().includes(search.toLowerCase()))
       return false
     if (industry !== "All" && c.industry !== industry) return false
@@ -41,7 +60,7 @@ export default function Companies() {
       <div
         style={{
           background:
-            "linear-gradient(135deg, #101F3E 0%, var(--primary) 100%)",
+            "linear-gradient(135deg, var(--accent) 0%, #1A0924 55%, var(--primary-deep) 100%)",
         }}
         className="py-12"
       >
@@ -136,7 +155,7 @@ export default function Companies() {
                         {company.isVerified && (
                           <CheckCircle
                             size={14}
-                            className="text-blue-500 shrink-0"
+                            className="text-[var(--primary)] shrink-0"
                           />
                         )}
                       </div>
@@ -173,9 +192,13 @@ export default function Companies() {
         </div>
 
         {filtered.length === 0 && (
-          <div className="text-center py-20">
-            <p className="text-[var(--muted-foreground)]">
-              No companies found. Try adjusting your filters.
+          <div className="text-center py-20 bg-[var(--card)] rounded-2xl border border-[var(--border)] p-8 max-w-lg mx-auto">
+            <Building size={40} className="mx-auto text-[var(--muted-foreground)] mb-3 opacity-40" />
+            <h3 className="font-bold text-base text-[var(--foreground)]">No companies found</h3>
+            <p className="text-xs text-[var(--muted-foreground)] mt-1">
+              {isLocalhost()
+                ? "Try adjusting your search query or industry filter."
+                : "No company profiles registered yet. Once recruiters post jobs, their companies will appear here."}
             </p>
           </div>
         )}

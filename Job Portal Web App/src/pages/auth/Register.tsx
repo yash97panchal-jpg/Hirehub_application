@@ -1,6 +1,5 @@
 import { useState } from "react"
-import symbolLogo from "../../imports/symbol_only.jpeg"
-import { BlackHoleHeroSection } from "../../components/ui/blackhole-hero-section"
+import { ParticleTextEffect } from "../../components/ui/particle-text-effect"
 import { Link, useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
 import { useForm } from "react-hook-form"
@@ -73,71 +72,51 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left panel */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        <BlackHoleHeroSection
-          focus={[0.5, 0.6]}
-          scrim="bottom"
-          scrimStrength={0.7}
-          distance={20}
-          elevation={-5.5}
-          fov={50}
-          glow={1}
-          steps={300}
-          resolution={0.7}
-          className="absolute inset-0 z-0"
-        >
-          <div className="relative z-10 flex flex-col items-center justify-center h-full max-w-md mx-auto p-12">
-            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-white shadow-lg border border-[var(--border)] mb-6 shrink-0 overflow-hidden text-center mx-auto">
-              <img
-                src={symbolLogo}
-                alt="HireHub Logo"
-                className="w-16 h-16 object-contain"
-              />
-            </div>
-            <h2 className="font-poppins text-4xl font-black text-white mb-4 text-center">
-              Start your career journey today
-            </h2>
-            <p className="text-white/80 text-lg leading-relaxed mb-8 text-center">
-              Join 85,000+ professionals finding their dream jobs through
-              intelligent matching and ATS-optimized resumes.
-            </p>
-            <ul className="space-y-3 w-full">
-              {[
-                "Free ATS resume score checker",
-                "AI-powered job recommendations",
-                "Direct recruiter messaging",
-                "Salary insights and benchmarks",
-                "Resume builder with 4 templates",
-              ].map((f) => (
-                <li
-                  key={f}
-                  className="flex items-center gap-3 text-white/90 text-sm p-3 rounded-xl bg-white/5 backdrop-blur-md border border-white/10"
-                >
-                  <span className="w-5 h-5 rounded-full bg-[var(--primary)]/20 flex items-center justify-center text-[var(--primary)] text-xs font-bold flex-shrink-0 border border-[var(--primary)]/30">
-                    ✓
-                  </span>
-                  {f}
-                </li>
-              ))}
-            </ul>
+    <div className="pt-16 min-h-screen lg:h-[calc(100vh-4rem)] flex flex-col lg:flex-row bg-[var(--background)] overflow-x-hidden no-scrollbar">
+      {/* Left panel with Particle Text Effect (Responsive on Phone, Tablet & Desktop) */}
+      <div className="flex flex-col justify-end w-full lg:w-1/2 h-[260px] sm:h-[300px] md:h-[350px] lg:h-full relative overflow-hidden bg-[#12051B] border-b lg:border-b-0 lg:border-r border-[var(--border)] shrink-0">
+        <ParticleTextEffect words={["WELCOME", "HIREHUB", "JOIN NOW"]} holdDurationMs={4500} />
+
+        <div className="relative z-10 p-4 sm:p-5 lg:p-8 pointer-events-none select-none max-w-md">
+          <h2 className="font-poppins text-base sm:text-lg lg:text-xl font-bold text-white mb-1 leading-tight">
+            Start Your Career Journey Today
+          </h2>
+          <p className="text-white/70 text-xs sm:text-sm leading-relaxed mb-3 line-clamp-2 lg:line-clamp-none">
+            Join 85,000+ professionals finding their dream jobs through intelligent matching.
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {["ATS Score Checker", "AI Matching", "Verified Employers"].map((item) => (
+              <span
+                key={item}
+                className="px-2 py-0.5 rounded-lg bg-white/10 backdrop-blur-md text-white/90 text-[11px] sm:text-xs font-medium border border-white/10"
+              >
+                ✓ {item}
+              </span>
+            ))}
           </div>
-        </BlackHoleHeroSection>
+        </div>
       </div>
 
       {/* Right panel */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-12 bg-[var(--background)] overflow-y-auto">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-12 py-3 lg:py-4 bg-[var(--background)] lg:h-full overflow-y-auto no-scrollbar">
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="w-full max-w-md pt-16"
+          transition={{ duration: 0.35 }}
+          className="w-full max-w-md my-auto"
         >
-          <h1 className="font-poppins text-3xl font-bold text-[var(--foreground)] mb-1">
+          {/* Top back navigation */}
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors mb-4"
+          >
+            <ArrowLeft size={14} /> Back to Home
+          </Link>
+
+          <h1 className="font-poppins text-2xl sm:text-3xl font-bold text-[var(--foreground)] mb-1">
             Create account
           </h1>
-          <p className="text-[var(--muted-foreground)] mb-6">
+          <p className="text-sm text-[var(--muted-foreground)] mb-5">
             Already have an account?{" "}
             <Link
               to="/login"
@@ -169,7 +148,7 @@ export default function Register() {
                 onClick={() => setRole(opt.value)}
                 className={`p-4 rounded-xl border-2 text-left transition-all ${
                   role === opt.value
-                    ? "border-[var(--primary)] bg-[var(--muted)] dark:bg-blue-950/30"
+                    ? "border-[var(--primary)] bg-[var(--muted)] dark:bg-[var(--accent)]/40"
                     : "border-[var(--border)] hover:border-[var(--primary)]/50"
                 }`}
               >

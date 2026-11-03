@@ -1,0 +1,30 @@
+# Secrets and Private Credentials
+admin-credentials.txt
+admin-password.txt
+CHANGES_AND_DELETIONS.txt
+error-log.txt
+*.zip
+.env*
+.env.local
+.env.*.local
+
+# Node & Build Outputs
+node_modules/
+dist/
+build/
+.cache/
+.vite/
+*.tsbuildinfo
+logs/
+*.log
+.tmp-*
+.vercel/
+
+# Python & Legacy Artifacts
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+db.sqlite3
+accounts.zip

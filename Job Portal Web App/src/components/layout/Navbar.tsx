@@ -24,12 +24,16 @@ import {
   DollarSign,
   Users,
   Shield,
-  MessageSquare,
   Bookmark,
+  MessageSquare,
+  Award,
 } from "lucide-react"
 import ThemeToggle from "../ui/ThemeToggle"
 import Button from "../ui/Button"
+import LanguageSwitcher from "./LanguageSwitcher"
 import { useAuthStore } from "../../store/authStore"
+import { useSavedJobsStore } from "../../store/savedJobsStore"
+import { useMessageStore } from "../../store/messageStore"
 import { mockNotifications } from "../../data/mockData"
 import { cn } from "../../utils/cn"
 import symbolLogo from "../../imports/symbol_only.jpeg"
@@ -45,6 +49,7 @@ const jobCategories = [
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuthStore()
+  const { savedJobIds } = useSavedJobsStore()
   const navigate = useNavigate()
   const location = useLocation()
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -56,7 +61,28 @@ export default function Navbar() {
   const notifRef = useRef<HTMLDivElement>(null)
   const profileRef = useRef<HTMLDivElement>(null)
 
-  const unreadCount = mockNotifications.filter((n) => !n.isRead).length
+  const isAuthPage = ["/login", "/register", "/forgot-password"].includes(location.pathname)
+
+  const { conversations } = useMessageStore()
+  const unreadMsgCount = conversations.reduce((acc, c) => acc + (c.unreadCount || 0), 0)
+
+  // Keyboard shortcut listener: Press "/" to focus or navigate to Jobs Search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement
+      if (
+        e.key === "/" &&
+        target.tagName !== "INPUT" &&
+        target.tagName !== "TEXTAREA" &&
+        !target.isContentEditable
+      ) {
+        e.preventDefault()
+        navigate("/jobs")
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [navigate])
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
@@ -123,115 +149,132 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-1">
-            {/* Jobs Mega Menu */}
-            <div ref={jobsRef} className="relative">
-              <button
-                onClick={() => setJobsOpen((v) => !v)}
-                className={cn(
-                  "flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-                  "text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)]",
-                  jobsOpen && "text-[var(--primary)] bg-[var(--muted)]",
-                )}
-              >
-                Find Jobs
-                <ChevronDown
-                  size={15}
+          {/* Desktop Nav - Options list only shows AFTER log in / sign up and NEVER on auth pages */}
+          {isAuthenticated && user && !isAuthPage && (
+            <nav className="hidden lg:flex items-center gap-1">
+              {/* Jobs Mega Menu */}
+              <div ref={jobsRef} className="relative">
+                <button
+                  onClick={() => setJobsOpen((v) => !v)}
                   className={cn(
-                    "transition-transform duration-200",
-                    jobsOpen && "rotate-180",
+                    "flex items-center gap-1 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors",
+                    "text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)]",
+                    jobsOpen && "text-[var(--primary)] bg-[var(--muted)]",
                   )}
-                />
-              </button>
-              <AnimatePresence>
-                {jobsOpen && (
-                  <motion.div
-                    variants={dropdownVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    className="absolute left-0 top-full mt-2 w-[480px] rounded-2xl bg-[var(--card)] border border-[var(--border)] shadow-[var(--shadow-elevated)] overflow-hidden"
-                  >
-                    <div className="p-4">
-                      <p className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-widest mb-3">
-                        Browse by Category
-                      </p>
-                      <div className="grid grid-cols-2 gap-2">
-                        {jobCategories.map((cat) => (
-                          <Link
-                            key={cat.label}
-                            to={`/jobs?category=${cat.label.toLowerCase()}`}
-                            className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--muted)] transition-colors group"
-                          >
-                            <div className="w-9 h-9 rounded-lg bg-[var(--muted)]  flex items-center justify-center group-hover:bg-[var(--primary)] transition-colors">
-                              <cat.icon
-                                size={16}
-                                className="text-[var(--primary)] group-hover:text-white transition-colors"
-                              />
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-[var(--foreground)]">
-                                {cat.label}
-                              </p>
-                              <p className="text-xs text-[var(--muted-foreground)]">
-                                {cat.count}
-                              </p>
-                            </div>
-                          </Link>
-                        ))}
+                >
+                  Find Jobs
+                  <ChevronDown
+                    size={15}
+                    className={cn(
+                      "transition-transform duration-200",
+                      jobsOpen && "rotate-180",
+                    )}
+                  />
+                </button>
+                <AnimatePresence>
+                  {jobsOpen && (
+                    <motion.div
+                      variants={dropdownVariants}
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
+                      className="absolute left-0 top-full mt-2 w-[480px] rounded-2xl bg-[var(--card)] border border-[var(--border)] shadow-[var(--shadow-elevated)] overflow-hidden"
+                    >
+                      <div className="p-4">
+                        <p className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-widest mb-3">
+                          Browse by Category
+                        </p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {jobCategories.map((cat) => (
+                            <Link
+                              key={cat.label}
+                              to={`/jobs?category=${cat.label.toLowerCase()}`}
+                              className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--muted)] transition-colors group"
+                            >
+                              <div className="w-9 h-9 rounded-lg bg-[var(--muted)] flex items-center justify-center group-hover:bg-[var(--primary)] transition-colors">
+                                <cat.icon
+                                  size={16}
+                                  className="text-[var(--primary)] group-hover:text-[#180C22] transition-colors"
+                                />
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-[var(--foreground)]">
+                                  {cat.label}
+                                </p>
+                                <p className="text-xs text-[var(--muted-foreground)]">
+                                  {cat.count}
+                                </p>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                    <div className="px-4 py-3 bg-[var(--muted)] flex items-center justify-between">
-                      <span className="text-sm text-[var(--muted-foreground)]">
-                        12,400+ jobs available
-                      </span>
-                      <Link
-                        to="/jobs"
-                        className="text-sm font-semibold text-[var(--primary)] hover:underline flex items-center gap-1"
-                      >
-                        View all <Zap size={13} />
-                      </Link>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                      <div className="px-4 py-3 bg-[var(--muted)] flex items-center justify-between">
+                        <span className="text-sm text-[var(--muted-foreground)]">
+                          12,400+ jobs available
+                        </span>
+                        <Link
+                          to="/jobs"
+                          className="text-sm font-semibold text-[var(--primary)] hover:underline flex items-center gap-1"
+                        >
+                          View all <Zap size={13} />
+                        </Link>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
 
-            <Link
-              to="/companies"
-              className="flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
-            >
-              Companies
-            </Link>
-            <Link
-              to="/internships"
-              className="flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
-            >
-              Internships
-            </Link>
-            <Link
-              to="/ats-checker"
-              className="flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
-            >
-              ATS Checker
-            </Link>
-            <Link
-              to="/roadmap"
-              className="flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
-            >
-              Roadmap
-            </Link>
-            <Link
-              to="/salary-insights"
-              className="flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
-            >
-              Salaries
-            </Link>
-          </nav>
+              <Link
+                to="/companies"
+                className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
+              >
+                Companies
+              </Link>
+              <Link
+                to="/skills"
+                className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
+              >
+                Skill Tests
+              </Link>
+              {user?.role === "recruiter" && (
+                <Link
+                  to="/recruiter/talent-search"
+                  className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--primary)] hover:bg-[var(--primary)]/10 transition-colors font-semibold"
+                >
+                  Talent Search
+                </Link>
+              )}
+              <Link
+                to="/pricing"
+                className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
+              >
+                Pricing
+              </Link>
+              <Link
+                to="/ats-checker"
+                className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
+              >
+                ATS Checker
+              </Link>
+              <Link
+                to="/resume-builder"
+                className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
+              >
+                Resume Builder
+              </Link>
+              <Link
+                to="/salary-insights"
+                className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
+              >
+                Salaries
+              </Link>
+            </nav>
+          )}
 
           {/* Right Actions */}
           <div className="flex items-center gap-2">
+            <LanguageSwitcher />
             <ThemeToggle />
 
             {isAuthenticated && user ? (
@@ -239,10 +282,23 @@ export default function Navbar() {
                 {/* Search icon */}
                 <button
                   onClick={() => navigate("/jobs")}
+                  title="Search Jobs (Press /)"
                   className="hidden sm:flex w-9 h-9 items-center justify-center rounded-lg text-[var(--muted-foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
                 >
                   <Search size={18} />
                 </button>
+
+                {/* Messages Hub */}
+                <Link
+                  to="/messages"
+                  title="Live Messages & Interviews"
+                  className="relative w-9 h-9 flex items-center justify-center rounded-lg text-[var(--muted-foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
+                >
+                  <MessageSquare size={18} />
+                  {unreadMsgCount > 0 && (
+                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[var(--primary)] rounded-full ring-2 ring-[var(--card)]" />
+                  )}
+                </Link>
 
                 {/* Notifications */}
                 <div ref={notifRef} className="relative">
@@ -352,19 +408,17 @@ export default function Navbar() {
                               to: "/dashboard",
                             },
                             {
-                              label: "Saved Jobs",
+                              label:
+                                savedJobIds.length > 0
+                                  ? `Saved Jobs (${savedJobIds.length})`
+                                  : "Saved Jobs",
                               icon: Bookmark,
                               to: "/dashboard/saved",
                             },
                             {
                               label: "My Resumes",
                               icon: FileText,
-                              to: "/dashboard/resumes",
-                            },
-                            {
-                              label: "Messages",
-                              icon: MessageSquare,
-                              to: "/messages",
+                              to: "/resume-builder",
                             },
                             ...(user.role === "recruiter"
                               ? [
@@ -413,7 +467,7 @@ export default function Navbar() {
                   </AnimatePresence>
                 </div>
               </>
-            ) : (
+            ) : !isAuthPage ? (
               <div className="hidden sm:flex items-center gap-2">
                 <Button
                   variant="ghost"
@@ -430,22 +484,25 @@ export default function Navbar() {
                   Get Started
                 </Button>
               </div>
-            )}
+            ) : null}
 
-            {/* Mobile menu button */}
-            <button
-              onClick={() => setMobileOpen((v) => !v)}
-              className="lg:hidden w-9 h-9 flex items-center justify-center rounded-lg text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors"
-            >
-              {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
+            {/* Mobile menu button (Hidden on auth pages) */}
+            {!isAuthPage && (
+              <button
+                onClick={() => setMobileOpen((v) => !v)}
+                className="lg:hidden w-9 h-9 flex items-center justify-center rounded-lg text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors"
+                aria-label="Toggle menu"
+              >
+                {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu - Only shown on non-auth pages; option list only appears AFTER login/signup */}
       <AnimatePresence>
-        {mobileOpen && (
+        {!isAuthPage && mobileOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
@@ -454,30 +511,61 @@ export default function Navbar() {
             className="lg:hidden bg-[var(--card)] border-t border-[var(--border)] overflow-hidden"
           >
             <nav className="px-4 py-4 flex flex-col gap-1">
-              {[
-                { label: "Find Jobs", to: "/jobs", icon: Briefcase },
-                { label: "Companies", to: "/companies", icon: Building2 },
-                { label: "Internships", to: "/internships", icon: Star },
-                { label: "ATS Checker", to: "/ats-checker", icon: FileText },
-                { label: "Roadmap", to: "/roadmap", icon: BookOpen },
-                {
-                  label: "Salary Insights",
-                  to: "/salary-insights",
-                  icon: DollarSign,
-                },
-                { label: "Career Tips", to: "/blog", icon: BookOpen },
-              ].map((item) => (
-                <Link
-                  key={item.label}
-                  to={item.to}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[var(--primary)] transition-colors"
-                >
-                  <item.icon size={17} />
-                  {item.label}
-                </Link>
-              ))}
-              {!isAuthenticated && (
-                <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-[var(--border)]">
+              {isAuthenticated && user ? (
+                <>
+                  {[
+                    { label: "Find Jobs", to: "/jobs", icon: Briefcase },
+                    { label: "Companies", to: "/companies", icon: Building2 },
+                    { label: "Live Messages", to: "/messages", icon: MessageSquare },
+                    { label: "Skill Tests", to: "/skills", icon: Award },
+                    { label: "Pricing", to: "/pricing", icon: DollarSign },
+                    ...(user.role === "recruiter"
+                      ? [{ label: "Talent Search", to: "/recruiter/talent-search", icon: Users }]
+                      : []),
+                    { label: "ATS Checker", to: "/ats-checker", icon: FileText },
+                    { label: "Resume Builder", to: "/resume-builder", icon: FileText },
+                    {
+                      label: "Salary Insights",
+                      to: "/salary-insights",
+                      icon: DollarSign,
+                    },
+                    { label: "Career Tips", to: "/blog", icon: BookOpen },
+                  ].map((item) => (
+                    <Link
+                      key={item.label}
+                      to={item.to}
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[var(--primary)] transition-colors"
+                    >
+                      <item.icon size={17} />
+                      {item.label}
+                    </Link>
+                  ))}
+
+                  <div className="mt-2 pt-2 border-t border-[var(--border)]">
+                    <Link
+                      to={
+                        user.role === "admin"
+                          ? "/admin"
+                          : user.role === "recruiter"
+                            ? "/recruiter"
+                            : "/dashboard"
+                      }
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
+                    >
+                      <User size={17} />
+                      My Dashboard
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                    >
+                      <LogOut size={17} />
+                      Sign out
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col gap-2 pt-1">
                   <Button variant="outline" onClick={() => navigate("/login")}>
                     Sign in
                   </Button>

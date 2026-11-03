@@ -15,11 +15,16 @@ import {
   BarChart3,
   Zap,
   ChevronRight,
+  Settings as SettingsIcon,
 } from "lucide-react"
 import { useAuthStore } from "../../store/authStore"
-import { mockJobs, mockNotifications } from "../../data/mockData"
+import { mockNotifications, mockJobs } from "../../data/mockData"
+import { useJobStore } from "../../store/jobStore"
+import { useSavedJobsStore } from "../../store/savedJobsStore"
+import { isLocalhost } from "../../utils/env"
 import Badge from "../../components/ui/Badge"
 import Button from "../../components/ui/Button"
+import ProfileStrengthRing from "../../components/dashboard/ProfileStrengthRing"
 
 const applicationStats = [
   {
@@ -52,11 +57,7 @@ const applicationStats = [
   },
 ]
 
-const recentApplications = [
-  { job: mockJobs[0], status: "Shortlisted" as const, appliedAt: "2026-09-28" },
-  { job: mockJobs[1], status: "Viewed" as const, appliedAt: "2026-09-25" },
-  { job: mockJobs[2], status: "Applied" as const, appliedAt: "2026-09-22" },
-]
+
 
 const statusVariant: Record<string, "success" | "warning" | "primary" | "default"> =
   {
@@ -70,6 +71,14 @@ const statusVariant: Record<string, "success" | "warning" | "primary" | "default
 
 export default function UserDashboard() {
   const { user } = useAuthStore()
+  const { jobs: storeJobs } = useJobStore()
+  const { savedJobIds } = useSavedJobsStore()
+
+  const recentApplications = [
+    { job: storeJobs[0], status: "Shortlisted" as const, appliedAt: "2026-09-28" },
+    { job: storeJobs[1], status: "Viewed" as const, appliedAt: "2026-09-25" },
+    { job: storeJobs[2], status: "Applied" as const, appliedAt: "2026-09-22" },
+  ]
 
   return (
     <div className="min-h-screen bg-[var(--background)] pt-20">
@@ -82,7 +91,7 @@ export default function UserDashboard() {
         >
           <div>
             <h1 className="font-poppins text-3xl font-bold text-[var(--foreground)]">
-              Welcome back, {user?.name.split(" ")[0]} 👋
+              Welcome back, {user?.name ? user.name.split(" ")[0] : "Candidate"} 👋
             </h1>
             <p className="text-[var(--muted-foreground)] mt-1">
               Here's what's happening with your job search.
@@ -101,7 +110,7 @@ export default function UserDashboard() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary-deep)] rounded-2xl p-5 mb-6 text-white"
+          className="bg-gradient-to-r from-[var(--primary)] to-[var(--primary-deep)] rounded-2xl p-5 mb-6 text-[#180C22]"
         >
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
@@ -111,20 +120,18 @@ export default function UserDashboard() {
                   Profile Strength: {user?.profileCompletion || 75}%
                 </span>
               </div>
-              <p className="text-white/80 text-sm">
+              <p className="text-[#180C22]/80 text-sm">
                 Complete your profile to get 3× more recruiter views.
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="w-48 h-2.5 bg-white/20 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-[var(--accent)] rounded-full transition-all duration-1000"
-                  style={{ width: `${user?.profileCompletion || 75}%` }}
-                />
-              </div>
+            <div className="flex items-center gap-4">
+              <ProfileStrengthRing
+                progress={user?.profileCompletion || 75}
+                color="#180C22"
+              />
               <Link
                 to="/profile"
-                className="text-sm font-semibold text-[var(--accent)] hover:underline whitespace-nowrap"
+                className="text-sm font-bold text-[#F1F5F9] bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-5 py-2.5 rounded-xl shadow-sm transition-all whitespace-nowrap"
               >
                 Complete Profile
               </Link>
@@ -230,79 +237,101 @@ export default function UserDashboard() {
               </Link>
             </div>
             <div className="space-y-3">
-              {mockJobs.slice(0, 2).map((job) => (
-                <div
-                  key={job.id}
-                  className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-4 flex items-center gap-4 hover:border-[var(--primary)] transition-colors shadow-[var(--shadow-card)]"
-                >
-                  <div className="w-11 h-11 rounded-xl overflow-hidden bg-[var(--muted)] shrink-0 ring-1 ring-[var(--border)]">
-                    {job.company.logo && (
-                      <img
-                        src={job.company.logo}
-                        alt={job.company.name}
-                        className="w-full h-full object-cover"
-                      />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <Link
-                      to={`/jobs/${job.id}`}
-                      className="font-semibold text-sm text-[var(--foreground)] hover:text-[var(--primary)] transition-colors truncate block"
-                    >
-                      {job.title}
-                    </Link>
-                    <p className="text-xs text-[var(--muted-foreground)]">
-                      {job.company.name} · {job.type}
-                    </p>
-                  </div>
-                  <div className="shrink-0 text-right">
-                    {job.salaryMin && (
-                      <p className="text-sm font-semibold text-[var(--foreground)]">
-                        ${(job.salaryMin / 1000).toFixed(0)}k+
-                      </p>
-                    )}
-                    <Badge variant="accent" size="sm">
-                      <Zap size={9} className="mr-0.5" />
-                      Match
-                    </Badge>
-                  </div>
+              {storeJobs.length === 0 ? (
+                <div className="p-6 text-center text-xs text-[var(--muted-foreground)] bg-[var(--card)] rounded-2xl border border-[var(--border)]">
+                  No recommended jobs right now. Check back soon!
                 </div>
-              ))}
+              ) : (
+                storeJobs.slice(0, 2).map((job) => (
+                  <div
+                    key={job.id}
+                    className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-4 flex items-center gap-4 hover:border-[var(--primary)] transition-colors shadow-[var(--shadow-card)]"
+                  >
+                    <div className="w-11 h-11 rounded-xl overflow-hidden bg-[var(--muted)] shrink-0 ring-1 ring-[var(--border)] flex items-center justify-center font-bold text-[var(--primary)]">
+                      {job.company?.logo ? (
+                        <img
+                          src={job.company.logo}
+                          alt={job.company.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span>{job.company?.name?.charAt(0) || "J"}</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <Link
+                        to={`/jobs/${job.id}`}
+                        className="font-semibold text-sm text-[var(--foreground)] hover:text-[var(--primary)] transition-colors truncate block"
+                      >
+                        {job.title}
+                      </Link>
+                      <p className="text-xs text-[var(--muted-foreground)]">
+                        {job.company?.name || "Company"} · {job.type}
+                      </p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      {job.salaryMin && (
+                        <p className="text-sm font-semibold text-[var(--foreground)]">
+                          ${(job.salaryMin / 1000).toFixed(0)}k+
+                        </p>
+                      )}
+                      <Badge variant="accent" size="sm">
+                        <Zap size={9} className="mr-0.5" />
+                        Match
+                      </Badge>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-4">
             {/* Notifications */}
-            <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-5 shadow-[var(--shadow-card)]">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-poppins font-semibold text-[var(--foreground)]">
-                  Notifications
-                </h3>
-                <span className="w-5 h-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
-                  {mockNotifications.filter((n) => !n.isRead).length}
-                </span>
-              </div>
-              <div className="space-y-3">
-                {mockNotifications.map((n) => (
-                  <div
-                    key={n.id}
-                    className={`p-3 rounded-xl ${
-                      !n.isRead
-                        ? "bg-[var(--muted)] dark:bg-blue-950/30"
-                        : "bg-[var(--muted)]"
-                    }`}
-                  >
-                    <p className="text-xs font-semibold text-[var(--foreground)]">
-                      {n.title}
-                    </p>
-                    <p className="text-xs text-[var(--muted-foreground)] mt-0.5 line-clamp-2">
-                      {n.message}
-                    </p>
+            {(() => {
+              const notifs = isLocalhost() ? mockNotifications : []
+              const unreadCount = notifs.filter((n) => !n.isRead).length
+              return (
+                <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-5 shadow-[var(--shadow-card)]">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-poppins font-semibold text-[var(--foreground)]">
+                      Notifications
+                    </h3>
+                    {unreadCount > 0 && (
+                      <span className="w-5 h-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
+                        {unreadCount}
+                      </span>
+                    )}
                   </div>
-                ))}
-              </div>
-            </div>
+                  <div className="space-y-3">
+                    {notifs.length === 0 ? (
+                      <p className="text-xs text-[var(--muted-foreground)] text-center py-4">
+                        No notifications yet.
+                      </p>
+                    ) : (
+                      notifs.map((n) => (
+                        <div
+                          key={n.id}
+                          className={`p-3 rounded-xl ${
+                            !n.isRead
+                              ? "bg-[var(--muted)] dark:bg-[var(--accent)]/40"
+                              : "bg-[var(--muted)]"
+                          }`}
+                        >
+                          <p className="text-xs font-semibold text-[var(--foreground)]">
+                            {n.title}
+                          </p>
+                          <p className="text-xs text-[var(--muted-foreground)] mt-0.5 line-clamp-2">
+                            {n.message}
+                          </p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )
+            })()}
 
             {/* Quick Actions */}
             <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-5 shadow-[var(--shadow-card)]">
@@ -324,7 +353,10 @@ export default function UserDashboard() {
                     color: "text-green-500",
                   },
                   {
-                    label: "Saved Jobs",
+                    label:
+                      savedJobIds.length > 0
+                        ? `Saved Jobs (${savedJobIds.length})`
+                        : "Saved Jobs",
                     icon: Bookmark,
                     to: "/dashboard/saved",
                     color: "text-yellow-500",
@@ -340,6 +372,12 @@ export default function UserDashboard() {
                     icon: BarChart3,
                     to: "/salary-insights",
                     color: "text-orange-500",
+                  },
+                  {
+                    label: "Account Settings",
+                    icon: SettingsIcon,
+                    to: "/settings",
+                    color: "text-blue-500",
                   },
                 ].map((action) => (
                   <Link

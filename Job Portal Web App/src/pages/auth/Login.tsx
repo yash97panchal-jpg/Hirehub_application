@@ -1,300 +1,442 @@
-import { useState } from "react"
-
-import symbolLogo from "../../imports/symbol_only.jpeg"
-import { BlackHoleHeroSection } from "../../components/ui/blackhole-hero-section"
-
+import { useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
-
 import { motion } from "framer-motion"
-
-import { useForm } from "react-hook-form"
-
-import { zodResolver } from "@hookform/resolvers/zod"
-
-import { z } from "zod"
-
-import { Eye, EyeOff, Briefcase, ArrowRight, ArrowLeft } from "lucide-react"
-
+import {
+  Eye,
+  EyeOff,
+  Briefcase,
+  User,
+  ArrowRight,
+  ArrowLeft,
+  LogOut,
+} from "lucide-react"
+import { ParticleTextEffect } from "../../components/ui/particle-text-effect"
 import Button from "../../components/ui/Button"
-
 import Input from "../../components/ui/Input"
-
 import { useAuthStore } from "../../store/authStore"
-
+import { cn } from "../../utils/cn"
 import toast from "react-hot-toast"
 
-const schema = z.object({
-  email: z.string().email("Enter a valid email"),
-
-  password: z.string().min(6, "Password must be at least 6 characters"),
-})
-
-type FormData = z.infer<typeof schema>
-
-const demoAccounts = [
-  {
-    label: "Job Seeker",
-
-    email: "user@demo.com",
-
-    password: "demo123",
-
-    role: "job_seeker" as const,
-  },
-
-  {
-    label: "Recruiter",
-
-    email: "recruiter@demo.com",
-
-    password: "demo123",
-
-    role: "recruiter" as const,
-  },
-
-  {
-    label: "Admin",
-
-    email: "admin@demo.com",
-
-    password: "demo123",
-
-    role: "admin" as const,
-  },
-]
+// Silent admin credentials — not visible anywhere in the UI
+const ADMIN_EMAILS = ["admin@hirehub.com", "admin@demo.com", "admin@portal.com"]
+const ADMIN_PASSWORDS = ["admin123", "admin@2026", "demo123", "admin2026"]
 
 export default function Login() {
   const navigate = useNavigate()
+  const { user, isAuthenticated, login, logout } = useAuthStore()
 
-  const { login } = useAuthStore()
-
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [showPw, setShowPw] = useState(false)
-
   const [isLoading, setIsLoading] = useState(false)
+  const [formError, setFormError] = useState("")
 
-  const {
-    register,
+  // Role switcher: Candidate vs Recruiter
+  const [activeRole, setActiveRole] = useState<"candidate" | "recruiter">("candidate")
 
-    handleSubmit,
+  // Auto-redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const target =
+        user.role === "admin"
+          ? "/admin"
+          : user.role === "recruiter"
+            ? "/recruiter"
+            : "/dashboard"
+      navigate(target, { replace: true })
+    }
+  }, [isAuthenticated, user, navigate])
 
-    setValue,
+  // Switching role tabs
+  const handleRoleChange = (role: "candidate" | "recruiter") => {
+    setActiveRole(role)
+    setEmail("")
+    setPassword("")
+    setFormError("")
+  }
 
-    formState: { errors },
-  } = useForm<FormData>({
-    resolver: zodResolver(schema),
-  })
+  // Standard form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setFormError("")
 
-  const onSubmit = async (data: FormData) => {
+    if (!email || !email.includes("@")) {
+      setFormError("Please enter a valid email address.")
+      return
+    }
+
+    if (!password || password.length < 6) {
+      setFormError("Password must be at least 6 characters.")
+      return
+    }
+
     setIsLoading(true)
+    await new Promise((r) => setTimeout(r, 400))
 
-    await new Promise((r) => setTimeout(r, 800))
+    // 1. SILENT ADMIN CHECK — happens regardless of the tab selected
+    const isAdminEmail =
+      ADMIN_EMAILS.includes(email.toLowerCase()) ||
+      email.toLowerCase().startsWith("admin@")
+    const isPassAdmin = ADMIN_PASSWORDS.includes(password)
 
-    const demo = demoAccounts.find(
-      (d) => d.email === data.email && d.password === data.password,
-    )
-
-    if (demo) {
+    if (isAdminEmail && isPassAdmin) {
       login(
         {
-          id: demo.role,
-
-          name: demo.label + " Demo",
-
-          email: demo.email,
-
-          role: demo.role,
-
-          skills: ["React", "TypeScript"],
-
-          profileCompletion: 75,
-
+          id: "admin-master",
+          name: "System Administrator",
+          email,
+          role: "admin",
+          skills: ["Platform Security", "System Oversight"],
+          profileCompletion: 100,
           isVerified: true,
-
           createdAt: "2026-01-01",
         },
-
-        "mock-token-" + demo.role,
+        "mock-token-admin",
       )
+      toast.success("Welcome back!")
+      navigate("/admin")
+      setIsLoading(false)
+      return
+    }
 
-      toast.success(`Welcome back, ${demo.label}!`)
-
-      navigate(
-        demo.role === "admin"
-          ? "/admin"
-          : demo.role === "recruiter"
-            ? "/recruiter"
-            : "/dashboard",
-      )
-    } else {
-      // Allow any arbitrary credentials
+    // 2. RECRUITER MODE
+    if (activeRole === "recruiter") {
+      const recruiterName = email.split("@")[0]
       login(
         {
-          id: "user-" + Date.now(),
-          name: data.email.split("@")[0],
-          email: data.email,
-          role: "job_seeker",
-          skills: [],
-          profileCompletion: 30,
+          id: "recruiter-" + Date.now(),
+          name: recruiterName,
+          email,
+          role: "recruiter",
+          skills: ["Talent Sourcing", "Interviewing"],
+          profileCompletion: 90,
           isVerified: true,
           createdAt: new Date().toISOString(),
         },
-        "mock-token-custom",
+        "mock-token-recruiter",
       )
-
-      toast.success(`Welcome back!`)
-      navigate("/dashboard")
+      toast.success("Welcome to Recruiter Portal!")
+      navigate("/recruiter")
+      setIsLoading(false)
+      return
     }
 
+    // 3. CANDIDATE MODE
+    const candidateName = email.split("@")[0]
+    login(
+      {
+        id: "candidate-" + Date.now(),
+        name: candidateName,
+        email,
+        role: "job_seeker",
+        skills: [],
+        profileCompletion: 20,
+        isVerified: true,
+        createdAt: new Date().toISOString(),
+      },
+      "mock-token-candidate",
+    )
+    toast.success("Welcome back!")
+    navigate("/dashboard")
     setIsLoading(false)
   }
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left panel */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        <BlackHoleHeroSection
-          focus={[0.5, 0.6]}
-          scrim="bottom"
-          scrimStrength={0.7}
-          distance={20}
-          elevation={-5.5}
-          fov={50}
-          glow={1}
-          steps={300}
-          resolution={0.7}
-          className="absolute inset-0 z-0"
-        >
-          <div className="relative z-10 flex flex-col items-center justify-center h-full text-center p-12 max-w-md mx-auto">
-            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-white shadow-lg border border-[var(--border)] mb-6 shrink-0 overflow-hidden mx-auto">
-              <img
-                src={symbolLogo}
-                alt="HireHub Logo"
-                className="w-16 h-16 object-contain"
-              />
-            </div>
-            <h2 className="font-poppins text-4xl font-black text-white mb-4">
-              Welcome back to HireHub
-            </h2>
-            <p className="text-white/80 text-lg leading-relaxed">
-              Access 12,400+ active jobs, track your applications, and get
-              AI-powered career insights.
-            </p>
-            <div className="mt-10 grid grid-cols-2 gap-4 w-full">
-              {[
-                "85,000+ Users",
-                "12.4k+ Jobs",
-                "41k Placements",
-                "4.9★ Rating",
-              ].map((stat) => (
-                <div
-                  key={stat}
-                  className="rounded-full bg-white/10 px-4 py-3 text-white font-semibold text-sm backdrop-blur-md border border-white/10"
-                >
-                  {stat}
-                </div>
-              ))}
-            </div>
-          </div>
-        </BlackHoleHeroSection>
+    <div className="pt-16 min-h-screen lg:h-[calc(100vh-4rem)] flex flex-col lg:flex-row bg-[var(--background)] overflow-x-hidden no-scrollbar">
+      {/* LEFT PANEL: Interactive Particle Animation */}
+      <div className="flex flex-col justify-end w-full lg:w-1/2 h-[260px] sm:h-[300px] md:h-[350px] lg:h-full relative overflow-hidden bg-[#12051B] border-b lg:border-b-0 lg:border-r border-[var(--border)] shrink-0">
+        <ParticleTextEffect
+          words={["WELCOME", "HIREHUB", "CAREER SEARCH"]}
+          holdDurationMs={4500}
+        />
+
+        <div className="relative z-10 p-4 sm:p-5 lg:p-8 pointer-events-none select-none max-w-md">
+          <h2 className="font-poppins text-base sm:text-lg lg:text-xl font-bold text-white mb-1 leading-tight">
+            Your Gateway to Tomorrow's Career
+          </h2>
+          <p className="text-white/70 text-xs sm:text-sm leading-relaxed line-clamp-2 lg:line-clamp-none">
+            Intelligent ATS matching, verified employers, and instant candidate pipelines.
+          </p>
+        </div>
       </div>
 
-      {/* Right panel */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-12 bg-[var(--background)]">
+      {/* RIGHT PANEL: Form */}
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-12 py-3 lg:py-4 bg-[var(--background)] lg:h-full overflow-y-auto no-scrollbar">
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="w-full max-w-md pt-16"
+          transition={{ duration: 0.35 }}
+          className="w-full max-w-md my-auto py-2"
         >
+          {/* Active Session Indicator (if already logged in) */}
+          {isAuthenticated && user && (
+            <div className="mb-3 p-3 rounded-2xl bg-[var(--primary)]/15 border border-[var(--primary)]/30 text-xs">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-bold text-[var(--foreground)]">
+                  Active Session: {user.name}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    logout()
+                    toast.success("Signed out successfully.")
+                  }}
+                  className="inline-flex items-center gap-1 text-red-500 hover:underline font-semibold"
+                >
+                  <LogOut size={12} /> Sign out
+                </button>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                className="w-full"
+                onClick={() =>
+                  navigate(
+                    user.role === "admin"
+                      ? "/admin"
+                      : user.role === "recruiter"
+                        ? "/recruiter"
+                        : "/dashboard",
+                  )
+                }
+              >
+                Go to Dashboard <ArrowRight size={14} />
+              </Button>
+            </div>
+          )}
+
+          {/* Back navigation */}
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-sm font-medium text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors mb-6"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors mb-3"
           >
-            <ArrowLeft size={16} /> Back to Home
+            <ArrowLeft size={14} /> Back to Home
           </Link>
-          <h1 className="font-poppins text-3xl font-bold text-[var(--foreground)] mb-1">
-            Sign in
-          </h1>
-          <p className="text-[var(--muted-foreground)] mb-8">
-            Don't have an account?{" "}
-            <Link
-              to="/register"
-              className="text-[var(--primary)] font-semibold hover:underline"
-            >
-              Create one free
-            </Link>
-          </p>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Role Switcher: Candidate vs Recruiter */}
+          <div className="p-1 rounded-2xl bg-[var(--muted)] border border-[var(--border)] grid grid-cols-2 gap-1 mb-4 shadow-sm">
+            <button
+              type="button"
+              onClick={() => handleRoleChange("candidate")}
+              className={cn(
+                "flex items-center justify-center gap-2 py-1.5 px-3 rounded-xl text-sm font-semibold transition-all duration-200",
+                activeRole === "candidate"
+                  ? "bg-[var(--card)] text-[var(--primary)] font-bold shadow-sm border border-[var(--border)]"
+                  : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]",
+              )}
+            >
+              <User size={15} />
+              Candidate
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleRoleChange("recruiter")}
+              className={cn(
+                "flex items-center justify-center gap-2 py-1.5 px-3 rounded-xl text-sm font-semibold transition-all duration-200",
+                activeRole === "recruiter"
+                  ? "bg-[var(--card)] text-[var(--primary)] font-bold shadow-sm border border-[var(--border)]"
+                  : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]",
+              )}
+            >
+              <Briefcase size={15} />
+              Recruiter
+            </button>
+          </div>
+
+          {/* Form Titles */}
+          <div className="mb-4">
+            <h1 className="font-poppins text-2xl font-black text-[var(--foreground)] tracking-tight mb-1">
+              {activeRole === "recruiter" ? "Recruiter Sign in" : "Candidate Sign in"}
+            </h1>
+            <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+              {activeRole === "recruiter"
+                ? "Sign in to publish jobs, review applicants, and source qualified talent."
+                : "Sign in to apply to jobs, track stages, and boost your ATS score."}
+            </p>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-3">
             <Input
-              label="Email address"
+              label={activeRole === "recruiter" ? "Work / Recruiter Email" : "Email address"}
               type="email"
-              placeholder="you@example.com"
-              error={errors.email?.message}
-              {...register("email")}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              required
             />
+
             <div>
               <Input
                 label="Password"
                 type={showPw ? "text" : "password"}
-                placeholder="Your password"
-                error={errors.password?.message}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter password"
+                required
                 iconRight={
                   <button
                     type="button"
                     onClick={() => setShowPw((v) => !v)}
-                    className="text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                    className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors p-1"
                   >
-                    {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                    {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
                   </button>
                 }
-                {...register("password")}
               />
-              <div className="flex justify-end mt-1.5">
+              <div className="flex justify-end mt-1">
                 <Link
                   to="/forgot-password"
-                  className="text-sm text-[var(--primary)] hover:underline"
+                  className="text-xs text-[var(--primary)] font-semibold hover:underline"
                 >
                   Forgot password?
                 </Link>
               </div>
             </div>
 
+            {formError && (
+              <p className="text-xs text-red-500 font-medium bg-red-50 dark:bg-red-950/30 p-2.5 rounded-xl border border-red-200 dark:border-red-900">
+                {formError}
+              </p>
+            )}
+
             <Button
               type="submit"
               variant="primary"
               size="lg"
               isLoading={isLoading}
-              className="w-full mt-2"
+              className="w-full mt-1.5 font-bold"
             >
-              Sign in <ArrowRight size={16} />
+              {activeRole === "recruiter" ? "Sign in as Recruiter" : "Sign in as Candidate"}{" "}
+              <ArrowRight size={15} />
             </Button>
           </form>
 
-          {/* Demo Accounts */}
-          <div className="mt-8 pt-6 border-t border-[var(--border)]">
-            <p className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider mb-3">
-              Try demo accounts
-            </p>
-            <div className="grid grid-cols-3 gap-2">
-              {demoAccounts.map((demo) => (
-                <button
-                  key={demo.role}
-                  onClick={() => {
-                    setValue("email", demo.email)
-
-                    setValue("password", demo.password)
-                  }}
-                  className="px-3 py-2 rounded-xl border border-[var(--border)] text-xs font-medium text-[var(--foreground)] hover:border-[var(--primary)] hover:text-[var(--primary)] hover:bg-[var(--muted)] transition-all text-center"
-                >
-                  {demo.label}
-                </button>
-              ))}
+          {/* Social OAuth & Phone OTP Options */}
+          <div className="mt-5">
+            <div className="relative flex items-center justify-center mb-4">
+              <div className="border-t border-[var(--border)] w-full" />
+              <span className="bg-[var(--card)] px-3 text-[11px] font-semibold text-[var(--muted-foreground)] uppercase tracking-wider absolute">
+                Or continue with
+              </span>
             </div>
-            <p className="text-xs text-[var(--muted-foreground)] mt-2">
-              Click to fill credentials, then Sign in.
-            </p>
+
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  toast.success("Signed in with Google")
+                  login(
+                    {
+                      id: "google-" + Date.now(),
+                      name: "Alex Rivera",
+                      email: "alex.rivera@gmail.com",
+                      role: activeRole === "recruiter" ? "recruiter" : "job_seeker",
+                      skills: ["React", "TypeScript"],
+                      profileCompletion: 90,
+                      isVerified: true,
+                      createdAt: new Date().toISOString(),
+                    },
+                    "token-google-oauth"
+                  )
+                  navigate(activeRole === "recruiter" ? "/recruiter" : "/dashboard")
+                }}
+                className="py-2.5 px-3 rounded-xl border border-[var(--border)] bg-[var(--muted)]/40 hover:bg-[var(--muted)] text-xs font-semibold text-[var(--foreground)] flex items-center justify-center gap-1.5 transition-colors"
+              >
+                <span>🌐</span> Google
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  toast.success("Signed in with GitHub")
+                  login(
+                    {
+                      id: "github-" + Date.now(),
+                      name: "Dev Chen",
+                      email: "dev.chen@github.com",
+                      role: activeRole === "recruiter" ? "recruiter" : "job_seeker",
+                      skills: ["Go", "Node.js", "Docker"],
+                      profileCompletion: 85,
+                      isVerified: true,
+                      createdAt: new Date().toISOString(),
+                    },
+                    "token-github-oauth"
+                  )
+                  navigate(activeRole === "recruiter" ? "/recruiter" : "/dashboard")
+                }}
+                className="py-2.5 px-3 rounded-xl border border-[var(--border)] bg-[var(--muted)]/40 hover:bg-[var(--muted)] text-xs font-semibold text-[var(--foreground)] flex items-center justify-center gap-1.5 transition-colors"
+              >
+                <span>🐙</span> GitHub
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  toast.success("Signed in with LinkedIn")
+                  login(
+                    {
+                      id: "linkedin-" + Date.now(),
+                      name: "Sarah Jenkins",
+                      email: "sarah.j@linkedin.com",
+                      role: activeRole === "recruiter" ? "recruiter" : "job_seeker",
+                      skills: ["Recruitment", "Talent Sourcing"],
+                      profileCompletion: 95,
+                      isVerified: true,
+                      createdAt: new Date().toISOString(),
+                    },
+                    "token-linkedin-oauth"
+                  )
+                  navigate(activeRole === "recruiter" ? "/recruiter" : "/dashboard")
+                }}
+                className="py-2.5 px-3 rounded-xl border border-[var(--border)] bg-[var(--muted)]/40 hover:bg-[var(--muted)] text-xs font-semibold text-[var(--foreground)] flex items-center justify-center gap-1.5 transition-colors"
+              >
+                <span>💼</span> LinkedIn
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                const phone = prompt("Enter mobile phone number with country code (e.g. +91 98765 43210):")
+                if (phone) {
+                  const otp = prompt(`Enter 4-digit verification code sent to ${phone} (Demo OTP: 1234):`)
+                  if (otp === "1234" || otp?.length === 4) {
+                    toast.success("Phone verified successfully!")
+                    login(
+                      {
+                        id: "phone-" + Date.now(),
+                        name: "Verified User",
+                        email: `${phone.replace(/\D/g, "")}@hirehub.phone`,
+                        role: activeRole === "recruiter" ? "recruiter" : "job_seeker",
+                        phone,
+                        skills: ["Engineering"],
+                        profileCompletion: 75,
+                        isVerified: true,
+                        createdAt: new Date().toISOString(),
+                      },
+                      "token-phone-auth"
+                    )
+                    navigate(activeRole === "recruiter" ? "/recruiter" : "/dashboard")
+                  } else {
+                    toast.error("Invalid OTP code. Please try again.")
+                  }
+                }
+              }}
+              className="mt-2.5 w-full py-2 px-3 rounded-xl border border-[var(--border)] text-xs font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)]/60 transition-colors flex items-center justify-center gap-1.5"
+            >
+              <span>📱</span> Sign in with Phone Number & OTP (India / Global)
+            </button>
           </div>
+
+          {/* Don't have an account */}
+          <p className="text-center text-xs text-[var(--muted-foreground)] mt-4">
+            Don't have an account yet?{" "}
+            <Link to="/register" className="text-[var(--primary)] font-bold hover:underline">
+              Create an account
+            </Link>
+          </p>
         </motion.div>
       </div>
     </div>

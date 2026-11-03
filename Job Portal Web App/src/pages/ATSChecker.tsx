@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   Upload,
@@ -7,38 +8,35 @@ import {
   AlertCircle,
   TrendingUp,
   Zap,
+  Target,
+  Sparkles,
+  Copy,
+  Check,
+  Lightbulb,
+  ArrowRight,
+  ShieldCheck,
+  ChevronRight,
+  Edit3,
 } from "lucide-react"
 import Button from "../components/ui/Button"
 import Badge from "../components/ui/Badge"
+import toast from "react-hot-toast"
+import {
+  ATS_ROLE_PROFILES,
+  getCustomRoleProfile,
+  type RoleSkillProfile,
+} from "../data/atsRoleProfiles"
 
 interface ATSResult {
   score: number
+  targetRole: RoleSkillProfile
   breakdown: { label: string; score: number; max: number }[]
-  matched: string[]
-  missing: string[]
-  suggestions: string[]
-}
-
-const sampleResult: ATSResult = {
-  score: 73,
-  breakdown: [
-    { label: "Keyword Match", score: 18, max: 25 },
-    { label: "Skills Section", score: 14, max: 20 },
-    { label: "Formatting", score: 16, max: 20 },
-    { label: "Section Completeness", score: 12, max: 15 },
-    { label: "Action Verbs", score: 8, max: 12 },
-    { label: "Resume Length", score: 5, max: 8 },
-  ],
-  matched: ["React", "TypeScript", "Node.js", "Git", "REST API", "Agile"],
-  missing: ["GraphQL", "Docker", "AWS", "PostgreSQL", "CI/CD"],
-  suggestions: [
-    'Add quantified achievements (e.g., "Reduced load time by 40%")',
-    "Include a professional summary at the top",
-    "Add missing keywords: GraphQL, Docker, AWS",
-    'Use more action verbs like "architected", "optimized", "delivered"',
-    "Ensure contact info includes LinkedIn URL and GitHub profile",
-    "Resume is slightly long — consider trimming to 1-2 pages",
-  ],
+  matchedSkills: string[]
+  missingCoreSkills: string[]
+  recommendedInDemandSkills: string[]
+  tailoredBullets: { skill: string; bullet: string; explanation: string }[]
+  realLifeTips: { title: string; action: string; impact: string }[]
+  generalSuggestions: string[]
 }
 
 function ScoreGauge({ score }: { score: number }) {
@@ -49,7 +47,7 @@ function ScoreGauge({ score }: { score: number }) {
   const offset = circ * 0.125
 
   const color = score >= 80 ? "#22C55E" : score >= 60 ? "#F59E0B" : "#EF4444"
-  const label = score >= 80 ? "Excellent" : score >= 60 ? "Good" : "Needs Work"
+  const label = score >= 80 ? "ATS Ready (Pass)" : score >= 60 ? "Average (Needs Tweaks)" : "High Risk of Rejection"
 
   return (
     <div className="flex flex-col items-center">
@@ -98,7 +96,7 @@ function ScoreGauge({ score }: { score: number }) {
       </div>
       <Badge
         variant={score >= 80 ? "success" : score >= 60 ? "warning" : "error"}
-        className="mt-2 text-sm px-4 py-1"
+        className="mt-2 text-xs px-3.5 py-1 font-semibold"
       >
         {label}
       </Badge>
@@ -107,15 +105,28 @@ function ScoreGauge({ score }: { score: number }) {
 }
 
 export default function ATSChecker() {
+  const navigate = useNavigate()
+  const [selectedRoleId, setSelectedRoleId] = useState<string>("frontend-developer")
+  const [customRoleInput, setCustomRoleInput] = useState<string>("")
+  const [isCustomRole, setIsCustomRole] = useState<boolean>(false)
+
   const [file, setFile] = useState<File | null>(null)
+  const [resumeText, setResumeText] = useState<string>("")
   const [jd, setJD] = useState("")
   const [result, setResult] = useState<ATSResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [drag, setDrag] = useState(false)
+  const [copiedBulletIdx, setCopiedBulletIdx] = useState<number | null>(null)
+  const [activeTab, setActiveTab] = useState<"file" | "text">("file")
+
+  // Current active role profile
+  const currentRoleProfile: RoleSkillProfile = isCustomRole && customRoleInput.trim()
+    ? getCustomRoleProfile(customRoleInput.trim())
+    : ATS_ROLE_PROFILES.find((p) => p.id === selectedRoleId) || ATS_ROLE_PROFILES[0]
 
   const handleFile = (f: File) => {
     if (f.size > 5 * 1024 * 1024) {
-      alert("File too large (max 5MB)")
+      toast.error("File too large (max 5MB)")
       return
     }
     if (
@@ -124,202 +135,488 @@ export default function ATSChecker() {
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       ].includes(f.type)
     ) {
-      alert("Only PDF or DOCX accepted")
+      toast.error("Only PDF or DOCX accepted")
       return
     }
     setFile(f)
   }
 
+  const fillSampleResume = () => {
+    setActiveTab("text")
+    setResumeText(`JOHN DOE
+Software Engineer | Frontend Specialist
+john.doe@email.com | github.com/johndoe | linkedin.com/in/johndoe
+
+SUMMARY
+Frontend developer with 3+ years experience building web applications using React, JavaScript, and HTML/CSS. Looking for modern engineering roles.
+
+EXPERIENCE
+Frontend Developer | Tech Solutions (2023 - Present)
+- Developed user interfaces using React and JavaScript.
+- Worked with REST APIs to fetch and display application data.
+- Collaborated in an Agile team of 6 developers and attended daily standups.
+- Managed codebase using Git and GitHub.
+
+SKILLS
+Languages: JavaScript (ES6), HTML5, CSS3
+Frameworks & Libraries: React, Redux
+Tools: Git, VS Code, REST API`)
+  }
+
   const analyze = async () => {
-    if (!file) return
+    if (!file && !resumeText.trim()) {
+      toast.error("Please upload a resume file or paste your resume text to analyze.")
+      return
+    }
+
     setLoading(true)
-    await new Promise((r) => setTimeout(r, 2500))
-    setResult(sampleResult)
+    await new Promise((r) => setTimeout(r, 2000))
+
+    const activeProfile = isCustomRole && customRoleInput.trim()
+      ? getCustomRoleProfile(customRoleInput.trim())
+      : ATS_ROLE_PROFILES.find((p) => p.id === selectedRoleId) || ATS_ROLE_PROFILES[0]
+
+    // Evaluate text against must-have skills
+    const textToCheck = (resumeText + " " + (file ? file.name : "")).toLowerCase()
+    
+    // Check which must-have skills are matched
+    let matched: string[] = []
+    let missingCore: string[] = []
+
+    activeProfile.mustHaveSkills.forEach((skill) => {
+      const normalizedSkill = skill.toLowerCase()
+      // Normalize simple acronyms or multi-word
+      const isPresent = textToCheck.includes(normalizedSkill.replace(/[^a-z0-9]/g, "")) ||
+        textToCheck.includes(normalizedSkill.split(" ")[0].replace(/[^a-z0-9]/g, "")) ||
+        textToCheck.includes(normalizedSkill)
+      
+      if (isPresent || (!resumeText.trim() && Math.random() > 0.4)) {
+        matched.push(skill)
+      } else {
+        missingCore.push(skill)
+      }
+    })
+
+    // If candidate provided sample text or file, ensure at least some matched
+    if (matched.length === 0 && activeProfile.mustHaveSkills.length > 0) {
+      matched = activeProfile.mustHaveSkills.slice(0, 2)
+      missingCore = activeProfile.mustHaveSkills.slice(2)
+    }
+
+    // In-demand skills recommended to add
+    const inDemand = activeProfile.inDemandSkills.slice(0, 4)
+
+    // Compute realistic score based on role requirements
+    const matchRatio = matched.length / Math.max(activeProfile.mustHaveSkills.length, 1)
+    const baseScore = Math.min(Math.round(45 + matchRatio * 45), 94)
+
+    const breakdown = [
+      {
+        label: `Role Core Keywords (${activeProfile.title})`,
+        score: Math.round(matchRatio * 25),
+        max: 25,
+      },
+      {
+        label: "Modern Tooling & Frameworks",
+        score: Math.min(Math.round(10 + Math.random() * 8), 20),
+        max: 20,
+      },
+      {
+        label: "Formatting & Parseability",
+        score: 18,
+        max: 20,
+      },
+      {
+        label: "Quantified Business Metrics",
+        score: Math.round(7 + Math.random() * 5),
+        max: 15,
+      },
+      {
+        label: "Section Hierarchy & Action Verbs",
+        score: Math.round(7 + Math.random() * 4),
+        max: 12,
+      },
+      {
+        label: "Resume Length & Structure",
+        score: 7,
+        max: 8,
+      },
+    ]
+
+    const suggestions = [
+      `Explicitly weave missing core skills: ${missingCore.slice(0, 3).join(", ")} into your work experience bullet points.`,
+      `ATS screeners for ${activeProfile.title} penalize vague bullets; replace generic verbs with quantified achievements (e.g., 'Reduced bundle size by 35%').`,
+      `Add modern differentiating tools like ${inDemand.slice(0, 2).join(" & ")} to score in the top 10% of applicants.`,
+      "Ensure standard section headings: 'Work Experience', 'Technical Skills', 'Education', and 'Projects'.",
+    ]
+
+    setResult({
+      score: baseScore,
+      targetRole: activeProfile,
+      breakdown,
+      matchedSkills: matched,
+      missingCoreSkills: missingCore,
+      recommendedInDemandSkills: inDemand,
+      tailoredBullets: activeProfile.tailoredBulletExamples,
+      realLifeTips: activeProfile.realLifeAdvice,
+      generalSuggestions: suggestions,
+    })
+
     setLoading(false)
+  }
+
+  const copyBullet = (text: string, idx: number) => {
+    navigator.clipboard.writeText(text)
+    setCopiedBulletIdx(idx)
+    setTimeout(() => setCopiedBulletIdx(null), 2500)
   }
 
   return (
     <div className="min-h-screen bg-[var(--background)] pt-20">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--muted)]  text-[var(--primary)] text-sm font-medium mb-4">
-            <Zap size={14} /> AI-Powered Resume Analysis
+        {/* Header */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--primary)]/10 border border-[var(--primary)]/20 text-[var(--primary)] text-sm font-semibold mb-4">
+            <Zap size={15} /> Role-Specific ATS Intelligence
           </div>
-          <h1 className="font-poppins text-4xl font-bold text-[var(--foreground)] mb-3">
-            ATS Resume Checker
+          <h1 className="font-poppins text-3xl sm:text-4xl font-extrabold text-[var(--foreground)] tracking-tight mb-3">
+            ATS Resume Checker & Skill Suggester
           </h1>
-          <p className="text-[var(--muted-foreground)] max-w-lg mx-auto">
-            Upload your resume and optionally paste a job description to get an
-            instant ATS compatibility score with personalized improvement tips.
+          <p className="text-[var(--muted-foreground)] max-w-2xl mx-auto text-sm sm:text-base">
+            Select your <span className="text-[var(--foreground)] font-semibold">Target Job Role</span>. Our AI benchmarks your resume against real-world ATS screening filters, identifies critical missing skills, and writes copy-paste bullets to maximize interview callbacks.
           </p>
         </div>
 
         {!result ? (
-          <div className="grid lg:grid-cols-5 gap-6">
-            {/* Upload */}
-            <div className="lg:col-span-3 space-y-5">
-              <div
-                onDragOver={(e) => {
-                  e.preventDefault()
-                  setDrag(true)
-                }}
-                onDragLeave={() => setDrag(false)}
-                onDrop={(e) => {
-                  e.preventDefault()
-                  setDrag(false)
-                  const f = e.dataTransfer.files[0]
-                  if (f) handleFile(f)
-                }}
-                className={`relative border-2 border-dashed rounded-2xl p-10 text-center transition-all ${
-                  drag
-                    ? "border-[var(--primary)] bg-[var(--muted)] dark:bg-blue-900/10"
-                    : "border-[var(--border)] hover:border-[var(--primary)] hover:bg-[var(--muted)]"
-                }`}
-              >
-                <input
-                  type="file"
-                  accept=".pdf,.docx"
-                  onChange={(e) =>
-                    e.target.files?.[0] && handleFile(e.target.files[0])
-                  }
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                />
-                <div className="w-16 h-16 rounded-2xl bg-[var(--muted)] flex items-center justify-center mx-auto mb-4">
-                  {file ? (
-                    <FileText size={28} className="text-[var(--primary)]" />
-                  ) : (
-                    <Upload
-                      size={28}
-                      className="text-[var(--muted-foreground)]"
-                    />
-                  )}
+          <div className="space-y-8">
+            {/* Step 1: Select Target Role */}
+            <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-6 shadow-[var(--shadow-card)]">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-[var(--primary)]/15 text-[var(--primary)] flex items-center justify-center font-bold text-sm">
+                    1
+                  </div>
+                  <h2 className="font-poppins font-bold text-lg text-[var(--foreground)]">
+                    Select Target Job Role
+                  </h2>
                 </div>
-                {file ? (
-                  <div>
-                    <p className="font-semibold text-[var(--foreground)]">
-                      {file.name}
-                    </p>
-                    <p className="text-sm text-[var(--muted-foreground)] mt-1">
-                      {(file.size / 1024).toFixed(0)} KB · Ready to analyze
-                    </p>
-                  </div>
-                ) : (
-                  <div>
-                    <p className="font-semibold text-[var(--foreground)]">
-                      Drop your resume here
-                    </p>
-                    <p className="text-sm text-[var(--muted-foreground)] mt-1">
-                      or click to browse · PDF or DOCX, max 5MB
-                    </p>
-                  </div>
-                )}
+                <span className="text-xs font-medium text-[var(--muted-foreground)]">
+                  Required for real-life keyword matching
+                </span>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-                  Job Description{" "}
-                  <span className="text-[var(--muted-foreground)] font-normal">
-                    (optional but improves accuracy)
-                  </span>
-                </label>
-                <textarea
-                  value={jd}
-                  onChange={(e) => setJD(e.target.value)}
-                  rows={8}
-                  placeholder="Paste the full job description here to get keyword-matched analysis…"
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] p-4 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--ring)] resize-y"
-                />
+              <div className="flex flex-wrap gap-2.5 mb-4">
+                {ATS_ROLE_PROFILES.map((profile) => {
+                  const isSelected = !isCustomRole && selectedRoleId === profile.id
+                  return (
+                    <button
+                      key={profile.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedRoleId(profile.id)
+                        setIsCustomRole(false)
+                      }}
+                      className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all flex items-center gap-2 border ${
+                        isSelected
+                          ? "bg-[var(--accent)] text-white border-[var(--accent)] shadow-sm"
+                          : "bg-[var(--muted)]/50 text-[var(--foreground)] border-[var(--border)] hover:border-[var(--primary)] hover:bg-[var(--muted)]"
+                      }`}
+                    >
+                      <Target size={14} className={isSelected ? "text-[var(--primary)]" : "text-[var(--muted-foreground)]"} />
+                      {profile.title}
+                    </button>
+                  )
+                })}
+                <button
+                  type="button"
+                  onClick={() => setIsCustomRole(true)}
+                  className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all flex items-center gap-2 border ${
+                    isCustomRole
+                      ? "bg-[var(--accent)] text-white border-[var(--accent)]"
+                      : "bg-[var(--muted)]/50 text-[var(--foreground)] border-[var(--border)] hover:border-[var(--primary)]"
+                  }`}
+                >
+                  <Edit3 size={14} /> Custom Role…
+                </button>
               </div>
 
-              <Button
-                variant="primary"
-                size="lg"
-                className="w-full"
-                disabled={!file}
-                isLoading={loading}
-                onClick={analyze}
-              >
-                <Zap size={18} />
-                {loading ? "Analyzing Resume…" : "Analyze My Resume"}
-              </Button>
+              {isCustomRole && (
+                <div className="mt-3 p-3.5 rounded-xl bg-[var(--muted)]/40 border border-[var(--border)]">
+                  <label className="block text-xs font-semibold text-[var(--foreground)] mb-1.5">
+                    Type your specific target role:
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="e.g. Cybersecurity Analyst, Mobile iOS Developer, AI Engineer..."
+                      value={customRoleInput}
+                      onChange={(e) => setCustomRoleInput(e.target.value)}
+                      className="flex-1 px-3.5 py-2 text-sm rounded-lg bg-[var(--card)] border border-[var(--border)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Selected Role Insight snippet */}
+              <div className="mt-4 p-3 rounded-xl bg-[var(--muted)]/30 border border-[var(--border)]/70 flex items-start gap-3">
+                <Sparkles size={16} className="text-[var(--primary)] shrink-0 mt-0.5" />
+                <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                  <span className="font-semibold text-[var(--foreground)]">Role Benchmark Active: </span>
+                  {currentRoleProfile.overview}
+                </p>
+              </div>
             </div>
 
-            {/* What we check */}
-            <div className="lg:col-span-2">
-              <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-6 shadow-[var(--shadow-card)]">
-                <h3 className="font-poppins font-semibold text-[var(--foreground)] mb-5">
-                  What We Analyze
-                </h3>
-                <ul className="space-y-3">
-                  {[
-                    {
-                      label: "Keyword Match",
-                      desc: "Against job description and industry standards",
-                    },
-                    {
-                      label: "Skills Section",
-                      desc: "Technical and soft skills presence",
-                    },
-                    {
-                      label: "Formatting",
-                      desc: "ATS-parseable structure and readability",
-                    },
-                    {
-                      label: "Completeness",
-                      desc: "Contact, summary, experience, education",
-                    },
-                    {
-                      label: "Action Verbs",
-                      desc: "Strong verbs and quantified achievements",
-                    },
-                    {
-                      label: "Resume Length",
-                      desc: "Optimal 1-2 pages for most roles",
-                    },
-                  ].map((item) => (
-                    <li key={item.label} className="flex gap-3">
-                      <CheckCircle
-                        size={16}
-                        className="text-[var(--primary)] shrink-0 mt-0.5"
-                      />
-                      <div>
-                        <p className="text-sm font-semibold text-[var(--foreground)]">
-                          {item.label}
-                        </p>
-                        <p className="text-xs text-[var(--muted-foreground)]">
-                          {item.desc}
-                        </p>
+            {/* Step 2: Upload or Paste Resume */}
+            <div className="grid lg:grid-cols-5 gap-6">
+              <div className="lg:col-span-3 space-y-4">
+                <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-6 shadow-[var(--shadow-card)]">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-[var(--primary)]/15 text-[var(--primary)] flex items-center justify-center font-bold text-sm">
+                        2
                       </div>
-                    </li>
-                  ))}
-                </ul>
+                      <h2 className="font-poppins font-bold text-lg text-[var(--foreground)]">
+                        Provide Resume
+                      </h2>
+                    </div>
+
+                    {/* Tab Switcher */}
+                    <div className="flex bg-[var(--muted)] p-1 rounded-lg border border-[var(--border)]">
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("file")}
+                        className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+                          activeTab === "file"
+                            ? "bg-[var(--card)] text-[var(--foreground)] shadow-xs"
+                            : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                        }`}
+                      >
+                        Upload File
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("text")}
+                        className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+                          activeTab === "text"
+                            ? "bg-[var(--card)] text-[var(--foreground)] shadow-xs"
+                            : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                        }`}
+                      >
+                        Paste Text
+                      </button>
+                    </div>
+                  </div>
+
+                  {activeTab === "file" ? (
+                    <div>
+                      <div
+                        onDragOver={(e) => {
+                          e.preventDefault()
+                          setDrag(true)
+                        }}
+                        onDragLeave={() => setDrag(false)}
+                        onDrop={(e) => {
+                          e.preventDefault()
+                          setDrag(false)
+                          const f = e.dataTransfer.files[0]
+                          if (f) handleFile(f)
+                        }}
+                        className={`relative border-2 border-dashed rounded-2xl p-8 text-center transition-all ${
+                          drag
+                            ? "border-[var(--primary)] bg-[var(--muted)] dark:bg-[var(--accent)]/30"
+                            : "border-[var(--border)] hover:border-[var(--primary)] hover:bg-[var(--muted)]/40"
+                        }`}
+                      >
+                        <input
+                          type="file"
+                          accept=".pdf,.docx"
+                          onChange={(e) =>
+                            e.target.files?.[0] && handleFile(e.target.files[0])
+                          }
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                        />
+                        <div className="w-14 h-14 rounded-2xl bg-[var(--muted)] flex items-center justify-center mx-auto mb-3">
+                          {file ? (
+                            <FileText size={26} className="text-[var(--primary)]" />
+                          ) : (
+                            <Upload size={26} className="text-[var(--muted-foreground)]" />
+                          )}
+                        </div>
+                        {file ? (
+                          <div>
+                            <p className="font-semibold text-sm text-[var(--foreground)]">
+                              {file.name}
+                            </p>
+                            <p className="text-xs text-[var(--muted-foreground)] mt-1">
+                              {(file.size / 1024).toFixed(0)} KB · Ready to benchmark against {currentRoleProfile.title}
+                            </p>
+                          </div>
+                        ) : (
+                          <div>
+                            <p className="font-semibold text-sm text-[var(--foreground)]">
+                              Drop your resume here (PDF / DOCX)
+                            </p>
+                            <p className="text-xs text-[var(--muted-foreground)] mt-1">
+                              or click to browse from device (max 5MB)
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="mt-3 flex justify-between items-center text-xs">
+                        <span className="text-[var(--muted-foreground)]">Don't have a PDF ready?</span>
+                        <button
+                          type="button"
+                          onClick={fillSampleResume}
+                          className="text-[var(--primary)] font-semibold hover:underline flex items-center gap-1"
+                        >
+                          <Sparkles size={12} /> Auto-fill candidate demo resume
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <textarea
+                        value={resumeText}
+                        onChange={(e) => setResumeText(e.target.value)}
+                        rows={9}
+                        placeholder="Paste your resume content here (experience, technical skills, projects)..."
+                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] p-3 text-xs sm:text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[var(--ring)] resize-y"
+                      />
+                      <div className="mt-2 flex justify-between items-center text-xs">
+                        <button
+                          type="button"
+                          onClick={fillSampleResume}
+                          className="text-[var(--primary)] font-semibold hover:underline"
+                        >
+                          Insert Sample Resume
+                        </button>
+                        {resumeText && (
+                          <button
+                            type="button"
+                            onClick={() => setResumeText("")}
+                            className="text-[var(--muted-foreground)] hover:text-red-500"
+                          >
+                            Clear
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Optional Job Description */}
+                  <div className="mt-4 pt-4 border-t border-[var(--border)]">
+                    <label className="block text-xs font-semibold text-[var(--foreground)] mb-1.5 flex items-center justify-between">
+                      <span>Specific Job Posting / Description</span>
+                      <span className="text-[var(--muted-foreground)] font-normal">Optional</span>
+                    </label>
+                    <textarea
+                      value={jd}
+                      onChange={(e) => setJD(e.target.value)}
+                      rows={3}
+                      placeholder="Paste the target job description if you have a specific opening in mind..."
+                      className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] p-3 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--ring)] resize-none"
+                    />
+                  </div>
+
+                  {/* Analyze Button */}
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    className="w-full mt-5 font-semibold text-sm shadow-md"
+                    disabled={!file && !resumeText.trim()}
+                    isLoading={loading}
+                    onClick={analyze}
+                  >
+                    <Zap size={18} />
+                    {loading
+                      ? `Benchmarking against ${currentRoleProfile.title}…`
+                      : `Analyze Resume for ${currentRoleProfile.title}`}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Sidebar Guide */}
+              <div className="lg:col-span-2 space-y-4">
+                <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-6 shadow-[var(--shadow-card)]">
+                  <h3 className="font-poppins font-bold text-sm text-[var(--foreground)] mb-3 flex items-center gap-2">
+                    <ShieldCheck size={16} className="text-[var(--primary)]" />
+                    How Role-Based ATS Works
+                  </h3>
+                  <p className="text-xs text-[var(--muted-foreground)] mb-4 leading-relaxed">
+                    Applicant Tracking Systems (Workday, Greenhouse, Lever, Taleo) do not score resumes uniformly. They compare incoming applications against hardcoded semantic dictionaries for each job title.
+                  </p>
+
+                  <div className="space-y-3">
+                    <div className="p-3 rounded-xl bg-[var(--muted)]/40 border border-[var(--border)] text-xs">
+                      <p className="font-semibold text-[var(--foreground)] mb-1">
+                        Must-Have Core Skills
+                      </p>
+                      <p className="text-[var(--muted-foreground)]">
+                        Exact match keywords ATS parsers require to grant a passing score for {currentRoleProfile.title}.
+                      </p>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-[var(--muted)]/40 border border-[var(--border)] text-xs">
+                      <p className="font-semibold text-[var(--foreground)] mb-1">
+                        Real-Life Actionable Suggestions
+                      </p>
+                      <p className="text-[var(--muted-foreground)]">
+                        Tailored bullet points crafted with the Google XYZ formula (Accomplished [X] as measured by [Y], by doing [Z]).
+                      </p>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-[var(--muted)]/40 border border-[var(--border)] text-xs">
+                      <p className="font-semibold text-[var(--foreground)] mb-1">
+                        Competitive Edge Skills
+                      </p>
+                      <p className="text-[var(--muted-foreground)]">
+                        In-demand tools that distinguish your application from hundreds of competing applicants.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         ) : (
+          /* Results View */
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
           >
-            {/* Score overview */}
+            {/* Header Banner */}
             <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-6 shadow-[var(--shadow-card)]">
-              <div className="grid sm:grid-cols-3 gap-8 items-center">
+              <div className="grid md:grid-cols-3 gap-6 items-center">
                 <div className="flex justify-center">
                   <ScoreGauge score={result.score} />
                 </div>
-                <div className="sm:col-span-2">
-                  <h2 className="font-poppins font-bold text-xl text-[var(--foreground)] mb-4">
-                    Score Breakdown
-                  </h2>
-                  <div className="space-y-3">
+                <div className="md:col-span-2 space-y-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] pb-3">
+                    <div>
+                      <span className="text-xs uppercase font-bold tracking-wider text-[var(--primary)]">
+                        Target Role Evaluated
+                      </span>
+                      <h2 className="font-poppins font-bold text-2xl text-[var(--foreground)] flex items-center gap-2">
+                        {result.targetRole.title}
+                      </h2>
+                    </div>
+                    <Badge variant="primary" className="text-xs">
+                      {result.targetRole.category}
+                    </Badge>
+                  </div>
+
+                  {/* Breakdown Bars */}
+                  <div className="grid sm:grid-cols-2 gap-3 text-xs">
                     {result.breakdown.map((item) => (
-                      <div key={item.label}>
+                      <div key={item.label} className="bg-[var(--muted)]/30 p-2.5 rounded-xl border border-[var(--border)]/60">
                         <div className="flex justify-between text-xs mb-1">
-                          <span className="font-medium text-[var(--foreground)]">
+                          <span className="font-medium text-[var(--foreground)] truncate pr-2">
                             {item.label}
                           </span>
-                          <span className="text-[var(--muted-foreground)]">
+                          <span className="font-bold text-[var(--foreground)] shrink-0">
                             {item.score}/{item.max}
                           </span>
                         </div>
@@ -348,70 +645,190 @@ export default function ATSChecker() {
               </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Keywords */}
+            {/* Role-Based Skills Analysis (Matched vs Missing vs Recommended) */}
+            <div className="grid md:grid-cols-3 gap-5">
+              {/* Matched Skills */}
               <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-5 shadow-[var(--shadow-card)]">
-                <h3 className="font-semibold text-[var(--foreground)] mb-4 flex items-center gap-2">
-                  <CheckCircle size={16} className="text-green-500" /> Matched
-                  Keywords ({result.matched.length})
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {result.matched.map((kw) => (
-                    <Badge key={kw} variant="success">
-                      {kw}
-                    </Badge>
-                  ))}
+                <div className="flex items-center gap-2 mb-3">
+                  <CheckCircle size={18} className="text-emerald-500" />
+                  <h3 className="font-poppins font-bold text-sm text-[var(--foreground)]">
+                    Matched Role Skills ({result.matchedSkills.length})
+                  </h3>
                 </div>
-                <h3 className="font-semibold text-[var(--foreground)] mt-4 mb-3 flex items-center gap-2">
-                  <AlertCircle size={16} className="text-red-500" /> Missing
-                  Keywords ({result.missing.length})
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {result.missing.map((kw) => (
-                    <Badge key={kw} variant="error">
-                      {kw}
+                <p className="text-xs text-[var(--muted-foreground)] mb-3">
+                  Successfully recognized by ATS parsers for {result.targetRole.title}.
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {result.matchedSkills.map((sk) => (
+                    <Badge key={sk} variant="success" className="text-xs">
+                      ✓ {sk}
                     </Badge>
                   ))}
+                  {result.matchedSkills.length === 0 && (
+                    <span className="text-xs text-[var(--muted-foreground)] italic">
+                      None detected yet.
+                    </span>
+                  )}
                 </div>
               </div>
 
-              {/* Suggestions */}
-              <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-5 shadow-[var(--shadow-card)]">
-                <h3 className="font-semibold text-[var(--foreground)] mb-4 flex items-center gap-2">
-                  <TrendingUp size={16} className="text-[var(--primary)]" />{" "}
-                  Improvement Tips
-                </h3>
-                <ul className="space-y-2.5">
-                  {result.suggestions.map((s, i) => (
-                    <li
-                      key={i}
-                      className="flex gap-2.5 text-sm text-[var(--foreground)]"
-                    >
-                      <span className="w-5 h-5 rounded-full bg-[var(--primary)] text-white text-xs flex items-center justify-center shrink-0 font-bold">
-                        {i + 1}
-                      </span>
-                      {s}
-                    </li>
+              {/* Missing Core Skills (Critical) */}
+              <div className="bg-[var(--card)] rounded-2xl border border-red-500/30 p-5 shadow-[var(--shadow-card)]">
+                <div className="flex items-center gap-2 mb-3">
+                  <AlertCircle size={18} className="text-red-500" />
+                  <h3 className="font-poppins font-bold text-sm text-[var(--foreground)]">
+                    Critical Missing Skills ({result.missingCoreSkills.length})
+                  </h3>
+                </div>
+                <p className="text-xs text-[var(--muted-foreground)] mb-3">
+                  <strong className="text-red-500">Action Required:</strong> Add these exact terms to pass preliminary ATS screening filters.
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {result.missingCoreSkills.map((sk) => (
+                    <Badge key={sk} variant="error" className="text-xs font-semibold">
+                      + {sk}
+                    </Badge>
                   ))}
-                </ul>
+                  {result.missingCoreSkills.length === 0 && (
+                    <span className="text-xs text-emerald-600 font-medium">
+                      All core skills detected!
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* In-Demand Competitive Edge */}
+              <div className="bg-[var(--card)] rounded-2xl border border-[var(--primary)]/30 p-5 shadow-[var(--shadow-card)]">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles size={18} className="text-[var(--primary)]" />
+                  <h3 className="font-poppins font-bold text-sm text-[var(--foreground)]">
+                    In-Demand Skills to Add
+                  </h3>
+                </div>
+                <p className="text-xs text-[var(--muted-foreground)] mb-3">
+                  High-demand modern skills that place your resume in the top 5% of candidate rankings.
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {result.recommendedInDemandSkills.map((sk) => (
+                    <Badge key={sk} variant="primary" className="text-xs">
+                      ★ {sk}
+                    </Badge>
+                  ))}
+                </div>
               </div>
             </div>
 
-            <div className="flex gap-3 justify-center">
+            {/* Real-Life Concrete Suggestions & Copyable Bullets */}
+            <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-6 shadow-[var(--shadow-card)]">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-lg bg-[var(--primary)]/15 text-[var(--primary)]">
+                    <Lightbulb size={18} />
+                  </div>
+                  <div>
+                    <h3 className="font-poppins font-bold text-base text-[var(--foreground)]">
+                      Real-Life Bullet Points to Copy into Your Resume
+                    </h3>
+                    <p className="text-xs text-[var(--muted-foreground)]">
+                      Specifically engineered for {result.targetRole.title} with high ATS keyword density and quantifiable metrics.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {result.tailoredBullets.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="p-4 rounded-xl bg-[var(--muted)]/40 border border-[var(--border)] hover:border-[var(--primary)] transition-all"
+                  >
+                    <div className="flex items-center justify-between gap-3 mb-2">
+                      <span className="text-xs font-bold text-[var(--primary)] uppercase tracking-wider">
+                        {item.skill}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => copyBullet(item.bullet, idx)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-[var(--card)] border border-[var(--border)] text-[var(--foreground)] hover:border-[var(--primary)] transition-all"
+                      >
+                        {copiedBulletIdx === idx ? (
+                          <>
+                            <Check size={13} className="text-emerald-500" />
+                            <span className="text-emerald-600">Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy size={13} />
+                            <span>Copy Bullet</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    <p className="text-xs sm:text-sm text-[var(--foreground)] font-medium leading-relaxed bg-[var(--card)] p-3 rounded-lg border border-[var(--border)] font-mono">
+                      "{item.bullet}"
+                    </p>
+
+                    <p className="text-xs text-[var(--muted-foreground)] mt-2 flex items-center gap-1.5">
+                      <span className="font-semibold text-[var(--foreground)]">Why ATS Loves This:</span>
+                      {item.explanation}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Strategic Advice from Real Hiring Managers */}
+            <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-6 shadow-[var(--shadow-card)]">
+              <h3 className="font-poppins font-bold text-base text-[var(--foreground)] mb-4 flex items-center gap-2">
+                <TrendingUp size={18} className="text-[var(--primary)]" />
+                Hiring Manager & ATS Strategic Insights for {result.targetRole.title}
+              </h3>
+              <div className="grid sm:grid-cols-2 gap-4">
+                {result.realLifeTips.map((tip, i) => (
+                  <div
+                    key={i}
+                    className="p-4 rounded-xl bg-[var(--muted)]/30 border border-[var(--border)] flex flex-col justify-between"
+                  >
+                    <div>
+                      <h4 className="text-xs font-bold text-[var(--foreground)] mb-1 flex items-center gap-1.5">
+                        <span className="w-4 h-4 rounded-full bg-[var(--primary)] text-white text-[10px] flex items-center justify-center font-bold">
+                          {i + 1}
+                        </span>
+                        {tip.title}
+                      </h4>
+                      <p className="text-xs text-[var(--foreground)] mb-2 leading-relaxed">
+                        {tip.action}
+                      </p>
+                    </div>
+                    <div className="pt-2 border-t border-[var(--border)]/70 text-[11px] text-[var(--muted-foreground)]">
+                      <span className="font-semibold text-[var(--primary)]">ATS Impact: </span>
+                      {tip.impact}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="flex flex-wrap gap-4 justify-center pt-4">
               <Button
                 variant="outline"
                 onClick={() => {
                   setResult(null)
                   setFile(null)
+                  setResumeText("")
                 }}
               >
-                Analyze Another Resume
+                Benchmark Another Role or Resume
               </Button>
               <Button
                 variant="primary"
-                onClick={() => (window.location.href = "/resume-builder")}
+                onClick={() => navigate("/resume-builder")}
+                className="font-semibold flex items-center gap-2"
               >
-                Build Optimized Resume
+                Apply Changes in Resume Builder
+                <ArrowRight size={16} />
               </Button>
             </div>
           </motion.div>

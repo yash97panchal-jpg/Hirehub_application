@@ -1,6 +1,7 @@
 import { useState, useRef } from "react"
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
+import toast from "react-hot-toast"
 import {
   MapPin,
   Clock,
@@ -12,6 +13,7 @@ import {
 } from "lucide-react"
 import Badge from "./Badge"
 import type { Job } from "../../types"
+import { useSavedJobsStore } from "../../store/savedJobsStore"
 
 interface JobCardProps {
   job: Job
@@ -20,12 +22,36 @@ interface JobCardProps {
 
 function formatSalary(job: Job) {
   if (!job.salaryMin && !job.salaryMax) return null
-  const cur = job.currency === "USD" ? "$" : ""
+
+  const symMap: Record<string, string> = {
+    USD: "$",
+    EUR: "€",
+    GBP: "£",
+    CAD: "CA$",
+    AUD: "AU$",
+    SGD: "S$",
+    CHF: "CHF ",
+    INR: "₹",
+    JPY: "¥",
+  }
+  const cur = symMap[job.currency || "USD"] || (job.currency ? `${job.currency} ` : "$")
+
   if (job.type === "Internship") {
     return `${cur}${job.salaryMin}–${job.salaryMax}/hr`
   }
-  const fmt = (n: number) =>
-    n >= 1000 ? `${cur}${(n / 1000).toFixed(0)}k` : `${cur}${n}`
+
+  const fmt = (n: number) => {
+    if (job.currency === "INR") {
+      if (n >= 100000) return `${cur}${(n / 100000).toFixed(1).replace(/\.0$/, "")}L`
+      return `${cur}${(n / 1000).toFixed(0)}k`
+    }
+    if (job.currency === "JPY") {
+      if (n >= 10000) return `${cur}${(n / 10000).toFixed(0)}万`
+      return `${cur}${n.toLocaleString()}`
+    }
+    return n >= 1000 ? `${cur}${(n / 1000).toFixed(0)}k` : `${cur}${n}`
+  }
+
   if (job.salaryMin && job.salaryMax)
     return `${fmt(job.salaryMin)} – ${fmt(job.salaryMax)}`
   if (job.salaryMax) return `Up to ${fmt(job.salaryMax)}`
@@ -44,7 +70,8 @@ const typeColors: Record<string, string> = {
 }
 
 export default function JobCard({ job, compact = false }: JobCardProps) {
-  const [saved, setSaved] = useState(false)
+  const { isJobSaved, toggleSaveJob } = useSavedJobsStore()
+  const isSaved = isJobSaved(job.id)
   const cardRef = useRef<HTMLDivElement>(null)
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -58,6 +85,17 @@ export default function JobCard({ job, compact = false }: JobCardProps) {
 
   const handleMouseLeave = () => {
     if (cardRef.current) cardRef.current.style.transform = ""
+  }
+
+  const handleBookmarkClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const nowSaved = toggleSaveJob(job.id)
+    if (nowSaved) {
+      toast.success(`Saved "${job.title}" to bookmarks!`)
+    } else {
+      toast(`Removed "${job.title}" from saved jobs`, { icon: "🔖" })
+    }
   }
 
   const salary = formatSalary(job)
@@ -105,16 +143,21 @@ export default function JobCard({ job, compact = false }: JobCardProps) {
           </div>
         </Link>
         <button
-          onClick={() => setSaved((v) => !v)}
-          className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[var(--muted)] transition-colors"
-          aria-label={saved ? "Unsave job" : "Save job"}
+          onClick={handleBookmarkClick}
+          className={`shrink-0 w-8 h-8 flex items-center justify-center rounded-lg transition-all ${
+            isSaved
+              ? "bg-[var(--primary)]/15 text-[var(--primary)]"
+              : "hover:bg-[var(--muted)] text-[var(--muted-foreground)] hover:text-[var(--primary)]"
+          }`}
+          aria-label={isSaved ? "Unsave job" : "Save job"}
+          title={isSaved ? "Remove from saved jobs" : "Save job for later"}
         >
-          {saved ? (
-            <BookmarkCheck size={16} className="text-[var(--primary)]" />
+          {isSaved ? (
+            <BookmarkCheck size={16} className="text-[var(--primary)] fill-[var(--primary)]/20" />
           ) : (
             <Bookmark
               size={16}
-              className="text-[var(--muted-foreground)] group-hover:text-[var(--primary)] transition-colors"
+              className="group-hover:text-[var(--primary)] transition-colors"
             />
           )}
         </button>

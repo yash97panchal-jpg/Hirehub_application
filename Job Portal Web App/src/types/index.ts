@@ -8,6 +8,21 @@ export type ApplicationStatus = "Applied" | "Viewed" | "Shortlisted" | "Intervie
 
 export type RecruiterStatus = "pending" | "approved" | "rejected" | "blocked"
 
+export interface Experience {
+  id: string
+  company: string
+  role: string
+  duration: string
+  description: string
+}
+
+export interface Education {
+  id: string
+  school: string
+  degree: string
+  dates: string
+}
+
 export interface User {
   id: string
   name: string
@@ -17,7 +32,11 @@ export interface User {
   headline?: string
   location?: string
   about?: string
+  phone?: string
+  linkedin?: string
   skills: string[]
+  experience?: Experience[]
+  education?: Education[]
   profileCompletion: number
   isVerified: boolean
   createdAt: string
@@ -32,6 +51,8 @@ export interface Company {
   industry: string
   size: string
   location: string
+  address?: string
+  coordinates?: { lat: number; lng: number }
   website?: string
   founded?: number
   rating: number
@@ -45,6 +66,8 @@ export interface Job {
   title: string
   company: Company
   location: string
+  address?: string
+  coordinates?: { lat: number; lng: number }
   type: JobType
   experience: ExperienceLevel
   salaryMin?: number

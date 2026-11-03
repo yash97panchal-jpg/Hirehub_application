@@ -25,15 +25,15 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variants = {
       primary:
-        "bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] shadow-lg shadow-[var(--primary)]/20 hover:shadow-[var(--primary)]/30 hover:-translate-y-0.5 active:translate-y-0",
+        "bg-[var(--primary)] text-[#180C22] hover:bg-[var(--primary-hover)] shadow-lg shadow-[var(--primary)]/20 hover:shadow-[var(--primary)]/30 hover:-translate-y-0.5 active:translate-y-0 font-bold",
       secondary:
         "bg-[var(--muted)] text-[var(--foreground)] hover:bg-[var(--border)] dark:hover:bg-[var(--muted)]",
       outline:
-        "border-2 border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white",
+        "border-2 border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-[#180C22] font-semibold",
       ghost:
         "text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[var(--primary)]",
       accent:
-        "bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] shadow-lg shadow-[var(--accent)]/20 hover:-translate-y-0.5 active:translate-y-0 font-bold",
+        "bg-[var(--accent)] text-[#F1F5F9] hover:bg-[var(--accent-hover)] shadow-lg shadow-[var(--accent)]/20 hover:-translate-y-0.5 active:translate-y-0 font-bold",
       danger:
         "bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/20 hover:-translate-y-0.5",
     }

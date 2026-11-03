@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
 import {
   Briefcase,
@@ -27,7 +27,8 @@ import {
   Area,
   AreaChart,
 } from "recharts"
-import { mockJobs, mockStats } from "../../data/mockData"
+import { mockStats } from "../../data/mockData"
+import { useJobStore } from "../../store/jobStore"
 import Badge from "../../components/ui/Badge"
 import Button from "../../components/ui/Button"
 import { useAuthStore } from "../../store/authStore"
@@ -91,10 +92,12 @@ const statusVariant: Record<string, any> = {
 }
 
 export default function RecruiterDashboard() {
+  const navigate = useNavigate()
   const { user } = useAuthStore()
+  const { jobs: storeJobs } = useJobStore()
   const [activeTab, setActiveTab] =
     useState<"overview" | "jobs" | "applicants">("overview")
-  const activeJobs = mockJobs.slice(0, 4)
+  const activeJobs = storeJobs.slice(0, 4)
 
   return (
     <div className="min-h-screen bg-[var(--background)] pt-20">
@@ -113,12 +116,20 @@ export default function RecruiterDashboard() {
               Manage your jobs and applicants.
             </p>
           </div>
-          <Button
-            variant="primary"
-            onClick={() => (window.location.href = "/recruiter/post-job")}
-          >
-            <Plus size={16} /> Post New Job
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => navigate("/recruiter/company-profile")}
+            >
+              Company Profile
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => navigate("/recruiter/post-job")}
+            >
+              <Plus size={16} className="mr-2" /> Post New Job
+            </Button>
+          </div>
         </motion.div>
 
         {/* Tabs */}
@@ -143,27 +154,27 @@ export default function RecruiterDashboard() {
           {[
             {
               label: "Active Jobs",
-              value: 4,
+              value: storeJobs.length,
               icon: Briefcase,
               color: "var(--primary)",
               bg: "bg-[var(--muted)] ",
-              change: "+2 this week",
+              change: storeJobs.length > 0 ? `+${storeJobs.length} active` : "0 posted",
             },
             {
               label: "Total Applicants",
-              value: 142,
+              value: storeJobs.length > 0 ? 142 : 0,
               icon: Users,
               color: "#22C55E",
               bg: "bg-green-100 dark:bg-green-900/30",
-              change: "+23 today",
+              change: storeJobs.length > 0 ? "+23 today" : "0 new",
             },
             {
               label: "Shortlisted",
-              value: 43,
+              value: storeJobs.length > 0 ? 43 : 0,
               icon: Star,
               color: "#F59E0B",
               bg: "bg-yellow-100 dark:bg-yellow-900/30",
-              change: "+8 this week",
+              change: storeJobs.length > 0 ? "+8 this week" : "0 new",
             },
             {
               label: "Interviews",
@@ -339,49 +350,61 @@ export default function RecruiterDashboard() {
                   View all <ChevronRight size={13} />
                 </Link>
               </div>
-              {activeJobs.map((job, i) => (
-                <div
-                  key={job.id}
-                  className={`p-4 flex items-center gap-4 ${
-                    i < activeJobs.length - 1
-                      ? "border-b border-[var(--border)]"
-                      : ""
-                  }`}
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm text-[var(--foreground)] truncate">
-                      {job.title}
-                    </p>
-                    <div className="flex items-center gap-3 mt-1">
-                      <span className="flex items-center gap-1 text-xs text-[var(--muted-foreground)]">
-                        <Users size={11} /> {job.applicationCount} applied
-                      </span>
-                      <span className="flex items-center gap-1 text-xs text-[var(--muted-foreground)]">
-                        <Eye size={11} /> {job.applicationCount * 8} views
-                      </span>
-                      <span className="flex items-center gap-1 text-xs text-[var(--muted-foreground)]">
-                        <Clock size={11} />{" "}
-                        {Math.floor(
-                          (Date.now() - new Date(job.postedAt).getTime()) /
-                            86400000,
-                        )}
-                        d ago
-                      </span>
+              {activeJobs.length === 0 ? (
+                <div className="p-8 text-center text-[var(--muted-foreground)]">
+                  <p className="text-sm font-medium">No active jobs posted yet.</p>
+                  <Link
+                    to="/recruiter/post-job"
+                    className="inline-block mt-3 text-xs text-[var(--primary)] font-semibold hover:underline bg-[var(--primary)]/10 px-3 py-1.5 rounded-lg"
+                  >
+                    + Post your first job
+                  </Link>
+                </div>
+              ) : (
+                activeJobs.map((job, i) => (
+                  <div
+                    key={job.id}
+                    className={`p-4 flex items-center gap-4 ${
+                      i < activeJobs.length - 1
+                        ? "border-b border-[var(--border)]"
+                        : ""
+                    }`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm text-[var(--foreground)] truncate">
+                        {job.title}
+                      </p>
+                      <div className="flex items-center gap-3 mt-1">
+                        <span className="flex items-center gap-1 text-xs text-[var(--muted-foreground)]">
+                          <Users size={11} /> {job.applicationCount} applied
+                        </span>
+                        <span className="flex items-center gap-1 text-xs text-[var(--muted-foreground)]">
+                          <Eye size={11} /> {job.applicationCount * 8} views
+                        </span>
+                        <span className="flex items-center gap-1 text-xs text-[var(--muted-foreground)]">
+                          <Clock size={11} />{" "}
+                          {Math.floor(
+                            (Date.now() - new Date(job.postedAt).getTime()) /
+                              86400000,
+                          )}
+                          d ago
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Badge variant="success" size="sm">
+                        Active
+                      </Badge>
+                      <button className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[var(--muted)] transition-colors">
+                        <MoreHorizontal
+                          size={15}
+                          className="text-[var(--muted-foreground)]"
+                        />
+                      </button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Badge variant="success" size="sm">
-                      Active
-                    </Badge>
-                    <button className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[var(--muted)] transition-colors">
-                      <MoreHorizontal
-                        size={15}
-                        className="text-[var(--muted-foreground)]"
-                      />
-                    </button>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
@@ -392,9 +415,12 @@ export default function RecruiterDashboard() {
                 <h3 className="font-poppins font-semibold text-[var(--foreground)]">
                   Recent Applicants
                 </h3>
-                <button className="flex items-center gap-1 text-xs text-[var(--muted-foreground)] hover:text-[var(--primary)]">
-                  <Filter size={12} /> Filter
-                </button>
+                <Link
+                  to="/recruiter/applicants"
+                  className="text-sm text-[var(--primary)] hover:underline flex items-center gap-1"
+                >
+                  View all <ChevronRight size={13} />
+                </Link>
               </div>
               {recentApplicants.map((a, i) => (
                 <div

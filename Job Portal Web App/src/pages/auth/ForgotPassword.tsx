@@ -42,7 +42,7 @@ export default function ForgotPassword() {
         className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center p-12 relative overflow-hidden"
         style={{
           background:
-            "linear-gradient(135deg, #101F3E 0%, var(--primary) 100%)",
+            "linear-gradient(135deg, var(--accent) 0%, #1A0924 55%, var(--primary-deep) 100%)",
         }}
       >
         <div
@@ -65,7 +65,8 @@ export default function ForgotPassword() {
             Secure Account Recovery
           </h2>
           <p className="text-white/80 text-lg leading-relaxed">
-            Don't worry, it happens to the best of us. We'll help you get back to your account in no time.
+            Don't worry, it happens to the best of us. We'll help you get back
+            to your account in no time.
           </p>
         </div>
       </div>
@@ -91,7 +92,8 @@ export default function ForgotPassword() {
                 Reset Password
               </h1>
               <p className="text-[var(--muted-foreground)] mb-8">
-                Enter the email address associated with your account and we'll send you a link to reset your password.
+                Enter the email address associated with your account and we'll
+                send you a link to reset your password.
               </p>
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -100,10 +102,15 @@ export default function ForgotPassword() {
                   type="email"
                   placeholder="you@example.com"
                   error={errors.email?.message}
-                  iconRight={<Mail size={18} className="text-[var(--muted-foreground)]" />}
+                  iconRight={
+                    <Mail
+                      size={18}
+                      className="text-[var(--muted-foreground)]"
+                    />
+                  }
                   {...register("email")}
                 />
-                
+
                 <Button
                   type="submit"
                   variant="primary"
@@ -128,7 +135,8 @@ export default function ForgotPassword() {
                 Check your email
               </h2>
               <p className="text-[var(--muted-foreground)] mb-8">
-                We've sent a password reset link to your email address. Please check your inbox and spam folder.
+                We've sent a password reset link to your email address. Please
+                check your inbox and spam folder.
               </p>
               <Link to="/login">
                 <Button variant="outline" className="w-full">

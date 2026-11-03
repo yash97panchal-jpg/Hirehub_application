@@ -1,8 +1,17 @@
+# Secret Credentials & Internal Logs (NEVER COMMIT OR PUBLISH)
+admin-credentials.txt
+admin-password.txt
+CHANGES_AND_DELETIONS.txt
+error-log.txt
+*.zip
+.env*
+.env.local
+.env.*.local
+
 node_modules/
 dist/
 build/
 .cache/
-.env*
 .vite/
 vite.config.*.timestamp-*
 *.tsbuildinfo
@@ -19,3 +28,5 @@ logs/
 # beside it.
 /.plugins/
 /.opencode-skills/
+
+.vercel

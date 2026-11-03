@@ -32,6 +32,8 @@ import {
 import Badge from "../../components/ui/Badge"
 import Button from "../../components/ui/Button"
 import { mockStats } from "../../data/mockData"
+import { useJobStore } from "../../store/jobStore"
+import { useApplicationStore } from "../../store/applicationStore"
 
 const growthData = [
   { month: "Apr", users: 62000, jobs: 8200 },
@@ -108,6 +110,9 @@ const recentActivity = [
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] =
     useState<"overview" | "recruiters" | "reports">("overview")
+
+  const { jobs } = useJobStore()
+  const { applications } = useApplicationStore()
 
   return (
     <div className="min-h-screen bg-[var(--background)] pt-20">
@@ -421,7 +426,7 @@ export default function AdminDashboard() {
                     }`}
                   >
                     {act.type === "recruiter" ? (
-                      <Building2 size={14} className="text-blue-500" />
+                      <Building2 size={14} className="text-[var(--primary)]" />
                     ) : act.type === "job" ? (
                       <Briefcase size={14} className="text-green-500" />
                     ) : act.type === "report" ? (
@@ -449,6 +454,72 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
+
+        {/* Jobs and Applications */}
+        <div className="mt-6 bg-[var(--card)] rounded-2xl border border-[var(--border)] shadow-[var(--shadow-card)]">
+          <div className="p-5 border-b border-[var(--border)]">
+            <h3 className="font-poppins font-semibold text-[var(--foreground)] flex items-center gap-2">
+              <Briefcase size={16} className="text-[var(--primary)]" /> All Job Posts & Applications
+            </h3>
+          </div>
+          <div className="p-0 max-h-[600px] overflow-y-auto">
+            {jobs.length === 0 ? (
+              <div className="p-6 text-center text-[var(--muted-foreground)]">
+                No jobs posted yet.
+              </div>
+            ) : (
+              <table className="w-full text-sm text-left">
+                <thead className="bg-[var(--muted)] text-[var(--muted-foreground)] text-xs uppercase">
+                  <tr>
+                    <th className="px-6 py-3">Job & Recruiter</th>
+                    <th className="px-6 py-3">Company</th>
+                    <th className="px-6 py-3">Posted Date</th>
+                    <th className="px-6 py-3">Applications</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[var(--border)]">
+                  {jobs.map((job) => {
+                    const jobApplications = applications.filter((app) => app.job.id === job.id);
+                    return (
+                      <tr key={job.id} className="hover:bg-[var(--muted)]/50">
+                        <td className="px-6 py-4">
+                          <p className="font-semibold text-[var(--foreground)]">{job.title}</p>
+                          <p className="text-xs text-[var(--muted-foreground)]">{job.type} &bull; {job.location}</p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <p className="font-medium text-[var(--foreground)]">{job.company?.name || "Unknown Company"}</p>
+                        </td>
+                        <td className="px-6 py-4 text-[var(--muted-foreground)]">
+                          {new Date(job.postedAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4">
+                          {jobApplications.length > 0 ? (
+                            <div className="space-y-2">
+                              {jobApplications.map((app) => (
+                                <div key={app.id} className="flex items-center gap-2 text-xs p-2 bg-[var(--background)] rounded border border-[var(--border)]">
+                                  <div className="w-6 h-6 rounded-full bg-[var(--muted)] flex items-center justify-center shrink-0">
+                                    <Users size={12} className="text-[var(--primary)]" />
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-[var(--foreground)]">{app.applicant.name}</p>
+                                    <p className="text-[var(--muted-foreground)]">{app.status}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-[var(--muted-foreground)]">No applications yet</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+
       </div>
     </div>
   )

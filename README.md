@@ -1,80 +1,41 @@
-# HireHub - Job & Internship Portal
+# HireHub - AI-Powered Job Portal & ATS Platform
 
-## 1. Project Introduction
-HireHub is a modern, production-ready web application designed to bridge the gap between job seekers/students and recruiters/companies. It serves as a comprehensive platform where candidates can apply for jobs and internships, and recruiters can manage their hiring pipeline. The system includes three main roles: Candidates, Recruiters, and Administrators, each with distinct features and dashboards.
+HireHub is a modern, high-performance job discovery, ATS (Applicant Tracking System), recruiter dashboard, and career acceleration platform built with React 19, TypeScript, Vite, and Tailwind CSS.
 
-## 2. Features
-- **Candidate Portal:** Profile management, job/internship search, advanced filtering, one-click apply, application tracking, saved jobs, notifications.
-- **Recruiter Portal:** Company profiles, job/internship postings, application management (shortlist, interview, select, reject), interview scheduling, analytics.
-- **Admin Panel:** Complete platform management, user moderation, analytics dashboards, taxonomy (skills, categories) management.
-- **Advanced UI/UX:** Built with Bootstrap 5, featuring a responsive, modern design with glassmorphism touches and 3D visual elements. Dark/Light mode supported.
-- **Secure Architecture:** Role-based access control, Django authentication, CSRF/XSS protections.
+## 🚀 Key Features
 
-## 3. Technologies
-- **Backend:** Python 3, Django 5+
-- **Database:** MySQL
-- **Frontend:** HTML5, CSS3, JavaScript, Bootstrap 5, Chart.js
-- **API:** Django REST Framework (DRF)
-- **Environment Management:** django-environ
+- **Candidate Discovery & Job Matching**: Full-featured job search with interactive GIS/Leaflet map views, multi-facet filtering (remote, full-time, salary, experience, date posted), and instant bookmarking.
+- **Role-Based ATS Scanner**: Tailored resume benchmarking against industry skill profiles with keyword matching and actionable suggestions.
+- **Interactive Resume Builder**: Real-time PDF preview and generation with customizable templates.
+- **Recruiter & Employer Suite**:
+  - Job creation, editing, status pipeline management (Applied, Shortlisted, Selected, Rejected).
+  - Talent Search: Candidate discovery engine with 1-click "Invite to Apply" workflow.
+  - Multi-tier Employer Subscriptions with Razorpay and Stripe checkout flows.
+- **Real-Time Communication**: Candidate-recruiter live messaging, encrypted HD video interview rooms, and RFC 5545 `.ics` calendar invitation export.
+- **Technical Assessments**: Timed interactive skill quizzes awarding verified profile badges.
+- **Mobile First & PWA Ready**: Installable Progressive Web App (PWA) with offline service worker caching, install prompts, and full compatibility for Google Play Store (via TWA) and Apple App Store.
+- **Internationalization (i18n)**: Seamless language switcher supporting English, Hindi (हिन्दी), and Gujarati (ગુજરાતી).
+- **Compliance & Trust**: GDPR/DPDP compliant cookie consent, job scam reporting, and instant apply celebration confetti.
 
-## 4. Requirements
-- Python 3.8+
-- MySQL Server
-- pip (Python package manager)
-- virtualenv (recommended)
+## 🛠️ Tech Stack
 
-## 5. Installation & Setup
-1. **Clone the repository** (if applicable) or navigate to the project directory:
-   ```bash
-   cd C:\Hirehub_application
-   ```
+- **Frontend**: React 19, TypeScript 5.7, Tailwind CSS v4, Lucide Icons, Framer Motion
+- **State Management**: Zustand
+- **Routing**: React Router v7
+- **3D & Visuals**: Three.js, React Three Fiber, Recharts
+- **Build Tool**: Vite 8
 
-2. **Set up Virtual Environment:**
-   ```bash
-   python -m venv venv
-   .\venv\Scripts\Activate.ps1
-   ```
+## 📦 Deployment to Vercel
 
-3. **Install Dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+### Option 1: Automatic via Vercel GitHub Integration (Recommended)
+1. In Vercel Dashboard, click **Add New... > Project**.
+2. Select your repository `Hirehub_application`.
+3. In **Project Settings**:
+   - **Root Directory**: `Job Portal Web App` (Click *Edit* and select `Job Portal Web App`)
+   - **Framework Preset**: `Vite`
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+4. Click **Deploy**.
 
-4. **MySQL Configuration:**
-   - Create a MySQL database named `hirehub_db`.
-   - Configure your `.env` file (based on `.env.example`) with your database credentials.
-
-5. **Apply Migrations:**
-   ```bash
-   python manage.py makemigrations
-   python manage.py migrate
-   ```
-
-6. **Create Superuser (Admin):**
-   ```bash
-   python manage.py createsuperuser
-   ```
-
-7. **Run the Development Server:**
-   ```bash
-   python manage.py runserver
-   ```
-
-## 6. Project Structure
-```
-hirehub/
-├── hirehub_core/ (Settings, URLs, WSGI/ASGI)
-├── accounts/ (User models, Auth, Roles)
-├── jobs/ (Job & Internship models, logic)
-├── applications/ (Application workflow, Saved jobs)
-├── profiles/ (Candidate & Recruiter/Company profiles)
-├── interactions/ (Notifications, Interviews, Activity)
-├── templates/ (HTML Templates)
-├── static/ (CSS, JS, Images, 3D Assets)
-└── media/ (Uploaded Resumes, Profile Pics, Logos)
-```
-
-## 7. Future Enhancements
-- Real-time chat between recruiters and candidates.
-- AI-based resume parsing and job matching.
-- Advanced 3D WebGL visualizations using Three.js for company campus tours.
+### Option 2: Preconfigured Root Deployment
+This repository includes a root redirect and script configuration pointing to `Job Portal Web App`.

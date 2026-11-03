@@ -1,0 +1,10 @@
+{
+  "buildCommand": "cd \"Job Portal Web App\" && npm install && npm run build",
+  "outputDirectory": "Job Portal Web App/dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

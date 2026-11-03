@@ -1,0 +1,9 @@
+{
+  "name": "hirehub-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "cd \"Job Portal Web App\" && npm install && npm run build",
+    "dev": "cd \"Job Portal Web App\" && npm run dev"
+  }
+}

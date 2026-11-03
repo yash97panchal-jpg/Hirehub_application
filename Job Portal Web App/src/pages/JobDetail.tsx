@@ -18,24 +18,63 @@ import {
   ChevronRight,
   Globe,
   ExternalLink,
+  ShieldAlert,
 } from "lucide-react"
 import Button from "../components/ui/Button"
 import Badge from "../components/ui/Badge"
 import JobCard from "../components/ui/JobCard"
-import { mockJobs } from "../data/mockData"
+import { useJobStore } from "../store/jobStore"
 import { useAuthStore } from "../store/authStore"
+import { useApplicationStore } from "../store/applicationStore"
+import { useSavedJobsStore } from "../store/savedJobsStore"
+import { triggerConfetti } from "../utils/confetti"
+import ShareJobModal from "../components/jobs/ShareJobModal"
+import ReportJobModal from "../components/jobs/ReportJobModal"
 import toast from "react-hot-toast"
 
 export default function JobDetail() {
   const { id } = useParams()
+  const { jobs: storeJobs } = useJobStore()
   const navigate = useNavigate()
-  const { isAuthenticated } = useAuthStore()
-  const [saved, setSaved] = useState(false)
+  const { isAuthenticated, user } = useAuthStore()
+  const { applications, addApplication } = useApplicationStore()
+  const { isJobSaved, toggleSaveJob } = useSavedJobsStore()
   const [applied, setApplied] = useState(false)
   const [applying, setApplying] = useState(false)
+  const [isShareOpen, setIsShareOpen] = useState(false)
+  const [isReportOpen, setIsReportOpen] = useState(false)
 
-  const job = mockJobs.find((j) => j.id === id) || mockJobs[0]
-  const similarJobs = mockJobs
+  const job = storeJobs.find((j) => j.id === id) || (storeJobs.length > 0 ? storeJobs[0] : null)
+
+  if (!job) {
+    return (
+      <div className="min-h-screen bg-[var(--background)] pt-28 pb-16 px-4">
+        <div className="max-w-md mx-auto bg-[var(--card)] p-8 rounded-3xl border border-[var(--border)] text-center shadow-lg">
+          <Briefcase size={44} className="mx-auto text-[var(--muted-foreground)] mb-3 opacity-50" />
+          <h2 className="text-xl font-bold text-[var(--foreground)]">Job Not Found</h2>
+          <p className="text-sm text-[var(--muted-foreground)] mt-2">
+            The job opening you are looking for does not exist or has been removed.
+          </p>
+          <Button variant="primary" className="mt-5 w-full" onClick={() => navigate("/jobs")}>
+            Browse Available Jobs
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  const isSaved = isJobSaved(job.id)
+  const isAlreadySubmitted = applied || applications.some((a) => a.job?.id === job.id)
+
+  const handleToggleSave = () => {
+    const nowSaved = toggleSaveJob(job.id)
+    if (nowSaved) {
+      toast.success(`Saved "${job.title}" to your bookmarks!`)
+    } else {
+      toast(`Removed "${job.title}" from saved jobs`, { icon: "🔖" })
+    }
+  }
+  const similarJobs = storeJobs
     .filter((j) => j.id !== job.id && j.category === job.category)
     .slice(0, 3)
   const daysAgo = Math.floor(
@@ -43,17 +82,35 @@ export default function JobDetail() {
   )
 
   const handleApply = async () => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !user) {
+      toast("Please sign in or create an account to apply.", { icon: "🔒" })
       navigate("/login")
       return
     }
+
+    if (isAlreadySubmitted) {
+      toast("You have already submitted an application for this role.", { icon: "ℹ️" })
+      return
+    }
+
     setApplying(true)
-    await new Promise((r) => setTimeout(r, 1200))
+    await new Promise((r) => setTimeout(r, 1000))
+    
+    // Save application to store
+    addApplication({
+      id: Math.random().toString(36).substring(2, 9),
+      job: job,
+      applicant: user,
+      status: "Applied",
+      resumeUrl: "",
+      appliedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    })
+
     setApplied(true)
     setApplying(false)
-    toast.success(
-      "Application submitted! The recruiter will review it shortly.",
-    )
+    triggerConfetti()
+    toast.success("Application submitted successfully! Recruiter notified.")
   }
 
   const salary =
@@ -133,16 +190,22 @@ export default function JobDetail() {
                     <Building2 size={14} />
                     <span className="font-medium">{job.company.name}</span>
                     {job.company.isVerified && (
-                      <CheckCircle size={13} className="text-blue-500 ml-0.5" />
+                      <CheckCircle size={13} className="text-[var(--primary)] ml-0.5" />
                     )}
                   </Link>
                 </div>
                 <div className="flex gap-2 shrink-0">
                   <button
-                    onClick={() => setSaved((v) => !v)}
-                    className="w-9 h-9 flex items-center justify-center rounded-lg border border-[var(--border)] hover:border-[var(--primary)] transition-colors"
+                    onClick={handleToggleSave}
+                    className={`w-9 h-9 flex items-center justify-center rounded-lg border transition-all ${
+                      isSaved
+                        ? "border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]"
+                        : "border-[var(--border)] hover:border-[var(--primary)] text-[var(--muted-foreground)]"
+                    }`}
+                    aria-label={isSaved ? "Unsave job" : "Save job"}
+                    title={isSaved ? "Remove from saved jobs" : "Save job"}
                   >
-                    {saved ? (
+                    {isSaved ? (
                       <BookmarkCheck
                         size={16}
                         className="text-[var(--primary)]"
@@ -155,15 +218,23 @@ export default function JobDetail() {
                     )}
                   </button>
                   <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(window.location.href)
-                      toast.success("Link copied!")
-                    }}
+                    onClick={() => setIsShareOpen(true)}
                     className="w-9 h-9 flex items-center justify-center rounded-lg border border-[var(--border)] hover:border-[var(--primary)] transition-colors"
+                    title="Share opening"
                   >
                     <Share2
                       size={16}
                       className="text-[var(--muted-foreground)]"
+                    />
+                  </button>
+                  <button
+                    onClick={() => setIsReportOpen(true)}
+                    className="w-9 h-9 flex items-center justify-center rounded-lg border border-[var(--border)] hover:border-amber-500 hover:text-amber-500 transition-colors"
+                    title="Report suspicious job"
+                  >
+                    <ShieldAlert
+                      size={16}
+                      className="text-[var(--muted-foreground)] hover:text-amber-500"
                     />
                   </button>
                 </div>
@@ -321,18 +392,24 @@ export default function JobDetail() {
                 </span>
               </div>
 
-              {applied ? (
+              {isAlreadySubmitted ? (
                 <div className="text-center p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
                   <CheckCircle
                     size={24}
                     className="text-green-500 mx-auto mb-2"
                   />
                   <p className="font-semibold text-green-700 dark:text-green-400 text-sm">
-                    Application Submitted!
+                    Application Submitted
                   </p>
                   <p className="text-xs text-green-600 dark:text-green-500 mt-1">
-                    Track it in your dashboard.
+                    Track status in your application tracker.
                   </p>
+                  <Link
+                    to="/dashboard/applications"
+                    className="inline-block mt-3 text-xs font-semibold text-[var(--primary)] hover:underline"
+                  >
+                    View Application Status →
+                  </Link>
                 </div>
               ) : (
                 <Button
@@ -347,14 +424,14 @@ export default function JobDetail() {
               )}
 
               <Button
-                variant="outline"
+                variant={isSaved ? "secondary" : "outline"}
                 size="md"
-                className="w-full mt-2"
-                onClick={() => setSaved((v) => !v)}
+                className={`w-full mt-2 ${isSaved ? "text-[var(--primary)] border-[var(--primary)]/30 bg-[var(--primary)]/10" : ""}`}
+                onClick={handleToggleSave}
               >
-                {saved ? (
+                {isSaved ? (
                   <>
-                    <BookmarkCheck size={15} /> Saved
+                    <BookmarkCheck size={15} className="text-[var(--primary)]" /> Saved
                   </>
                 ) : (
                   <>
@@ -425,6 +502,22 @@ export default function JobDetail() {
             </div>
           </div>
         </div>
+
+        {/* Share & Report Dialogs */}
+        <ShareJobModal
+          isOpen={isShareOpen}
+          onClose={() => setIsShareOpen(false)}
+          jobTitle={job.title}
+          companyName={job.company.name}
+          jobId={job.id}
+        />
+        <ReportJobModal
+          isOpen={isReportOpen}
+          onClose={() => setIsReportOpen(false)}
+          jobTitle={job.title}
+          companyName={job.company.name}
+          jobId={job.id}
+        />
       </div>
     </div>
   )

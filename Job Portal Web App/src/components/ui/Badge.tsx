@@ -16,14 +16,14 @@ export default function Badge({
   const variants = {
     default: "bg-[var(--muted)] text-[var(--muted-foreground)]",
     primary:
-      "bg-[var(--muted)] text-blue-700 dark:bg-blue-900/40 dark:text-white/70",
+      "bg-[var(--primary)]/15 text-[#9A5B00] dark:bg-[var(--primary)]/20 dark:text-[var(--primary)] font-semibold",
     accent:
-      "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300",
+      "bg-[var(--accent)]/15 text-[var(--accent)] dark:bg-[var(--accent)]/40 dark:text-[#E2E8F0] font-semibold",
     success:
-      "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
+      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
     error: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
     warning:
-      "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
+      "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
     outline: "border border-[var(--border)] text-[var(--muted-foreground)]",
   }
 
