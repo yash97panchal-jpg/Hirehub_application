@@ -1,6 +1,9 @@
 # Secret Credentials & Internal Logs (NEVER COMMIT OR PUBLISH)
 admin-credentials.txt
 admin-password.txt
+admin-login-steps.txt
+ADMIN_LOGIN_GUIDE.txt
+*admin*.txt
 CHANGES_AND_DELETIONS.txt
 error-log.txt
 *.zip
