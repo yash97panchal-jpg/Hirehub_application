@@ -16,6 +16,12 @@ import {
   Layers,
 } from "lucide-react"
 import type { Job } from "../../types"
+import {
+  ALL_LOCATION_HUBS,
+  COUNTRIES_CATALOG,
+  getMapCoordinatesForQuery,
+  type LocationHub,
+} from "../../data/locationCatalog"
 
 export type MapStyle = "real-world" | "satellite" | "dark" | "streets" | "vector"
 
@@ -67,19 +73,7 @@ function projectCoordinates(lat: number, lng: number): { x: number; y: number } 
   return { x: Math.round(x), y: Math.round(y) }
 }
 
-const WORLD_TECH_HUBS = [
-  { name: "All Worldwide", query: "", lat: 25, lng: 10, zoom: 2 },
-  { name: "Bengaluru, India", query: "Bengaluru", lat: 12.9716, lng: 77.5946, zoom: 12 },
-  { name: "London, UK", query: "London", lat: 51.5074, lng: -0.1278, zoom: 12 },
-  { name: "San Francisco, USA", query: "San Francisco", lat: 37.7749, lng: -122.4194, zoom: 12 },
-  { name: "New York, USA", query: "New York", lat: 40.7128, lng: -74.006, zoom: 12 },
-  { name: "Tokyo, Japan", query: "Tokyo", lat: 35.6762, lng: 139.6503, zoom: 12 },
-  { name: "Berlin, Germany", query: "Berlin", lat: 52.52, lng: 13.405, zoom: 12 },
-  { name: "Singapore", query: "Singapore", lat: 1.3521, lng: 103.8198, zoom: 12 },
-  { name: "Toronto, Canada", query: "Toronto", lat: 43.6532, lng: -79.3832, zoom: 12 },
-  { name: "Sydney, Australia", query: "Sydney", lat: -33.8688, lng: 151.2093, zoom: 12 },
-  { name: "Zurich, Switzerland", query: "Zurich", lat: 47.3769, lng: 8.5417, zoom: 12 },
-]
+const WORLD_TECH_HUBS = ALL_LOCATION_HUBS
 
 const REAL_MAP_TILES: Record<
   string,
@@ -405,31 +399,26 @@ export default function JobMap({
     if (!activeLocation) return
 
     const loc = activeLocation.toLowerCase().trim()
-    const isBangalore = loc.includes("bengaluru") || loc.includes("bangalore") || loc === "blr"
+    const targetCoords = getMapCoordinatesForQuery(loc)
 
-    if (isBangalore) {
-      leafletMapRef.current.flyTo([12.9716, 77.5946], 12, { duration: 1.2 })
-      const bGroup = markerGroups.find(
+    if (targetCoords) {
+      leafletMapRef.current.flyTo([targetCoords.lat, targetCoords.lng], targetCoords.zoom, { duration: 1.2 })
+      const matched = markerGroups.find(
         (g) =>
-          g.city.toLowerCase().includes("bengaluru") ||
-          g.address.toLowerCase().includes("bengaluru") ||
-          g.city.toLowerCase().includes("bangalore")
+          g.city.toLowerCase().includes(loc) ||
+          g.address.toLowerCase().includes(loc) ||
+          (loc.includes("bengaluru") && g.city.toLowerCase().includes("bangalore")) ||
+          (loc.includes("mumbai") && g.city.toLowerCase().includes("mumbai")) ||
+          (loc.includes("delhi") && g.address.toLowerCase().includes("delhi")) ||
+          (loc.includes("hyderabad") && g.city.toLowerCase().includes("hyderabad"))
       )
-      if (bGroup) {
-        setActiveCompanyId(bGroup.companyId)
+      if (matched) {
+        setActiveCompanyId(matched.companyId)
         setIsDismissed(false)
-        if (bGroup.jobs.length > 0 && onSelectJob) {
-          onSelectJob(bGroup.jobs[0])
+        if (matched.jobs.length > 0 && onSelectJob) {
+          onSelectJob(matched.jobs[0])
         }
       }
-      return
-    }
-
-    const matchedHub = WORLD_TECH_HUBS.find(
-      (h) => h.query && loc.includes(h.query.toLowerCase())
-    )
-    if (matchedHub) {
-      leafletMapRef.current.flyTo([matchedHub.lat, matchedHub.lng], matchedHub.zoom, { duration: 1.2 })
       return
     }
 
@@ -439,8 +428,8 @@ export default function JobMap({
     }
   }, [activeLocation, markerGroups, mapStyle])
 
-  // --- World Tech Hub Quick Navigation ---
-  const handleHubSelect = (hub: (typeof WORLD_TECH_HUBS)[number]) => {
+  // --- World Tech Hub & Country Navigation ---
+  const handleHubSelect = (hub: LocationHub | { name: string; query: string; lat: number; lng: number; zoom: number }) => {
     onLocationChange?.(hub.query)
 
     if (!hub.query) {
@@ -484,7 +473,7 @@ export default function JobMap({
       }
     } else {
       if (leafletMapRef.current && mapStyle !== "vector") {
-        leafletMapRef.current.flyTo([hub.lat, hub.lng], hub.zoom, { duration: 1.4 })
+        leafletMapRef.current.flyTo([hub.lat, hub.lng], hub.zoom || 11, { duration: 1.4 })
       }
     }
   }
@@ -608,12 +597,50 @@ export default function JobMap({
             </div>
           </div>
 
-          {/* Quick World Hub Buttons */}
-          <div className="flex flex-wrap items-center gap-1.5 text-xs">
-            {WORLD_TECH_HUBS.map((hub) => {
+          {/* Country Level Quick Tabs */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
+            <span className="text-[11px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider shrink-0 mr-1">
+              Country:
+            </span>
+            <button
+              type="button"
+              onClick={() => onLocationChange?.("")}
+              className={`px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
+                activeLocation === ""
+                  ? "bg-[var(--primary)] text-white shadow-xs"
+                  : "bg-[var(--card)] text-[var(--muted-foreground)] border border-[var(--border)] hover:border-[var(--primary)]"
+              }`}
+            >
+              🌍 All Countries
+            </button>
+            {COUNTRIES_CATALOG.map((c) => {
+              const isSelected = activeLocation.toLowerCase() === c.name.toLowerCase() || activeLocation.toLowerCase() === c.code.toLowerCase()
+              return (
+                <button
+                  key={c.code}
+                  type="button"
+                  onClick={() => onLocationChange?.(c.name)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all shrink-0 ${
+                    isSelected
+                      ? "bg-[var(--primary)] text-white shadow-xs font-bold"
+                      : "bg-[var(--card)] text-[var(--muted-foreground)] border border-[var(--border)] hover:border-[var(--primary)]"
+                  }`}
+                >
+                  {c.name}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* State / Tech Hub Buttons */}
+          <div className="flex flex-wrap items-center gap-1.5 text-xs pt-1 border-t border-[var(--border)]/50">
+            <span className="text-[11px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider mr-1">
+              Hubs:
+            </span>
+            {ALL_LOCATION_HUBS.filter((h) => h.query !== "").map((hub) => {
               const isSelected =
                 activeLocation.toLowerCase().includes(hub.query.toLowerCase()) &&
-                (hub.query !== "" || activeLocation === "")
+                hub.query !== ""
               return (
                 <button
                   key={hub.name}

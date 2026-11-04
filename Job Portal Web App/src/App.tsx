@@ -57,6 +57,7 @@ import PWAInstallPrompt from "./components/layout/PWAInstallPrompt"
 import CookieConsent from "./components/layout/CookieConsent"
 import BackToTop from "./components/layout/BackToTop"
 import CareerHelpBot from "./components/layout/CareerHelpBot"
+import MobileBottomNav from "./components/layout/MobileBottomNav"
 
 function PageLoader() {
   return (
@@ -76,8 +77,9 @@ function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col bg-[var(--background)] text-[var(--foreground)]">
       <Navbar />
-      <main className="flex-1 flex flex-col">{children}</main>
+      <main className="flex-1 flex flex-col pb-20 md:pb-0">{children}</main>
       {!isAuth && <Footer />}
+      <MobileBottomNav />
       <CookieConsent />
       <PWAInstallPrompt />
       <CareerHelpBot />

@@ -18,6 +18,7 @@ import Badge from "../components/ui/Badge"
 import Button from "../components/ui/Button"
 import { useJobStore } from "../store/jobStore"
 import type { Job, JobType, ExperienceLevel } from "../types"
+import { matchLocationQuery } from "../data/locationCatalog"
 
 const jobTypes: JobType[] = [
   "Full-time",
@@ -145,52 +146,16 @@ export default function Jobs() {
     }
     if (location) {
       const loc = location.toLowerCase().trim()
-      const isBangalore = loc.includes("bengaluru") || loc.includes("bangalore") || loc === "blr"
-      const isSF = loc.includes("san francisco") || loc === "sf" || loc.includes("bay area")
-      const isNY = loc.includes("new york") || loc === "nyc" || loc === "ny"
-
-      jobs = jobs.filter((j) => {
-        const jLoc = (j.location || "").toLowerCase()
-        const jAddr = (j.address || "").toLowerCase()
-        const compLoc = (j.company?.location || "").toLowerCase()
-        const compAddr = (j.company?.address || "").toLowerCase()
-
-        if (isBangalore) {
+      if (loc === "remote") {
+        jobs = jobs.filter((j) => j.isRemote || j.remoteType === "Remote" || (j.location || "").toLowerCase().includes("remote"))
+      } else {
+        jobs = jobs.filter((j) => {
           return (
-            jLoc.includes("bengaluru") ||
-            jLoc.includes("bangalore") ||
-            jAddr.includes("bengaluru") ||
-            jAddr.includes("bangalore") ||
-            compLoc.includes("bengaluru") ||
-            compLoc.includes("bangalore")
+            matchLocationQuery(location, j.location, j.address) ||
+            matchLocationQuery(location, j.company?.location || "", j.company?.address)
           )
-        }
-
-        if (isSF) {
-          return (
-            jLoc.includes("san francisco") ||
-            jLoc.includes("sf") ||
-            jLoc.includes("ca") ||
-            jAddr.includes("san francisco")
-          )
-        }
-
-        if (isNY) {
-          return (
-            jLoc.includes("new york") ||
-            jLoc.includes("ny") ||
-            jAddr.includes("new york")
-          )
-        }
-
-        return (
-          jLoc.includes(loc) ||
-          jAddr.includes(loc) ||
-          compLoc.includes(loc) ||
-          compAddr.includes(loc) ||
-          (loc === "remote" && j.isRemote)
-        )
-      })
+        })
+      }
     }
     if (category) {
       const cat = category.toLowerCase()

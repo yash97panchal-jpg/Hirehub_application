@@ -14,8 +14,9 @@ import {
 } from "lucide-react"
 import Button from "../ui/Button"
 import Input from "../ui/Input"
-import type { Job, User } from "../../types"
+import type { Job, User, Application } from "../../types"
 import { applicationService, storageService } from "../../lib/supabase"
+import { emailService, type SentEmailRecord } from "../../services/emailService"
 import { triggerConfetti } from "../../utils/confetti"
 import toast from "react-hot-toast"
 
@@ -24,7 +25,7 @@ interface EasyApplyModalProps {
   user: User | null
   isOpen: boolean
   onClose: () => void
-  onSuccess: () => void
+  onSuccess: (app?: Application, emailRecord?: SentEmailRecord | null) => void
 }
 
 export default function EasyApplyModal({
@@ -94,7 +95,7 @@ export default function EasyApplyModal({
     setErrorMsg("")
 
     try {
-      await applicationService.submitApplication({
+      const newApp = await applicationService.submitApplication({
         jobId: job.id,
         userId: user.id,
         resumeFile: resumePath,
@@ -104,9 +105,20 @@ export default function EasyApplyModal({
         applicant: user,
       })
 
+      let emailRecord: SentEmailRecord | null = null
+      try {
+        emailRecord = await emailService.sendApplicationConfirmation({
+          applicant: user,
+          job,
+          applicationId: newApp.id,
+        })
+      } catch (emailErr) {
+        console.warn("Could not send confirmation email:", emailErr)
+      }
+
       triggerConfetti()
-      toast.success("Easy Apply submitted successfully!")
-      onSuccess()
+      toast.success("Application submitted! Confirmation email sent to " + user.email)
+      onSuccess(newApp, emailRecord)
       onClose()
     } catch (err: any) {
       setErrorMsg(err.message || "Failed to submit application.")

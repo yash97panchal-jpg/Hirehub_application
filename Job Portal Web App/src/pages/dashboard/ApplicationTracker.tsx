@@ -14,6 +14,7 @@ import {
   MapPin,
   Calendar,
   Filter,
+  Mail,
 } from "lucide-react"
 import { Link } from "react-router-dom"
 import Badge from "../../components/ui/Badge"
@@ -21,7 +22,9 @@ import Button from "../../components/ui/Button"
 import { useApplicationStore } from "../../store/applicationStore"
 import { useAuthStore } from "../../store/authStore"
 import { applicationService } from "../../lib/supabase"
-import type { ApplicationStatus } from "../../types"
+import ApplicationSuccessModal from "../../components/jobs/ApplicationSuccessModal"
+import { emailService } from "../../services/emailService"
+import type { Application, ApplicationStatus } from "../../types"
 import toast from "react-hot-toast"
 
 export default function ApplicationTracker() {
@@ -31,6 +34,7 @@ export default function ApplicationTracker() {
   const [filterSource, setFilterSource] = useState<"all" | "easy" | "external">("all")
   const [filterStatus, setFilterStatus] = useState<string>("all")
   const [withdrawingId, setWithdrawingId] = useState<string | null>(null)
+  const [previewApp, setPreviewApp] = useState<Application | null>(null)
 
   // Filtered applications
   const applications = useMemo(() => {
@@ -258,6 +262,16 @@ export default function ApplicationTracker() {
                       </p>
                     </div>
 
+                    {/* View Confirmation Email / Details */}
+                    <button
+                      type="button"
+                      onClick={() => setPreviewApp(app)}
+                      className="p-2 rounded-xl text-emerald-500 hover:bg-emerald-500/10 border border-emerald-500/20 transition-colors"
+                      title="View Confirmation Email & Company Details"
+                    >
+                      <Mail size={15} />
+                    </button>
+
                     {/* Withdraw button for in-app applications that aren't already closed */}
                     {app.source !== "external" && app.status !== "Withdrawn" && app.status !== "Rejected" && (
                       <Button
@@ -277,6 +291,41 @@ export default function ApplicationTracker() {
           )}
         </div>
       </div>
+
+      {/* Confirmation & Email Preview Modal */}
+      {previewApp && (
+        <ApplicationSuccessModal
+          isOpen={Boolean(previewApp)}
+          onClose={() => setPreviewApp(null)}
+          job={previewApp.job}
+          user={user}
+          emailRecord={{
+            id: "email-" + previewApp.id,
+            to: user?.email || previewApp.applicant?.email || "candidate@hirehub.app",
+            subject: `Application Submitted Successfully: ${previewApp.job?.title} at ${previewApp.job?.company?.name}`,
+            timestamp: previewApp.appliedAt,
+            status: "delivered",
+            companyName: previewApp.job?.company?.name || "Company",
+            companyLogo: previewApp.job?.company?.logo,
+            companyLocation: previewApp.job?.company?.location || previewApp.job?.location,
+            companyWebsite: previewApp.job?.company?.website,
+            jobTitle: previewApp.job?.title || "Role",
+            jobType: previewApp.job?.type || "Full-time",
+            jobLocation: previewApp.job?.location || "Remote",
+            salary: previewApp.job?.salaryMin && previewApp.job?.salaryMax
+              ? `${previewApp.job.currency || "$"}${previewApp.job.salaryMin.toLocaleString()} - ${previewApp.job.currency || "$"}${previewApp.job.salaryMax.toLocaleString()}`
+              : "Market Standard",
+            applicationId: previewApp.id,
+            applicationStatus: previewApp.status,
+            htmlPreview: emailService.generateApplicationEmailHtml({
+              applicant: user || previewApp.applicant,
+              job: previewApp.job,
+              applicationId: previewApp.id,
+              appliedDate: previewApp.appliedAt,
+            }),
+          }}
+        />
+      )}
     </div>
   )
 }

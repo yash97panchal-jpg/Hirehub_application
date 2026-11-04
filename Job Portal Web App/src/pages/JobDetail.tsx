@@ -32,8 +32,10 @@ import { useSavedJobsStore } from "../store/savedJobsStore"
 import { externalApplyService } from "../lib/supabase"
 import EasyApplyModal from "../components/jobs/EasyApplyModal"
 import ExternalApplyPromptModal from "../components/jobs/ExternalApplyPromptModal"
+import ApplicationSuccessModal from "../components/jobs/ApplicationSuccessModal"
 import ShareJobModal from "../components/jobs/ShareJobModal"
 import ReportJobModal from "../components/jobs/ReportJobModal"
+import { emailService, type SentEmailRecord } from "../services/emailService"
 import { Browser } from "@capacitor/browser"
 import toast from "react-hot-toast"
 
@@ -48,6 +50,8 @@ export default function JobDetail() {
   const [isShareOpen, setIsShareOpen] = useState(false)
   const [isReportOpen, setIsReportOpen] = useState(false)
   const [isEasyApplyOpen, setIsEasyApplyOpen] = useState(false)
+  const [dispatchedEmail, setDispatchedEmail] = useState<SentEmailRecord | null>(null)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
 
   // External Apply Prompt tracking
   const [pendingExternalClickId, setPendingExternalClickId] = useState<string | null>(null)
@@ -135,21 +139,34 @@ export default function JobDetail() {
     }
 
     if (user && job) {
-      addApplication({
+      const newApp = {
         id: "ext-" + Date.now(),
         job,
         applicant: user,
-        status: "Applied",
+        status: "Applied" as const,
         resumeUrl: "External Apply Submission",
-        source: "external",
+        source: "external" as const,
         appliedAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-      })
+      }
+      addApplication(newApp)
+
+      try {
+        const emailRec = await emailService.sendApplicationConfirmation({
+          applicant: user,
+          job,
+          applicationId: newApp.id,
+        })
+        setDispatchedEmail(emailRec)
+      } catch (err) {
+        console.warn("Could not dispatch confirmation email:", err)
+      }
     }
 
     setShowExternalPrompt(false)
     setPendingExternalClickId(null)
-    toast.success("Great! Recorded in your Application Tracker as Applied.")
+    setShowSuccessModal(true)
+    toast.success("Application recorded & confirmation email dispatched!")
   }
 
   const similarJobs = storeJobs
@@ -607,8 +624,10 @@ export default function JobDetail() {
         user={user}
         isOpen={isEasyApplyOpen}
         onClose={() => setIsEasyApplyOpen(false)}
-        onSuccess={() => {
-          if (user) {
+        onSuccess={(newApp, emailRecord) => {
+          if (newApp) {
+            addApplication(newApp)
+          } else if (user) {
             addApplication({
               id: "app-" + Date.now(),
               job,
@@ -620,6 +639,10 @@ export default function JobDetail() {
               updatedAt: new Date().toISOString(),
             })
           }
+          if (emailRecord) {
+            setDispatchedEmail(emailRecord)
+          }
+          setShowSuccessModal(true)
         }}
       />
 
@@ -639,6 +662,15 @@ export default function JobDetail() {
           setShowExternalPrompt(false)
           setPendingExternalClickId(null)
         }}
+      />
+
+      {/* Application Success & Email Receipt Modal */}
+      <ApplicationSuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        job={job}
+        user={user}
+        emailRecord={dispatchedEmail}
       />
 
       {/* Share & Report Modals */}
