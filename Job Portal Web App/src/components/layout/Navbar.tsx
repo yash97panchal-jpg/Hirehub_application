@@ -65,6 +65,7 @@ export default function Navbar() {
 
   const { conversations } = useMessageStore()
   const unreadMsgCount = conversations.reduce((acc, c) => acc + (c.unreadCount || 0), 0)
+  const unreadCount = mockNotifications.filter((n) => !n.isRead).length
 
   // Keyboard shortcut listener: Press "/" to focus or navigate to Jobs Search
   useEffect(() => {

@@ -33,6 +33,8 @@ export interface User {
   location?: string
   about?: string
   phone?: string
+  isPhoneVerified?: boolean
+  isEmailVerified?: boolean
   linkedin?: string
   skills: string[]
   experience?: Experience[]

@@ -10,6 +10,7 @@ import {
   MapPin,
   Briefcase,
   FileText,
+  CheckCircle2,
 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import Button from "../components/ui/Button"
@@ -207,14 +208,24 @@ export default function Profile() {
                     setFormData({ ...formData, location: e.target.value })
                   }
                 />
-                <Input
-                  label="Phone"
-                  placeholder="e.g. +1 234 567 890"
-                  value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
-                />
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-semibold text-[var(--foreground)]">Phone Number</label>
+                    {user?.isPhoneVerified && (
+                      <span className="text-[11px] text-green-500 font-bold flex items-center gap-1">
+                        <CheckCircle2 size={12} /> Verified
+                      </span>
+                    )}
+                  </div>
+                  <input
+                    className="w-full px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] text-sm"
+                    placeholder="e.g. +91 98765 43210"
+                    value={formData.phone}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phone: e.target.value })
+                    }
+                  />
+                </div>
                 <Input
                   label="LinkedIn Profile"
                   placeholder="e.g. linkedin.com/in/username"

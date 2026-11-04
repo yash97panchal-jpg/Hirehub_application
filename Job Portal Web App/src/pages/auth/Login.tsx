@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import {
   Eye,
   EyeOff,
@@ -13,6 +13,11 @@ import {
   Lock,
   KeyRound,
   AlertTriangle,
+  Smartphone,
+  Mail,
+  CheckCircle2,
+  RefreshCw,
+  Phone,
 } from "lucide-react"
 import { ParticleTextEffect } from "../../components/ui/particle-text-effect"
 import Button from "../../components/ui/Button"
@@ -24,32 +29,57 @@ import toast from "react-hot-toast"
 // -----------------------------------------------------------------------------
 // HIGH-SECURITY ADMINISTRATOR ACCESS (Zero-Knowledge Stealth System)
 // -----------------------------------------------------------------------------
-// Primary Administrator (Owner account requested by user)
 const PRIMARY_ADMIN_EMAIL = "yrmp97p@gmail.com"
 const PRIMARY_ADMIN_PASSWORD = "yrmp@97"
 
-// Emergency Backup Administrator (In case primary is inaccessible)
 const BACKUP_ADMIN_EMAIL = "yash97panchal@gmail.com"
 const BACKUP_ADMIN_PASSWORD = "yrmp@backup97"
 
-// Master 2FA Security Passcode & Rescue Key
-// Required 2nd Factor — Even if an intruder guesses the email and password,
-// they CANNOT access the admin panel without this private 6-digit Master Passcode!
 const MASTER_ADMIN_2FA_PIN = "979726"
 const MASTER_ADMIN_RESCUE_KEY = "RESCUE-9797-2026"
+
+const COUNTRY_CODES = [
+  { code: "+91", label: "India (+91)", flag: "🇮🇳" },
+  { code: "+1", label: "USA / Canada (+1)", flag: "🇺🇸" },
+  { code: "+44", label: "UK (+44)", flag: "🇬🇧" },
+  { code: "+971", label: "UAE (+971)", flag: "🇦🇪" },
+  { code: "+61", label: "Australia (+61)", flag: "🇦🇺" },
+  { code: "+65", label: "Singapore (+65)", flag: "🇸🇬" },
+  { code: "+49", label: "Germany (+49)", flag: "🇩🇪" },
+  { code: "+33", label: "France (+33)", flag: "🇫🇷" },
+]
 
 export default function Login() {
   const navigate = useNavigate()
   const { user, isAuthenticated, login, logout } = useAuthStore()
 
-  const [email, setEmail] = useState("")
+  // Login Mode: "password" or "otp"
+  const [authMode, setAuthMode] = useState<"password" | "otp">("password")
+  const [activeRole, setActiveRole] = useState<"candidate" | "recruiter">("candidate")
+
+  // Password Login States
+  const [emailOrPhone, setEmailOrPhone] = useState("")
   const [password, setPassword] = useState("")
   const [showPw, setShowPw] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [formError, setFormError] = useState("")
 
-  // Role switcher: Candidate vs Recruiter
-  const [activeRole, setActiveRole] = useState<"candidate" | "recruiter">("candidate")
+  // OTP Login States
+  const [otpMethod, setOtpMethod] = useState<"phone" | "email">("phone")
+  const [countryCode, setCountryCode] = useState("+91")
+  const [phoneNumber, setPhoneNumber] = useState("")
+  const [otpEmail, setOtpEmail] = useState("")
+
+  // OTP Verification Modal
+  const [showOtpModal, setShowOtpModal] = useState(false)
+  const [otpTarget, setOtpTarget] = useState("")
+  const [otpTargetType, setOtpTargetType] = useState<"phone" | "email">("phone")
+  const [generatedOtp, setGeneratedOtp] = useState("")
+  const [enteredOtp, setEnteredOtp] = useState("")
+  const [otpError, setOtpError] = useState("")
+  const [otpTimer, setOtpTimer] = useState(30)
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false)
+  const timerRef = useRef<any>(null)
 
   // 2FA Admin Challenge Modal State
   const [showAdmin2FAModal, setShowAdmin2FAModal] = useState(false)
@@ -78,7 +108,7 @@ export default function Login() {
       const attempts = parseInt(localStorage.getItem("hirehub_admin_failed_attempts") || "0", 10) + 1
       localStorage.setItem("hirehub_admin_failed_attempts", attempts.toString())
       if (attempts >= 3) {
-        const lockoutTime = Date.now() + 15 * 60 * 1000 // 15-minute terminal lock
+        const lockoutTime = Date.now() + 15 * 60 * 1000
         localStorage.setItem("hirehub_admin_lockout_until", lockoutTime.toString())
       }
       return attempts
@@ -109,11 +139,109 @@ export default function Login() {
     }
   }, [isAuthenticated, user, navigate])
 
+  // Timer countdown for OTP
+  useEffect(() => {
+    if (showOtpModal && otpTimer > 0) {
+      timerRef.current = setTimeout(() => {
+        setOtpTimer((prev) => prev - 1)
+      }, 1000)
+    }
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current)
+    }
+  }, [showOtpModal, otpTimer])
+
+  // Generate and send OTP
+  const triggerOtpSend = (type: "phone" | "email", target: string) => {
+    const code = Math.floor(100000 + Math.random() * 900000).toString()
+    setGeneratedOtp(code)
+    setEnteredOtp("")
+    setOtpError("")
+    setOtpTimer(30)
+    setOtpTarget(target)
+    setOtpTargetType(type)
+    setShowOtpModal(true)
+    toast.success(`Verification code dispatched to ${target}!`)
+  }
+
+  // Handle Send OTP click from OTP Tab
+  const handleRequestOtp = (e: React.FormEvent) => {
+    e.preventDefault()
+    setFormError("")
+
+    if (otpMethod === "phone") {
+      const cleanPhone = phoneNumber.trim()
+      if (!cleanPhone || cleanPhone.length < 7) {
+        setFormError("Please enter a valid phone number (minimum 7 digits).")
+        return
+      }
+      const fullPhone = `${countryCode} ${cleanPhone}`
+      triggerOtpSend("phone", fullPhone)
+    } else {
+      const cleanEmail = otpEmail.trim().toLowerCase()
+      if (!cleanEmail || !cleanEmail.includes("@")) {
+        setFormError("Please enter a valid email address.")
+        return
+      }
+      triggerOtpSend("email", cleanEmail)
+    }
+  }
+
+  // Verify OTP submission
+  const handleVerifyOtp = (e: React.FormEvent) => {
+    e.preventDefault()
+    setOtpError("")
+    setIsVerifyingOtp(true)
+
+    setTimeout(() => {
+      const entered = enteredOtp.trim()
+      if (entered === generatedOtp || entered === "123456" || entered === "1234") {
+        toast.success("Verification successful! Logging in...")
+        setShowOtpModal(false)
+
+        const isPhone = otpTargetType === "phone"
+        login(
+          {
+            id: (isPhone ? "phone-" : "email-") + Date.now(),
+            name: isPhone ? `User (${otpTarget.slice(-4)})` : otpTarget.split("@")[0],
+            email: isPhone ? `${otpTarget.replace(/\D/g, "")}@hirehub.phone` : otpTarget,
+            phone: isPhone ? otpTarget : undefined,
+            role: activeRole === "recruiter" ? "recruiter" : "job_seeker",
+            skills: ["Communication", "Professional Ethics"],
+            profileCompletion: 85,
+            isVerified: true,
+            isEmailVerified: !isPhone,
+            isPhoneVerified: isPhone,
+            createdAt: new Date().toISOString(),
+          },
+          "token-verified-" + Date.now()
+        )
+        navigate(activeRole === "recruiter" ? "/recruiter" : "/dashboard")
+      } else {
+        setOtpError("Incorrect verification code. Please check and try again.")
+      }
+      setIsVerifyingOtp(false)
+    }, 400)
+  }
+
+  // Resend OTP handler
+  const handleResendOtp = () => {
+    if (otpTimer > 0) return
+    const code = Math.floor(100000 + Math.random() * 900000).toString()
+    setGeneratedOtp(code)
+    setEnteredOtp("")
+    setOtpError("")
+    setOtpTimer(30)
+    toast.success(`New verification code sent to ${otpTarget}!`)
+  }
+
   // Switching role tabs
   const handleRoleChange = (role: "candidate" | "recruiter") => {
     setActiveRole(role)
-    setEmail("")
+    setEmailOrPhone("")
     setPassword("")
+    setPhoneNumber("")
+    setOtpEmail("")
     setFormError("")
   }
 
@@ -151,6 +279,8 @@ export default function Login() {
             skills: ["Platform Security", "System Oversight", "Root Access"],
             profileCompletion: 100,
             isVerified: true,
+            isEmailVerified: true,
+            isPhoneVerified: true,
             createdAt: "2026-01-01",
           },
           "master-admin-token-" + Date.now(),
@@ -175,20 +305,20 @@ export default function Login() {
     }, 450)
   }
 
-  // Standard form submission
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Standard Password Form submission
+  const handleSubmitPassword = async (e: React.FormEvent) => {
     e.preventDefault()
     setFormError("")
 
-    // Check anti-brute force lockout
     const lockoutMsg = checkLockout()
     if (lockoutMsg) {
       setFormError(lockoutMsg)
       return
     }
 
-    if (!email || !email.includes("@")) {
-      setFormError("Please enter a valid email address.")
+    const cleanInput = emailOrPhone.trim()
+    if (!cleanInput) {
+      setFormError("Please enter your email address or mobile phone number.")
       return
     }
 
@@ -200,7 +330,7 @@ export default function Login() {
     setIsLoading(true)
     await new Promise((r) => setTimeout(r, 400))
 
-    const normalizedEmail = email.trim().toLowerCase()
+    const normalizedEmail = cleanInput.toLowerCase()
     const isPrimary = normalizedEmail === PRIMARY_ADMIN_EMAIL.toLowerCase()
     const isBackup = normalizedEmail === BACKUP_ADMIN_EMAIL.toLowerCase()
 
@@ -211,7 +341,6 @@ export default function Login() {
         (isBackup && password === BACKUP_ADMIN_PASSWORD)
 
       if (isPasswordValid) {
-        // Password is correct, but MUST pass secondary 2FA gate!
         setAdminPendingEmail(normalizedEmail)
         setAdmin2FAPin("")
         setAdmin2FAError("")
@@ -219,13 +348,11 @@ export default function Login() {
         setIsLoading(false)
         return
       } else {
-        // Wrong password on an admin email: count against anti-brute force
         const attempts = recordFailedAttempt()
         if (attempts >= 3) {
           setFormError("CRITICAL: Maximum security challenges failed. Terminal locked for 15 minutes.")
           toast.error("Intrusion detected: Terminal locked.")
         } else {
-          // Decoy error message: completely opaque to intruders
           setFormError("Invalid email or password. Unauthorized access attempts are monitored and recorded.")
         }
         setIsLoading(false)
@@ -233,18 +360,24 @@ export default function Login() {
       }
     }
 
+    // Determine if input is phone or email
+    const isPhone = !cleanInput.includes("@") && /^[+0-9\s-]+$/.test(cleanInput)
+
     // 2. RECRUITER MODE
     if (activeRole === "recruiter") {
-      const recruiterName = email.split("@")[0]
+      const recruiterName = isPhone ? `Recruiter (${cleanInput.slice(-4)})` : cleanInput.split("@")[0]
       login(
         {
           id: "recruiter-" + Date.now(),
           name: recruiterName,
-          email,
+          email: isPhone ? `${cleanInput.replace(/\D/g, "")}@hirehub.recruiter` : cleanInput,
+          phone: isPhone ? cleanInput : undefined,
           role: "recruiter",
           skills: ["Talent Sourcing", "Interviewing"],
           profileCompletion: 90,
           isVerified: true,
+          isEmailVerified: !isPhone,
+          isPhoneVerified: isPhone,
           createdAt: new Date().toISOString(),
         },
         "mock-token-recruiter",
@@ -256,21 +389,24 @@ export default function Login() {
     }
 
     // 3. CANDIDATE MODE
-    const candidateName = email.split("@")[0]
+    const candidateName = isPhone ? `Candidate (${cleanInput.slice(-4)})` : cleanInput.split("@")[0]
     login(
       {
         id: "candidate-" + Date.now(),
         name: candidateName,
-        email,
+        email: isPhone ? `${cleanInput.replace(/\D/g, "")}@hirehub.phone` : cleanInput,
+        phone: isPhone ? cleanInput : undefined,
         role: "job_seeker",
-        skills: [],
-        profileCompletion: 20,
+        skills: ["Skill Assessment", "Problem Solving"],
+        profileCompletion: 30,
         isVerified: true,
+        isEmailVerified: !isPhone,
+        isPhoneVerified: isPhone,
         createdAt: new Date().toISOString(),
       },
       "mock-token-candidate",
     )
-    toast.success("Welcome back!")
+    toast.success("Welcome back to HireHub!")
     navigate("/dashboard")
     setIsLoading(false)
   }
@@ -302,7 +438,7 @@ export default function Login() {
           transition={{ duration: 0.35 }}
           className="w-full max-w-md my-auto py-2"
         >
-          {/* Active Session Indicator (if already logged in) */}
+          {/* Active Session Indicator */}
           {isAuthenticated && user && (
             <div className="mb-3 p-3 rounded-2xl bg-[var(--primary)]/15 border border-[var(--primary)]/30 text-xs">
               <div className="flex items-center justify-between mb-2">
@@ -348,7 +484,7 @@ export default function Login() {
           </Link>
 
           {/* Role Switcher: Candidate vs Recruiter */}
-          <div className="p-1 rounded-2xl bg-[var(--muted)] border border-[var(--border)] grid grid-cols-2 gap-1 mb-4 shadow-sm">
+          <div className="p-1 rounded-2xl bg-[var(--muted)] border border-[var(--border)] grid grid-cols-2 gap-1 mb-3 shadow-sm">
             <button
               type="button"
               onClick={() => handleRoleChange("candidate")}
@@ -378,78 +514,211 @@ export default function Login() {
             </button>
           </div>
 
+          {/* Auth Method Toggle: Password vs OTP Verification */}
+          <div className="flex border-b border-[var(--border)] mb-4">
+            <button
+              type="button"
+              onClick={() => {
+                setAuthMode("password")
+                setFormError("")
+              }}
+              className={cn(
+                "flex-1 pb-2 text-xs font-bold transition-colors border-b-2",
+                authMode === "password"
+                  ? "border-[var(--primary)] text-[var(--primary)]"
+                  : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+              )}
+            >
+              Password Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setAuthMode("otp")
+                setFormError("")
+              }}
+              className={cn(
+                "flex-1 pb-2 text-xs font-bold transition-colors border-b-2 flex items-center justify-center gap-1.5",
+                authMode === "otp"
+                  ? "border-[var(--primary)] text-[var(--primary)]"
+                  : "border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+              )}
+            >
+              <Smartphone size={13} />
+              Phone / Email OTP Verification
+            </button>
+          </div>
+
           {/* Form Titles */}
-          <div className="mb-4">
-            <h1 className="font-poppins text-2xl font-black text-[var(--foreground)] tracking-tight mb-1">
+          <div className="mb-3">
+            <h1 className="font-poppins text-xl sm:text-2xl font-black text-[var(--foreground)] tracking-tight mb-1">
               {activeRole === "recruiter" ? "Recruiter Sign in" : "Candidate Sign in"}
             </h1>
             <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-              {activeRole === "recruiter"
-                ? "Sign in to publish jobs, review applicants, and source qualified talent."
-                : "Sign in to apply to jobs, track stages, and boost your ATS score."}
+              {authMode === "password"
+                ? "Sign in using your Email or Phone number and password."
+                : "Sign in instantly via one-time verification passcode (OTP)."}
             </p>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <Input
-              label={activeRole === "recruiter" ? "Work / Recruiter Email" : "Email address"}
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              required
-            />
-
-            <div>
+          {/* 1. PASSWORD SIGN IN FORM */}
+          {authMode === "password" && (
+            <form onSubmit={handleSubmitPassword} className="space-y-3">
               <Input
-                label="Password"
-                type={showPw ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password"
+                label={activeRole === "recruiter" ? "Work Email or Phone Number" : "Email or Phone Number"}
+                type="text"
+                value={emailOrPhone}
+                onChange={(e) => setEmailOrPhone(e.target.value)}
+                placeholder="you@example.com or +91 9876543210"
                 required
-                iconRight={
+              />
+
+              <div>
+                <Input
+                  label="Password"
+                  type={showPw ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter password"
+                  required
+                  iconRight={
+                    <button
+                      type="button"
+                      onClick={() => setShowPw((v) => !v)}
+                      className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors p-1"
+                    >
+                      {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                    </button>
+                  }
+                />
+                <div className="flex justify-between items-center mt-1">
                   <button
                     type="button"
-                    onClick={() => setShowPw((v) => !v)}
-                    className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors p-1"
+                    onClick={() => setAuthMode("otp")}
+                    className="text-xs text-[var(--primary)] font-semibold hover:underline"
                   >
-                    {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                    Sign in with OTP instead
                   </button>
-                }
-              />
-              <div className="flex justify-end mt-1">
-                <Link
-                  to="/forgot-password"
-                  className="text-xs text-[var(--primary)] font-semibold hover:underline"
-                >
-                  Forgot password?
-                </Link>
+                  <Link
+                    to="/forgot-password"
+                    className="text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
               </div>
-            </div>
 
-            {formError && (
-              <p className="text-xs text-red-500 font-medium bg-red-50 dark:bg-red-950/30 p-2.5 rounded-xl border border-red-200 dark:border-red-900">
-                {formError}
-              </p>
-            )}
+              {formError && (
+                <p className="text-xs text-red-500 font-medium bg-red-50 dark:bg-red-950/30 p-2.5 rounded-xl border border-red-200 dark:border-red-900">
+                  {formError}
+                </p>
+              )}
 
-            <Button
-              type="submit"
-              variant="primary"
-              size="lg"
-              isLoading={isLoading}
-              className="w-full mt-1.5 font-bold"
-            >
-              {activeRole === "recruiter" ? "Sign in as Recruiter" : "Sign in as Candidate"}{" "}
-              <ArrowRight size={15} />
-            </Button>
-          </form>
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                isLoading={isLoading}
+                className="w-full mt-1.5 font-bold"
+              >
+                {activeRole === "recruiter" ? "Sign in as Recruiter" : "Sign in as Candidate"}{" "}
+                <ArrowRight size={15} />
+              </Button>
+            </form>
+          )}
 
-          {/* Social OAuth & Phone OTP Options */}
-          <div className="mt-5">
-            <div className="relative flex items-center justify-center mb-4">
+          {/* 2. OTP VERIFICATION SIGN IN FORM */}
+          {authMode === "otp" && (
+            <form onSubmit={handleRequestOtp} className="space-y-3">
+              <div className="grid grid-cols-2 gap-2 p-1 bg-[var(--muted)] rounded-xl border border-[var(--border)] text-xs mb-1">
+                <button
+                  type="button"
+                  onClick={() => setOtpMethod("phone")}
+                  className={cn(
+                    "py-1.5 rounded-lg font-semibold flex items-center justify-center gap-1.5 transition-all",
+                    otpMethod === "phone"
+                      ? "bg-[var(--card)] text-[var(--primary)] shadow-sm font-bold"
+                      : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                  )}
+                >
+                  <Phone size={13} /> Mobile Phone
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOtpMethod("email")}
+                  className={cn(
+                    "py-1.5 rounded-lg font-semibold flex items-center justify-center gap-1.5 transition-all",
+                    otpMethod === "email"
+                      ? "bg-[var(--card)] text-[var(--primary)] shadow-sm font-bold"
+                      : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                  )}
+                >
+                  <Mail size={13} /> Email Address
+                </button>
+              </div>
+
+              {otpMethod === "phone" ? (
+                <div>
+                  <label className="block text-xs font-semibold text-[var(--foreground)] mb-1">
+                    Mobile Phone Number
+                  </label>
+                  <div className="flex gap-2">
+                    <select
+                      value={countryCode}
+                      onChange={(e) => setCountryCode(e.target.value)}
+                      aria-label="Country Code"
+                      className="w-28 px-2 py-2 rounded-xl border border-[var(--border)] bg-[var(--card)] text-xs font-medium text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]"
+                    >
+                      {COUNTRY_CODES.map((c) => (
+                        <option key={c.code} value={c.code}>
+                          {c.flag} {c.code}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      type="tel"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value.replace(/[^0-9\s]/g, ""))}
+                      placeholder="e.g. 98765 43210"
+                      required
+                      className="flex-1 px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--card)] text-sm text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]"
+                    />
+                  </div>
+                  <p className="text-[11px] text-[var(--muted-foreground)] mt-1">
+                    A 6-digit verification code (OTP) will be sent via SMS.
+                  </p>
+                </div>
+              ) : (
+                <Input
+                  label="Email address for Verification"
+                  type="email"
+                  value={otpEmail}
+                  onChange={(e) => setOtpEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  required
+                />
+              )}
+
+              {formError && (
+                <p className="text-xs text-red-500 font-medium bg-red-50 dark:bg-red-950/30 p-2.5 rounded-xl border border-red-200 dark:border-red-900">
+                  {formError}
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                className="w-full mt-2 font-bold"
+              >
+                Send Verification OTP <ArrowRight size={15} />
+              </Button>
+            </form>
+          )}
+
+          {/* Social OAuth & Quick OTP Button */}
+          <div className="mt-4">
+            <div className="relative flex items-center justify-center mb-3">
               <div className="border-t border-[var(--border)] w-full" />
               <span className="bg-[var(--card)] px-3 text-[11px] font-semibold text-[var(--muted-foreground)] uppercase tracking-wider absolute">
                 Or continue with
@@ -470,13 +739,15 @@ export default function Login() {
                       skills: ["React", "TypeScript"],
                       profileCompletion: 90,
                       isVerified: true,
+                      isEmailVerified: true,
+                      isPhoneVerified: false,
                       createdAt: new Date().toISOString(),
                     },
                     "token-google-oauth"
                   )
                   navigate(activeRole === "recruiter" ? "/recruiter" : "/dashboard")
                 }}
-                className="py-2.5 px-3 rounded-xl border border-[var(--border)] bg-[var(--muted)]/40 hover:bg-[var(--muted)] text-xs font-semibold text-[var(--foreground)] flex items-center justify-center gap-1.5 transition-colors"
+                className="py-2 px-3 rounded-xl border border-[var(--border)] bg-[var(--muted)]/40 hover:bg-[var(--muted)] text-xs font-semibold text-[var(--foreground)] flex items-center justify-center gap-1.5 transition-colors"
               >
                 <span>🌐</span> Google
               </button>
@@ -494,13 +765,15 @@ export default function Login() {
                       skills: ["Go", "Node.js", "Docker"],
                       profileCompletion: 85,
                       isVerified: true,
+                      isEmailVerified: true,
+                      isPhoneVerified: false,
                       createdAt: new Date().toISOString(),
                     },
                     "token-github-oauth"
                   )
                   navigate(activeRole === "recruiter" ? "/recruiter" : "/dashboard")
                 }}
-                className="py-2.5 px-3 rounded-xl border border-[var(--border)] bg-[var(--muted)]/40 hover:bg-[var(--muted)] text-xs font-semibold text-[var(--foreground)] flex items-center justify-center gap-1.5 transition-colors"
+                className="py-2 px-3 rounded-xl border border-[var(--border)] bg-[var(--muted)]/40 hover:bg-[var(--muted)] text-xs font-semibold text-[var(--foreground)] flex items-center justify-center gap-1.5 transition-colors"
               >
                 <span>🐙</span> GitHub
               </button>
@@ -518,50 +791,33 @@ export default function Login() {
                       skills: ["Recruitment", "Talent Sourcing"],
                       profileCompletion: 95,
                       isVerified: true,
+                      isEmailVerified: true,
+                      isPhoneVerified: false,
                       createdAt: new Date().toISOString(),
                     },
                     "token-linkedin-oauth"
                   )
                   navigate(activeRole === "recruiter" ? "/recruiter" : "/dashboard")
                 }}
-                className="py-2.5 px-3 rounded-xl border border-[var(--border)] bg-[var(--muted)]/40 hover:bg-[var(--muted)] text-xs font-semibold text-[var(--foreground)] flex items-center justify-center gap-1.5 transition-colors"
+                className="py-2 px-3 rounded-xl border border-[var(--border)] bg-[var(--muted)]/40 hover:bg-[var(--muted)] text-xs font-semibold text-[var(--foreground)] flex items-center justify-center gap-1.5 transition-colors"
               >
                 <span>💼</span> LinkedIn
               </button>
             </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                const phone = prompt("Enter mobile phone number with country code (e.g. +91 98765 43210):")
-                if (phone) {
-                  const otp = prompt(`Enter 4-digit verification code sent to ${phone} (Demo OTP: 1234):`)
-                  if (otp === "1234" || otp?.length === 4) {
-                    toast.success("Phone verified successfully!")
-                    login(
-                      {
-                        id: "phone-" + Date.now(),
-                        name: "Verified User",
-                        email: `${phone.replace(/\D/g, "")}@hirehub.phone`,
-                        role: activeRole === "recruiter" ? "recruiter" : "job_seeker",
-                        phone,
-                        skills: ["Engineering"],
-                        profileCompletion: 75,
-                        isVerified: true,
-                        createdAt: new Date().toISOString(),
-                      },
-                      "token-phone-auth"
-                    )
-                    navigate(activeRole === "recruiter" ? "/recruiter" : "/dashboard")
-                  } else {
-                    toast.error("Invalid OTP code. Please try again.")
-                  }
-                }
-              }}
-              className="mt-2.5 w-full py-2 px-3 rounded-xl border border-[var(--border)] text-xs font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)]/60 transition-colors flex items-center justify-center gap-1.5"
-            >
-              <span>📱</span> Sign in with Phone Number & OTP (India / Global)
-            </button>
+            {authMode !== "otp" && (
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode("otp")
+                  setOtpMethod("phone")
+                }}
+                className="mt-2.5 w-full py-2 px-3 rounded-xl border border-[var(--border)] text-xs font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)]/60 transition-colors flex items-center justify-center gap-1.5"
+              >
+                <Smartphone size={14} className="text-[var(--primary)]" />
+                Sign in with Phone Number & OTP Verification
+              </button>
+            )}
           </div>
 
           {/* Don't have an account */}
@@ -574,7 +830,123 @@ export default function Login() {
         </motion.div>
       </div>
 
-      {/* 2FA Master Admin Security Modal (Multi-factor root verification) */}
+      {/* ----------------------------------------------------------------------- */}
+      {/* PHONE / EMAIL OTP VERIFICATION MODAL                                    */}
+      {/* ----------------------------------------------------------------------- */}
+      <AnimatePresence>
+        {showOtpModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.94, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.94, y: 10 }}
+              className="w-full max-w-md bg-[var(--card)] border border-[var(--border)] rounded-3xl p-6 shadow-2xl relative overflow-hidden"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-[var(--primary)]/10 border border-[var(--primary)]/20 flex items-center justify-center text-[var(--primary)] shrink-0">
+                  {otpTargetType === "phone" ? <Smartphone size={24} /> : <Mail size={24} />}
+                </div>
+                <div>
+                  <h3 className="font-poppins text-lg font-black text-[var(--foreground)] tracking-tight">
+                    Verify Your {otpTargetType === "phone" ? "Phone Number" : "Email"}
+                  </h3>
+                  <p className="text-xs text-[var(--muted-foreground)]">
+                    Code sent to <span className="font-semibold text-[var(--foreground)]">{otpTarget}</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Demo Code Helper */}
+              <div className="p-3 rounded-2xl bg-[var(--primary)]/10 border border-[var(--primary)]/25 mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-[var(--primary)] shrink-0" />
+                  <span className="text-xs text-[var(--foreground)]">
+                    Demo Code: <strong className="font-mono text-sm tracking-wider text-[var(--primary)]">{generatedOtp}</strong>
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEnteredOtp(generatedOtp)}
+                  className="text-xs font-bold text-[var(--primary)] underline hover:opacity-80"
+                >
+                  Auto-fill
+                </button>
+              </div>
+
+              <form onSubmit={handleVerifyOtp} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[var(--foreground)] mb-1.5 text-center">
+                    Enter 6-Digit Verification Code
+                  </label>
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={enteredOtp}
+                    onChange={(e) => setEnteredOtp(e.target.value.replace(/\D/g, ""))}
+                    placeholder="● ● ● ● ● ●"
+                    autoFocus
+                    required
+                    className="w-full px-4 py-3 rounded-xl bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] font-mono text-center text-2xl tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all font-black"
+                  />
+                </div>
+
+                {otpError && (
+                  <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-500 font-semibold flex items-center gap-2">
+                    <AlertTriangle size={15} className="shrink-0" />
+                    <span>{otpError}</span>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[var(--muted-foreground)]">
+                    {otpTimer > 0 ? `Resend OTP in ${otpTimer}s` : "Didn't receive code?"}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={otpTimer > 0}
+                    onClick={handleResendOtp}
+                    className={cn(
+                      "font-semibold flex items-center gap-1",
+                      otpTimer > 0
+                        ? "text-[var(--muted-foreground)] cursor-not-allowed"
+                        : "text-[var(--primary)] hover:underline cursor-pointer"
+                    )}
+                  >
+                    <RefreshCw size={12} /> Resend OTP
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setShowOtpModal(false)
+                      setEnteredOtp("")
+                      setOtpError("")
+                    }}
+                    className="w-full"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    isLoading={isVerifyingOtp}
+                    className="w-full font-bold"
+                  >
+                    Verify & Sign In
+                  </Button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ----------------------------------------------------------------------- */}
+      {/* 2FA MASTER ADMIN SECURITY MODAL                                         */}
+      {/* ----------------------------------------------------------------------- */}
       {showAdmin2FAModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
           <motion.div
