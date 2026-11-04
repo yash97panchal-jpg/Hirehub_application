@@ -31,16 +31,27 @@ export default function MobileBottomNav() {
     },
     {
       label: isRecruiter ? "Applicants" : "Tracker",
-      to: isRecruiter ? "/dashboard/applicants" : "/tracker",
+      to: isRecruiter ? "/recruiter/applicants" : "/tracker",
       icon: Target,
-      isActive: location.pathname === "/tracker" || location.pathname === "/dashboard/applicants",
+      isActive:
+        location.pathname === "/tracker" ||
+        location.pathname === "/applications" ||
+        location.pathname === "/dashboard/applications" ||
+        location.pathname === "/dashboard/tracker" ||
+        location.pathname === "/recruiter/applicants" ||
+        location.pathname === "/dashboard/applicants",
       badge: applications.length > 0 ? applications.length : null,
     },
     {
       label: isRecruiter ? "Post Job" : "Saved",
-      to: isRecruiter ? "/dashboard/post-job" : "/saved-jobs",
+      to: isRecruiter ? "/recruiter/post-job" : "/saved",
       icon: Bookmark,
-      isActive: location.pathname === "/saved-jobs" || location.pathname === "/dashboard/post-job",
+      isActive:
+        location.pathname === "/saved" ||
+        location.pathname === "/saved-jobs" ||
+        location.pathname === "/dashboard/saved" ||
+        location.pathname === "/recruiter/post-job" ||
+        location.pathname === "/dashboard/post-job",
       badge: !isRecruiter && savedJobIds.length > 0 ? savedJobIds.length : null,
     },
     {
@@ -53,13 +64,14 @@ export default function MobileBottomNav() {
     {
       label: isAuthenticated ? (isAdmin ? "Admin" : isRecruiter ? "Manage" : "Profile") : "Sign In",
       to: isAuthenticated
-        ? (isAdmin ? "/admin" : isRecruiter ? "/dashboard/recruiter" : "/profile")
+        ? (isAdmin ? "/admin" : isRecruiter ? "/recruiter" : "/profile")
         : "/login",
       icon: isAuthenticated && (isAdmin || isRecruiter) ? LayoutDashboard : User,
       isActive:
         location.pathname === "/profile" ||
         location.pathname === "/dashboard" ||
         location.pathname.startsWith("/admin") ||
+        location.pathname.startsWith("/recruiter") ||
         location.pathname.startsWith("/dashboard/recruiter"),
       badge: null,
     },

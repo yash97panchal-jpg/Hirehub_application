@@ -27,6 +27,7 @@ import {
   Bookmark,
   MessageSquare,
   Award,
+  Target,
 } from "lucide-react"
 import ThemeToggle from "../ui/ThemeToggle"
 import Button from "../ui/Button"
@@ -274,8 +275,10 @@ export default function Navbar() {
           )}
 
           {/* Right Actions */}
-          <div className="flex items-center gap-2">
-            <LanguageSwitcher />
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="hidden sm:block">
+              <LanguageSwitcher />
+            </div>
             <ThemeToggle />
 
             {isAuthenticated && user ? (
@@ -289,11 +292,11 @@ export default function Navbar() {
                   <Search size={18} />
                 </button>
 
-                {/* Messages Hub */}
+                {/* Messages Hub (Desktop/Tablet; on phone it is in MobileBottomNav) */}
                 <Link
                   to="/messages"
                   title="Live Messages & Interviews"
-                  className="relative w-9 h-9 flex items-center justify-center rounded-lg text-[var(--muted-foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
+                  className="hidden sm:flex relative w-9 h-9 items-center justify-center rounded-lg text-[var(--muted-foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
                 >
                   <MessageSquare size={18} />
                   {unreadMsgCount > 0 && (
@@ -306,6 +309,7 @@ export default function Navbar() {
                   <button
                     onClick={() => setNotifOpen((v) => !v)}
                     className="relative w-9 h-9 flex items-center justify-center rounded-lg text-[var(--muted-foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
+                    aria-label="Notifications"
                   >
                     <Bell size={18} />
                     {unreadCount > 0 && (
@@ -319,7 +323,7 @@ export default function Navbar() {
                         initial="hidden"
                         animate="visible"
                         exit="exit"
-                        className="absolute right-0 top-full mt-2 w-80 rounded-2xl bg-[var(--card)] border border-[var(--border)] shadow-[var(--shadow-elevated)] overflow-hidden"
+                        className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-1.5rem)] rounded-2xl bg-[var(--card)] border border-[var(--border)] shadow-[var(--shadow-elevated)] overflow-hidden z-50"
                       >
                         <div className="p-4 flex items-center justify-between border-b border-[var(--border)]">
                           <h3 className="font-semibold text-sm text-[var(--foreground)]">
@@ -363,22 +367,24 @@ export default function Navbar() {
                   </AnimatePresence>
                 </div>
 
-                {/* Profile */}
+                {/* Profile / Account (Always visible, fits comfortably next to notifications) */}
                 <div ref={profileRef} className="relative">
                   <button
                     onClick={() => setProfileOpen((v) => !v)}
-                    className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-xl hover:bg-[var(--muted)] transition-colors"
+                    className="flex items-center gap-1.5 p-1 sm:pl-1 sm:pr-2.5 sm:py-1 rounded-xl hover:bg-[var(--muted)] transition-colors focus:outline-none"
+                    aria-label="Account menu"
+                    title={user?.name || "Account"}
                   >
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary-deep)] flex items-center justify-center text-white text-sm font-bold shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary-deep)] flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm">
                       {user?.name ? user.name.charAt(0).toUpperCase() : (user?.email?.charAt(0).toUpperCase() || "U")}
                     </div>
-                    <span className="hidden sm:block text-sm font-medium text-[var(--foreground)] max-w-[100px] truncate">
+                    <span className="hidden md:block text-sm font-medium text-[var(--foreground)] max-w-[90px] truncate">
                       {user?.name ? user.name.split(" ")[0] : (user?.email?.split("@")[0] || "User")}
                     </span>
                     <ChevronDown
                       size={14}
                       className={cn(
-                        "text-[var(--muted-foreground)] transition-transform duration-200",
+                        "hidden sm:block text-[var(--muted-foreground)] transition-transform duration-200",
                         profileOpen && "rotate-180",
                       )}
                     />
@@ -390,7 +396,7 @@ export default function Navbar() {
                         initial="hidden"
                         animate="visible"
                         exit="exit"
-                        className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-[var(--card)] border border-[var(--border)] shadow-[var(--shadow-elevated)] overflow-hidden"
+                        className="absolute right-0 top-full mt-2 w-60 max-w-[calc(100vw-1.5rem)] rounded-2xl bg-[var(--card)] border border-[var(--border)] shadow-[var(--shadow-elevated)] overflow-hidden z-50"
                       >
                         <div className="p-3 border-b border-[var(--border)]">
                           <p className="text-sm font-semibold text-[var(--foreground)]">
@@ -409,12 +415,17 @@ export default function Navbar() {
                               to: "/dashboard",
                             },
                             {
+                              label: "Application Tracker",
+                              icon: Target,
+                              to: "/tracker",
+                            },
+                            {
                               label:
                                 savedJobIds.length > 0
                                   ? `Saved Jobs (${savedJobIds.length})`
                                   : "Saved Jobs",
                               icon: Bookmark,
-                              to: "/dashboard/saved",
+                              to: "/saved",
                             },
                             {
                               label: "My Resumes",
@@ -486,20 +497,6 @@ export default function Navbar() {
                 </Button>
               </div>
             ) : null}
-
-            {/* Mobile Log Out button when authenticated */}
-            {isAuthenticated && !isAuthPage && (
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="lg:hidden flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-red-500 bg-red-500/10 hover:bg-red-500/20 text-xs font-bold transition-colors"
-                title="Log Out of HireHub"
-                aria-label="Sign out"
-              >
-                <LogOut size={14} />
-                <span>Log out</span>
-              </button>
-            )}
 
             {/* Mobile menu button (Hidden on auth pages) */}
             {!isAuthPage && (

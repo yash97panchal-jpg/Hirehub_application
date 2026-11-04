@@ -58,6 +58,7 @@ import CookieConsent from "./components/layout/CookieConsent"
 import BackToTop from "./components/layout/BackToTop"
 import CareerHelpBot from "./components/layout/CareerHelpBot"
 import MobileBottomNav from "./components/layout/MobileBottomNav"
+import ScrollToTop from "./components/layout/ScrollToTop"
 
 function PageLoader() {
   return (
@@ -105,6 +106,7 @@ export default function App() {
     <ErrorBoundary>
       {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
       <BrowserRouter>
+        <ScrollToTop />
         <Toaster
           position="top-right"
           toastOptions={{
@@ -250,10 +252,74 @@ export default function App() {
               }
             />
             <Route
+              path="/saved"
+              element={
+                <ProtectedRoute>
+                  <SavedJobs />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/saved-jobs"
+              element={
+                <ProtectedRoute>
+                  <SavedJobs />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/dashboard/applications"
               element={
                 <ProtectedRoute>
                   <ApplicationTracker />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/tracker"
+              element={
+                <ProtectedRoute>
+                  <ApplicationTracker />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/tracker"
+              element={
+                <ProtectedRoute>
+                  <ApplicationTracker />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/applications"
+              element={
+                <ProtectedRoute>
+                  <ApplicationTracker />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/recruiter"
+              element={
+                <ProtectedRoute role="recruiter">
+                  <RecruiterDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/post-job"
+              element={
+                <ProtectedRoute role="recruiter">
+                  <PostJob />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/applicants"
+              element={
+                <ProtectedRoute role="recruiter">
+                  <ApplicantManagement />
                 </ProtectedRoute>
               }
             />

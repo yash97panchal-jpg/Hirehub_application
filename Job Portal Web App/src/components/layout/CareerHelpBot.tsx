@@ -183,11 +183,11 @@ export default function CareerHelpBot() {
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.94 }}
         onClick={() => setIsOpen((prev) => !prev)}
-        className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-gradient-to-tr from-[var(--primary)] via-purple-600 to-indigo-600 text-white shadow-2xl flex items-center justify-center border-2 border-white/20 hover:shadow-[var(--shadow-glow)] transition-all cursor-pointer"
+        className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-40 w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-[var(--primary)] via-purple-600 to-indigo-600 text-white shadow-2xl flex items-center justify-center border-2 border-white/20 hover:shadow-[var(--shadow-glow)] transition-all cursor-pointer"
         aria-label="Open HireHub Career AI Bot"
       >
         <span className="relative">
-          {isOpen ? <X size={26} /> : <Bot size={26} />}
+          {isOpen ? <X size={24} /> : <Bot size={24} />}
           {!isOpen && (
             <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-white animate-pulse" />
           )}
@@ -202,7 +202,7 @@ export default function CareerHelpBot() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", stiffness: 280, damping: 24 }}
-            className="fixed bottom-24 right-4 sm:right-6 z-50 w-[94vw] sm:w-[420px] h-[580px] max-h-[85vh] bg-[var(--card)] border border-[var(--border)] rounded-3xl shadow-2xl flex flex-col overflow-hidden backdrop-blur-xl"
+            className="fixed bottom-20 md:bottom-24 right-2 sm:right-6 z-50 w-[calc(100vw-1rem)] sm:w-[420px] h-[560px] max-h-[82vh] bg-[var(--card)] border border-[var(--border)] rounded-3xl shadow-2xl flex flex-col overflow-hidden backdrop-blur-xl"
           >
             {/* Header */}
             <div className="p-4 bg-gradient-to-r from-purple-900/60 via-indigo-900/60 to-[var(--card)] border-b border-[var(--border)] flex items-center justify-between">

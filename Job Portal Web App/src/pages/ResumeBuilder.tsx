@@ -329,60 +329,64 @@ export default function ResumeBuilder() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
-            {/* Template selector */}
-            <div className="flex items-center gap-1.5 bg-[var(--muted)] p-1 rounded-xl text-xs font-semibold">
-              <span className="text-[10px] text-[var(--muted-foreground)] uppercase px-2">
-                Template:
+          <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 w-full md:w-auto">
+            {/* Template / Format selector - Full width on phone with smooth horizontal scroll so it never spills out of screen */}
+            <div className="w-full sm:w-auto flex items-center gap-1 bg-[var(--muted)] p-1 rounded-xl text-xs font-semibold overflow-x-auto max-w-full">
+              <span className="text-[10px] text-[var(--muted-foreground)] uppercase px-2 shrink-0">
+                Format:
               </span>
-              {[
-                { id: "modern", label: "Modern ATS" },
-                { id: "executive", label: "Executive" },
-                { id: "creative", label: "Creative" },
-                { id: "minimal", label: "Minimal" },
-              ].map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setTemplate(t.id as any)}
-                  className={`px-2.5 py-1 rounded-lg transition-all ${
-                    template === t.id
-                      ? "bg-[var(--card)] text-[var(--primary)] font-bold shadow-sm"
-                      : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
+              <div className="flex items-center gap-1 shrink-0">
+                {[
+                  { id: "modern", label: "Modern ATS" },
+                  { id: "executive", label: "Executive" },
+                  { id: "creative", label: "Creative" },
+                  { id: "minimal", label: "Minimal" },
+                ].map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setTemplate(t.id as any)}
+                    className={`px-2.5 py-1.5 rounded-lg transition-all shrink-0 text-xs font-medium ${
+                      template === t.id
+                        ? "bg-[var(--card)] text-[var(--primary)] font-bold shadow-sm"
+                        : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Quick Actions */}
-            <button
-              type="button"
-              onClick={handleLoadSample}
-              className="px-3 py-1.5 rounded-xl border border-[var(--border)] hover:bg-[var(--muted)] text-xs font-medium text-[var(--foreground)] flex items-center gap-1.5 transition-colors"
-              title="Fill with high-scoring sample engineer resume"
-            >
-              <Sparkles size={13} className="text-[var(--primary)]" />
-              Load Sample
-            </button>
+            <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto justify-between sm:justify-start">
+              <button
+                type="button"
+                onClick={handleLoadSample}
+                className="flex-1 sm:flex-initial px-3 py-1.5 rounded-xl border border-[var(--border)] hover:bg-[var(--muted)] text-xs font-medium text-[var(--foreground)] flex items-center justify-center gap-1.5 transition-colors whitespace-nowrap"
+                title="Fill with high-scoring sample engineer resume"
+              >
+                <Sparkles size={13} className="text-[var(--primary)]" />
+                Sample
+              </button>
 
-            <button
-              type="button"
-              onClick={handleClear}
-              className="p-2 rounded-xl border border-[var(--border)] hover:bg-[var(--muted)] text-xs text-[var(--muted-foreground)] hover:text-red-500 transition-colors"
-              title="Clear all fields"
-            >
-              <RotateCcw size={14} />
-            </button>
+              <button
+                type="button"
+                onClick={handleClear}
+                className="p-2 rounded-xl border border-[var(--border)] hover:bg-[var(--muted)] text-xs text-[var(--muted-foreground)] hover:text-red-500 transition-colors shrink-0"
+                title="Clear all fields"
+              >
+                <RotateCcw size={14} />
+              </button>
 
-            <Button variant="outline" size="sm" onClick={handleSaveDraft}>
-              <Save size={14} className="mr-1.5" /> Save
-            </Button>
+              <Button variant="outline" size="sm" onClick={handleSaveDraft} className="flex-1 sm:flex-initial">
+                <Save size={14} className="mr-1.5" /> Save
+              </Button>
 
-            <Button variant="primary" size="sm" onClick={handlePrint} className="font-bold">
-              <Printer size={14} className="mr-1.5" /> Print / PDF
-            </Button>
+              <Button variant="primary" size="sm" onClick={handlePrint} className="flex-1 sm:flex-initial font-bold">
+                <Printer size={14} className="mr-1.5" /> Print / PDF
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -876,7 +880,7 @@ export default function ResumeBuilder() {
             }`}
           >
             {/* Real Paper Container */}
-            <div className="bg-neutral-800/20 dark:bg-black/30 p-2 sm:p-6 rounded-3xl border border-[var(--border)] shadow-inner">
+            <div className="bg-neutral-800/20 dark:bg-black/30 p-2 sm:p-6 rounded-3xl border border-[var(--border)] shadow-inner overflow-x-auto">
               <div
                 id="printable-resume"
                 className={`bg-white text-slate-900 rounded-xl shadow-2xl p-6 sm:p-10 md:p-12 transition-all w-full min-h-[900px] border border-slate-200 select-text ${
