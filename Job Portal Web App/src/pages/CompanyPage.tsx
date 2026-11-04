@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+import React, { useState, useEffect, useMemo } from "react"
 import { useParams, useNavigate, Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import {
@@ -12,38 +12,74 @@ import {
   Briefcase,
   ExternalLink,
   ChevronRight,
+  BadgeCheck,
+  Map as MapIcon,
+  Compass,
 } from "lucide-react"
 import Button from "../components/ui/Button"
 import Badge from "../components/ui/Badge"
-import { mockCompanies } from "../data/mockData"
-import { useJobStore } from "../store/jobStore"
-import { isLocalhost } from "../utils/env"
-import type { Company } from "../types"
+import { companyService, jobService } from "../lib/supabase"
+import { mockCompanies, mockJobs } from "../data/mockData"
+import type { Company, Job } from "../types"
 import toast from "react-hot-toast"
 
 export default function CompanyPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { jobs: storeJobs } = useJobStore()
+  const [company, setCompany] = useState<Company | null>(null)
+  const [companyJobs, setCompanyJobs] = useState<Job[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [isFollowing, setIsFollowing] = useState(false)
+  const [showMap, setShowMap] = useState(true)
 
-  // On localhost show mock companies. On live server, derive from real store jobs.
-  const allCompanies = useMemo<Company[]>(() => {
-    if (isLocalhost()) return mockCompanies
-    const map = new Map<string, Company>()
-    storeJobs.forEach((j) => {
-      if (j.company && j.company.id && !map.has(j.company.id)) {
-        map.set(j.company.id, j.company)
+  useEffect(() => {
+    async function loadCompany() {
+      if (!id) return
+      setIsLoading(true)
+      try {
+        const found = await companyService.getCompanyBySlug(id)
+        if (found) {
+          setCompany(found)
+          // Fetch open jobs for this company
+          const allJobs = await jobService.getJobs()
+          const matched = allJobs.filter(
+            (j) =>
+              j.company?.id === found.id ||
+              j.company?.slug === found.slug ||
+              j.company?.name.toLowerCase() === found.name.toLowerCase()
+          )
+          setCompanyJobs(matched)
+        } else {
+          // Fallback to mock search
+          const fallback = mockCompanies.find(
+            (c) =>
+              c.id === id ||
+              c.slug === id ||
+              c.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") === id.toLowerCase()
+          )
+          if (fallback) {
+            setCompany(fallback)
+            setCompanyJobs(
+              mockJobs.filter((j) => j.company.id === fallback.id || j.company.name === fallback.name)
+            )
+          }
+        }
+      } catch (err) {
+        console.error("Error loading company:", err)
+      } finally {
+        setIsLoading(false)
       }
-    })
-    return Array.from(map.values())
-  }, [storeJobs])
+    }
+    loadCompany()
+  }, [id])
 
-  // Find company by ID or name
-  const company =
-    allCompanies.find((c) => c.id === id) ||
-    allCompanies.find((c) => c.name.toLowerCase().includes(id?.toLowerCase() || "")) ||
-    (allCompanies.length > 0 ? allCompanies[0] : null)
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[var(--background)] pt-32 pb-16 flex items-center justify-center">
+        <div className="w-10 h-10 border-3 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
 
   if (!company) {
     return (
@@ -52,20 +88,15 @@ export default function CompanyPage() {
           <Building size={44} className="mx-auto text-[var(--muted-foreground)] mb-3 opacity-50" />
           <h2 className="text-xl font-bold text-[var(--foreground)]">Company Not Found</h2>
           <p className="text-sm text-[var(--muted-foreground)] mt-2">
-            No company profile exists with this identifier yet.
+            No verified company profile exists with the identifier "{id}".
           </p>
           <Button variant="primary" className="mt-5 w-full" onClick={() => navigate("/companies")}>
-            Back to Companies
+            Browse Verified Companies
           </Button>
         </div>
       </div>
     )
   }
-
-  // Find jobs posted by this company
-  const companyJobs = storeJobs.filter(
-    (j) => j.company?.id === company.id || j.company?.name.toLowerCase() === company.name.toLowerCase(),
-  )
 
   const handleFollowToggle = () => {
     setIsFollowing((prev) => {
@@ -78,6 +109,8 @@ export default function CompanyPage() {
       return next
     })
   }
+
+  const mapQuery = encodeURIComponent(`${company.name}, ${company.location || "San Francisco, CA"}`)
 
   return (
     <div className="min-h-screen bg-[var(--background)] pb-20">
@@ -120,19 +153,23 @@ export default function CompanyPage() {
                 )}
               </div>
               <div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <h1 className="font-poppins text-2xl sm:text-3xl font-bold text-[var(--foreground)]">
                     {company.name}
                   </h1>
-                  {company.isVerified && (
-                    <span title="Verified Employer">
-                      <CheckCircle size={20} className="text-[var(--primary)]" />
+                  {company.isVerified ? (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20" title="Admin Verified Company">
+                      <BadgeCheck size={14} className="text-blue-500" /> Verified Employer
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                      Pending Verification
                     </span>
                   )}
                 </div>
                 <div className="flex items-center gap-3 mt-1.5 flex-wrap">
                   <Badge variant="default" size="sm">
-                    {company.industry}
+                    {company.industry || "Technology"}
                   </Badge>
                   {company.rating && (
                     <div className="flex items-center gap-1 text-sm font-semibold text-[var(--foreground)]">
@@ -143,9 +180,9 @@ export default function CompanyPage() {
                       </span>
                     </div>
                   )}
-                  {company.founded && (
+                  {company.size && (
                     <span className="text-xs text-[var(--muted-foreground)]">
-                      Founded in {company.founded}
+                      {company.size} employees
                     </span>
                   )}
                 </div>
@@ -166,15 +203,15 @@ export default function CompanyPage() {
           <div className="flex flex-wrap gap-6 mt-8 py-5 border-y border-[var(--border)] text-sm">
             <div className="flex items-center gap-2 text-[var(--foreground)] font-medium">
               <MapPin size={18} className="text-[var(--primary)] shrink-0" />
-              <span>{company.location}</span>
+              <span>{company.location || "Global Remote"}</span>
             </div>
             <div className="flex items-center gap-2 text-[var(--foreground)] font-medium">
               <Users size={18} className="text-[var(--primary)] shrink-0" />
-              <span>{company.size} employees</span>
+              <span>{company.size || "50-200"} team members</span>
             </div>
             <div className="flex items-center gap-2 text-[var(--foreground)] font-medium">
               <Briefcase size={18} className="text-[var(--primary)] shrink-0" />
-              <span>{companyJobs.length || company.jobCount || 0} Open Roles</span>
+              <span>{companyJobs.length} Active Positions</span>
             </div>
             {company.website && (
               <div className="flex items-center gap-2">
@@ -182,7 +219,7 @@ export default function CompanyPage() {
                 <a
                   href={company.website}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="text-[var(--primary)] font-semibold hover:underline flex items-center gap-1"
                 >
                   {company.website.replace(/^https?:\/\//, "")}
@@ -199,34 +236,65 @@ export default function CompanyPage() {
             </h2>
             <p className="text-[var(--muted-foreground)] leading-relaxed whitespace-pre-wrap text-sm sm:text-base">
               {company.about ||
-                `${company.name} is a forward-thinking organization dedicated to excellence and fostering top-tier career growth across the globe.`}
+                company.description ||
+                `${company.name} is a high-growth technology leader building scalable products and fostering world-class engineering and creative talent.`}
             </p>
           </div>
 
-          {/* Address / Headquarters */}
-          {company.address && (
-            <div className="mt-6 p-4 rounded-2xl bg-[var(--muted)]/50 border border-[var(--border)] text-xs text-[var(--muted-foreground)] flex items-center gap-2">
-              <MapPin size={16} className="text-[var(--primary)] shrink-0" />
-              <span>Headquarters: {company.address}</span>
+          {/* GIS Location Map View */}
+          <div className="mt-8 pt-8 border-t border-[var(--border)]">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="font-poppins text-lg font-bold text-[var(--foreground)] flex items-center gap-2">
+                  <MapIcon size={18} className="text-[var(--primary)]" />
+                  Office Location & Workplace Map
+                </h3>
+                <p className="text-xs text-[var(--muted-foreground)]">
+                  {company.location || "Worldwide Remote / Hybrid Headquarters"}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowMap(!showMap)}
+                className="text-xs font-semibold text-[var(--primary)] hover:underline flex items-center gap-1"
+              >
+                <Compass size={13} /> {showMap ? "Hide Map" : "Show Map"}
+              </button>
             </div>
-          )}
+
+            {showMap && (
+              <div className="rounded-2xl overflow-hidden border border-[var(--border)] h-56 sm:h-72 w-full bg-[var(--muted)]/40 relative shadow-inner">
+                <iframe
+                  title={`${company.name} Map Location`}
+                  width="100%"
+                  height="100%"
+                  frameBorder="0"
+                  scrolling="no"
+                  marginHeight={0}
+                  marginWidth={0}
+                  src={`https://maps.google.com/maps?q=${mapQuery}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
+                  className="w-full h-full grayscale-[25%] contrast-[1.05]"
+                />
+              </div>
+            )}
+          </div>
 
           {/* Open Positions Section */}
           <div className="mt-12 border-t border-[var(--border)] pt-8">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="font-poppins text-2xl font-bold text-[var(--foreground)]">
-                  Open Positions ({companyJobs.length})
+                  Open Opportunities ({companyJobs.length})
                 </h2>
                 <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
-                  Direct opportunities currently accepting applications.
+                  Choose between Easy Apply in-app and Direct ATS website applications.
                 </p>
               </div>
               <Link
                 to={`/jobs?keyword=${encodeURIComponent(company.name)}`}
                 className="text-xs font-bold text-[var(--primary)] hover:underline flex items-center gap-1"
               >
-                Browse all in Map <ChevronRight size={13} />
+                Explore on Search <ChevronRight size={13} />
               </Link>
             </div>
 
@@ -239,15 +307,23 @@ export default function CompanyPage() {
                     className="p-4 sm:p-5 rounded-2xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--primary)] transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group hover:shadow-sm"
                   >
                     <div>
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <h3 className="font-poppins font-bold text-base text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">
                           {job.title}
                         </h3>
-                        {job.isUrgent && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400">
-                            Urgent
-                          </span>
-                        )}
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          job.applyMode === "both"
+                            ? "bg-purple-500/10 text-purple-600"
+                            : job.applyMode === "external"
+                              ? "bg-blue-500/10 text-blue-600"
+                              : "bg-emerald-500/10 text-emerald-600"
+                        }`}>
+                          {job.applyMode === "both"
+                            ? "Easy & External"
+                            : job.applyMode === "external"
+                              ? "Apply on Website"
+                              : "Easy Apply"}
+                        </span>
                       </div>
                       <div className="flex flex-wrap items-center gap-3 text-xs text-[var(--muted-foreground)]">
                         <span className="flex items-center gap-1">
@@ -259,14 +335,14 @@ export default function CompanyPage() {
                         <span className="font-semibold text-[var(--foreground)]">
                           {job.salaryMin && job.salaryMax
                             ? `$${(job.salaryMin / 1000).toFixed(0)}k - $${(job.salaryMax / 1000).toFixed(0)}k`
-                            : "Competitive"}
+                            : "Competitive Salary"}
                         </span>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 self-end sm:self-center">
                       <Button variant="outline" size="sm" className="group-hover:bg-[var(--primary)] group-hover:text-white transition-colors">
-                        View Role <ChevronRight size={14} />
+                        Apply Now <ChevronRight size={14} />
                       </Button>
                     </div>
                   </Link>
@@ -279,62 +355,13 @@ export default function CompanyPage() {
                   className="mx-auto text-[var(--muted-foreground)] opacity-40 mb-3"
                 />
                 <h3 className="text-base font-semibold text-[var(--foreground)]">
-                  No active openings right now
+                  No published openings currently
                 </h3>
                 <p className="text-xs text-[var(--muted-foreground)] mt-1">
-                  Follow this company to be notified immediately when a new position opens.
+                  Follow {company.name} to receive real-time notifications as new positions open.
                 </p>
               </div>
             )}
-          </div>
-
-          {/* Employee Reviews */}
-          <div className="mt-12 border-t border-[var(--border)] pt-8">
-            <h2 className="font-poppins text-xl font-bold text-[var(--foreground)] mb-4">
-              Verified Employee Insights
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[
-                {
-                  rating: 5,
-                  author: "Senior Software Engineer",
-                  tenure: "Current employee (2+ years)",
-                  text: "Incredible engineering culture with genuine autonomy. Great modern tech stack and strong mentorship.",
-                  date: "October 2026",
-                },
-                {
-                  rating: 4,
-                  author: "Product Designer",
-                  tenure: "Current employee (1 year)",
-                  text: "Fast-moving collaborative environment with excellent work-life balance and comprehensive remote setup perks.",
-                  date: "September 2026",
-                },
-              ].map((review, i) => (
-                <div
-                  key={i}
-                  className="p-5 bg-[var(--muted)]/20 rounded-2xl border border-[var(--border)]"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <h4 className="font-semibold text-sm text-[var(--foreground)]">
-                        {review.author}
-                      </h4>
-                      <p className="text-[11px] text-[var(--muted-foreground)]">{review.tenure}</p>
-                    </div>
-                    <div className="flex text-amber-400 text-xs">
-                      {"★".repeat(review.rating)}
-                      {"☆".repeat(5 - review.rating)}
-                    </div>
-                  </div>
-                  <p className="text-xs text-[var(--muted-foreground)] leading-relaxed mt-2">
-                    "{review.text}"
-                  </p>
-                  <span className="text-[10px] text-[var(--muted-foreground)]/60 block mt-3">
-                    {review.date}
-                  </span>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </div>

@@ -1,34 +1,33 @@
-import { useState } from "react"
+import React, { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   Check,
   Zap,
   Shield,
-  CreditCard,
   Building,
   Sparkles,
   ArrowRight,
-  Download,
   CheckCircle2,
   X,
-  FileText,
-  BadgePercent,
+  Mail,
+  Info,
+  Smartphone,
+  Lock,
 } from "lucide-react"
 import Button from "../components/ui/Button"
 import Badge from "../components/ui/Badge"
+import Input from "../components/ui/Input"
 import toast from "react-hot-toast"
-import { triggerConfetti } from "../utils/confetti"
 
 export default function Pricing() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly")
   const [currency, setCurrency] = useState<"USD" | "INR">("USD")
   const [selectedPlan, setSelectedPlan] = useState<any>(null)
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
-  const [paymentGateway, setPaymentGateway] = useState<"razorpay" | "stripe">("stripe")
-  const [couponCode, setCouponCode] = useState("")
-  const [couponDiscount, setCouponDiscount] = useState(0)
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [paymentSuccess, setPaymentSuccess] = useState(false)
+  const [isInquiryOpen, setIsInquiryOpen] = useState(false)
+  const [inquiryEmail, setInquiryEmail] = useState("")
+  const [inquiryCompany, setInquiryCompany] = useState("")
+  const [inquiryNotes, setInquiryNotes] = useState("")
+  const [inquirySubmitted, setInquirySubmitted] = useState(false)
 
   const isINR = currency === "INR"
   const discountMultiplier = billingCycle === "yearly" ? 0.8 : 1 // 20% off annual
@@ -40,13 +39,13 @@ export default function Pricing() {
       badge: "Free Forever",
       priceMonthlyUSD: 0,
       priceMonthlyINR: 0,
-      description: "Essential tools for small teams & emerging recruiters.",
+      description: "Essential recruiting tools for startups and emerging founders.",
       features: [
         "Post up to 2 active jobs",
         "Basic applicant tracking pipeline",
         "Standard candidate email notifications",
         "Community forum support",
-        "7-day job listing validity",
+        "Multi-mode Easy Apply & External ATS links",
       ],
       popular: false,
       cta: "Get Started Free",
@@ -62,13 +61,13 @@ export default function Pricing() {
         "Post up to 15 active jobs",
         "⚡ 3 Featured 'Urgent Hiring' Badges",
         "Full Talent Database search & direct messaging",
-        "Automated ATS Resume scoring & screening",
-        "Kanban applicant pipeline & bulk exports",
+        "Automated ATS Resume scoring & screening questions",
+        "Kanban applicant pipeline & bulk CSV exports",
         "Priority 24/7 dedicated email support",
         "Direct Google Meet & Zoom interview scheduler",
       ],
       popular: true,
-      cta: "Upgrade to Pro",
+      cta: "Inquire for Pro Access",
     },
     {
       id: "enterprise",
@@ -80,67 +79,60 @@ export default function Pricing() {
       features: [
         "Unlimited active job postings",
         "Unlimited Featured & Promoted job tags",
-        "Dedicated Talent Acquisition Manager",
-        "Custom ATS API integration & webhooks",
-        "GST Invoicing & Multi-member team seats",
+        "Greenhouse / Lever / Workable API job importer",
+        "Dedicated Talent Acquisition Account Manager",
+        "Multi-member team recruiter seats & invitations",
         "Role-based access permissions & Audit logs",
         "100% SLA uptime guarantee",
       ],
       popular: false,
-      cta: "Deploy Enterprise",
+      cta: "Request Enterprise Pilot",
     },
   ]
 
-  const handleOpenCheckout = (plan: any) => {
+  const handleSelectPlan = (plan: any) => {
     if (plan.priceMonthlyUSD === 0) {
-      toast.success("You are now enrolled in the Starter Community plan!")
+      toast.success("You are enrolled in the Starter Community plan!")
       return
     }
     setSelectedPlan(plan)
-    setIsCheckoutOpen(true)
-    setPaymentSuccess(false)
+    setIsInquiryOpen(true)
+    setInquirySubmitted(false)
   }
 
-  const handleApplyCoupon = (e: React.FormEvent) => {
+  const handleSubmitInquiry = (e: React.FormEvent) => {
     e.preventDefault()
-    if (couponCode.toUpperCase() === "HIREHUB20") {
-      setCouponDiscount(0.2)
-      toast.success("Promo code applied: 20% Extra Discount!")
-    } else {
-      toast.error("Invalid coupon code. Try 'HIREHUB20'")
+    if (!inquiryEmail.trim() || !inquiryEmail.includes("@")) {
+      toast.error("Please enter a valid work email address.")
+      return
     }
-  }
-
-  const calculateFinalPrice = () => {
-    if (!selectedPlan) return 0
-    const base = isINR ? selectedPlan.priceMonthlyINR : selectedPlan.priceMonthlyUSD
-    const discounted = base * discountMultiplier * (1 - couponDiscount)
-    return Math.round(discounted)
-  }
-
-  const handlePay = () => {
-    setIsProcessing(true)
-    setTimeout(() => {
-      setIsProcessing(false)
-      setPaymentSuccess(true)
-      triggerConfetti()
-      toast.success(`Payment verified via ${paymentGateway === "razorpay" ? "Razorpay India" : "Stripe Global"}!`)
-    }, 1500)
+    setInquirySubmitted(true)
+    toast.success(`Inquiry submitted for ${selectedPlan?.name}! Our sales team will reach out within 24 hours.`)
   }
 
   return (
     <div className="min-h-screen bg-[var(--background)] pt-24 pb-20 px-4 sm:px-6">
       <div className="max-w-7xl mx-auto">
+        {/* Compliance Notice Banner */}
+        <div className="mb-8 p-4 rounded-2xl bg-blue-500/10 border border-blue-500/25 flex flex-col sm:flex-row items-start sm:items-center gap-3 text-xs text-[var(--foreground)]">
+          <div className="p-2 rounded-xl bg-blue-500/20 text-blue-600 dark:text-blue-400 shrink-0">
+            <Info size={16} />
+          </div>
+          <div className="flex-1">
+            <span className="font-bold">Payment & Compliance Notice:</span> Online credit card checkout is currently hidden pending final payment provider integration. iOS native mobile builds will require Apple In-App Purchases (IAP) in accordance with App Store Review Guidelines. All enterprise and pro upgrades are processed via direct corporate invoice.
+          </div>
+        </div>
+
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-12">
           <Badge variant="accent" size="md" className="mb-3">
-            <Sparkles size={13} className="mr-1" /> Flexible Plans For Every Hiring Need
+            <Sparkles size={13} className="mr-1" /> Transparent Recruitment Pricing
           </Badge>
           <h1 className="font-poppins text-4xl sm:text-5xl font-extrabold text-[var(--foreground)] tracking-tight">
-            Transparent Pricing, Zero Hidden Fees
+            Predictable Plans for Modern Hiring
           </h1>
           <p className="text-sm sm:text-base text-[var(--muted-foreground)] mt-3">
-            Whether you are hiring your first engineer or expanding a worldwide engineering team, HireHub has you covered.
+            Whether you are hiring your first developer or scaling global engineering organizations, HireHub gives you the tools you need.
           </p>
 
           {/* Controls: Billing Cycle + Currency Switcher */}
@@ -189,7 +181,7 @@ export default function Pricing() {
                     : "text-[var(--muted-foreground)]"
                 }`}
               >
-                INR (₹ GST)
+                INR (₹)
               </button>
             </div>
           </div>
@@ -198,245 +190,202 @@ export default function Pricing() {
         {/* Pricing Cards Grid */}
         <div className="grid lg:grid-cols-3 gap-8 items-stretch">
           {plans.map((plan) => {
-            const rawPrice = isINR ? plan.priceMonthlyINR : plan.priceMonthlyUSD
-            const finalPrice = Math.round(rawPrice * discountMultiplier)
+            const rawMonthly = isINR ? plan.priceMonthlyINR : plan.priceMonthlyUSD
+            const finalMonthly = Math.round(rawMonthly * discountMultiplier)
+            const currencySymbol = isINR ? "₹" : "$"
 
             return (
               <motion.div
                 key={plan.id}
-                whileHover={{ y: -5 }}
-                className={`rounded-3xl p-8 border flex flex-col justify-between transition-all relative ${
+                whileHover={{ y: -6 }}
+                transition={{ duration: 0.2 }}
+                className={`rounded-3xl p-8 flex flex-col justify-between relative bg-[var(--card)] border transition-all duration-300 ${
                   plan.popular
-                    ? "bg-[var(--card)] border-[var(--primary)] shadow-2xl ring-2 ring-[var(--primary)]/30"
-                    : "bg-[var(--card)] border-[var(--border)] shadow-sm"
+                    ? "border-[var(--primary)] shadow-[var(--shadow-elevated)] ring-2 ring-[var(--primary)]/20"
+                    : "border-[var(--border)] shadow-[var(--shadow-card)]"
                 }`}
               >
                 {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white text-xs font-extrabold px-3 py-1 rounded-full shadow-md">
-                      RECOMMENDED
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                    <span className="px-4 py-1 rounded-full text-xs font-bold bg-[var(--primary)] text-white shadow-md">
+                      {plan.badge}
                     </span>
                   </div>
                 )}
 
                 <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-poppins font-bold text-xl text-[var(--foreground)]">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-poppins text-xl font-bold text-[var(--foreground)]">
                       {plan.name}
                     </h3>
-                    <Badge variant={plan.popular ? "primary" : "default"} size="sm">
-                      {plan.badge}
-                    </Badge>
+                    {!plan.popular && (
+                      <span className="text-[11px] font-semibold text-[var(--muted-foreground)] bg-[var(--muted)] px-2.5 py-0.5 rounded-full">
+                        {plan.badge}
+                      </span>
+                    )}
                   </div>
 
-                  <p className="text-xs text-[var(--muted-foreground)] mb-6 min-h-[36px]">
+                  <p className="text-xs text-[var(--muted-foreground)] leading-relaxed mb-6 min-h-[36px]">
                     {plan.description}
                   </p>
 
-                  <div className="flex items-baseline gap-1 mb-6 pb-6 border-b border-[var(--border)]">
-                    <span className="text-4xl font-extrabold font-poppins text-[var(--foreground)]">
-                      {isINR ? `₹${finalPrice.toLocaleString()}` : `$${finalPrice}`}
+                  <div className="mb-6 flex items-baseline gap-1">
+                    <span className="font-poppins text-4xl font-extrabold text-[var(--foreground)]">
+                      {currencySymbol}{finalMonthly}
                     </span>
-                    <span className="text-xs text-[var(--muted-foreground)] font-medium">
-                      {plan.priceMonthlyUSD === 0 ? "" : billingCycle === "yearly" ? "/mo (billed annually)" : "/month"}
-                    </span>
+                    <span className="text-xs text-[var(--muted-foreground)]">/ month</span>
+                    {billingCycle === "yearly" && plan.priceMonthlyUSD > 0 && (
+                      <span className="text-[11px] text-emerald-500 font-bold ml-2">
+                        Billed annually
+                      </span>
+                    )}
                   </div>
 
-                  <ul className="space-y-3 mb-8">
+                  <div className="space-y-3 pt-4 border-t border-[var(--border)]">
+                    <p className="text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+                      Included in Plan:
+                    </p>
                     {plan.features.map((feature, i) => (
-                      <li key={i} className="flex items-start gap-2.5 text-xs text-[var(--foreground)]">
+                      <div key={i} className="flex items-start gap-2.5 text-xs text-[var(--foreground)]">
                         <Check size={15} className="text-emerald-500 shrink-0 mt-0.5" />
                         <span>{feature}</span>
-                      </li>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 </div>
 
-                <Button
-                  variant={plan.popular ? "primary" : "outline"}
-                  size="lg"
-                  className="w-full text-xs font-bold"
-                  onClick={() => handleOpenCheckout(plan)}
-                >
-                  {plan.cta} <ArrowRight size={14} className="ml-1" />
-                </Button>
+                <div className="mt-8 pt-6 border-t border-[var(--border)]">
+                  <Button
+                    variant={plan.popular ? "primary" : "outline"}
+                    size="lg"
+                    className="w-full font-bold text-xs"
+                    onClick={() => handleSelectPlan(plan)}
+                  >
+                    {plan.cta} <ArrowRight size={14} className="ml-1" />
+                  </Button>
+                </div>
               </motion.div>
             )
           })}
         </div>
 
-        {/* Enterprise Trust Banner */}
-        <div className="mt-16 bg-[var(--card)] border border-[var(--border)] rounded-3xl p-8 sm:p-10 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-[var(--primary)]/10 text-[var(--primary)] flex items-center justify-center shrink-0">
-              <Shield size={28} />
-            </div>
-            <div>
-              <h4 className="font-poppins font-bold text-base text-[var(--foreground)]">
-                Need a Custom SLA or University Partner Tier?
-              </h4>
-              <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
-                Contact our enterprise partnership team for bulk job posting packs, campus recruitment drives, and white-label options.
-              </p>
-            </div>
+        {/* Security & Support Badges */}
+        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+          <div className="p-6 rounded-2xl bg-[var(--card)] border border-[var(--border)]">
+            <Shield size={28} className="mx-auto text-[var(--primary)] mb-2" />
+            <h4 className="font-bold text-sm text-[var(--foreground)]">Enterprise Security</h4>
+            <p className="text-xs text-[var(--muted-foreground)] mt-1">
+              Encrypted resume storage, role-based access control, and GDPR data isolation.
+            </p>
           </div>
-          <Button variant="outline" size="md" onClick={() => toast.success("Enterprise sales representative notified.")} className="shrink-0 text-xs">
-            Contact Sales Team
-          </Button>
+          <div className="p-6 rounded-2xl bg-[var(--card)] border border-[var(--border)]">
+            <Smartphone size={28} className="mx-auto text-[var(--primary)] mb-2" />
+            <h4 className="font-bold text-sm text-[var(--foreground)]">Mobile In-App Purchase Ready</h4>
+            <p className="text-xs text-[var(--muted-foreground)] mt-1">
+              Compliant with iOS App Store & Android Google Play Store billing guidelines.
+            </p>
+          </div>
+          <div className="p-6 rounded-2xl bg-[var(--card)] border border-[var(--border)]">
+            <Building size={28} className="mx-auto text-[var(--primary)] mb-2" />
+            <h4 className="font-bold text-sm text-[var(--foreground)]">Custom ATS Integrations</h4>
+            <p className="text-xs text-[var(--muted-foreground)] mt-1">
+              Seamlessly link Greenhouse, Lever, and Workable with direct apply redirection.
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Checkout & Payment Gateway Modal */}
-      {isCheckoutOpen && selectedPlan && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[var(--card)] rounded-3xl border border-[var(--border)] shadow-2xl w-full max-w-lg p-6 animate-in zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
-              <div>
-                <h3 className="font-bold text-base text-[var(--foreground)]">
-                  Secure Checkout
-                </h3>
-                <p className="text-xs text-[var(--muted-foreground)]">
-                  Upgrading to {selectedPlan.name}
-                </p>
-              </div>
-              <button onClick={() => setIsCheckoutOpen(false)} className="p-1 rounded-lg hover:bg-[var(--muted)]">
-                <X size={18} />
-              </button>
-            </div>
-
-            {paymentSuccess ? (
-              <div className="py-8 text-center space-y-4">
-                <CheckCircle2 size={52} className="text-emerald-500 mx-auto" />
-                <h4 className="font-bold text-lg text-[var(--foreground)]">
-                  Payment Successful!
-                </h4>
-                <p className="text-xs text-[var(--muted-foreground)] max-w-sm mx-auto">
-                  Your HireHub Pro subscription is now active. A digital tax invoice receipt has been generated.
-                </p>
-                <div className="p-4 rounded-2xl bg-[var(--muted)]/50 border border-[var(--border)] text-left text-xs space-y-1.5">
-                  <div className="flex justify-between font-semibold">
-                    <span>Transaction ID:</span>
-                    <span className="font-mono">HH-TX-{Math.random().toString(36).substring(2, 8).toUpperCase()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Amount Paid:</span>
-                    <span>{isINR ? `₹${calculateFinalPrice()}` : `$${calculateFinalPrice()}`}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Gateway:</span>
-                    <span>{paymentGateway === "razorpay" ? "Razorpay (India UPI/Card)" : "Stripe Global (Credit Card)"}</span>
-                  </div>
+      {/* Enterprise / Pro Inquiry Modal */}
+      <AnimatePresence>
+        {isInquiryOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-md bg-[var(--card)] rounded-3xl border border-[var(--border)] p-6 shadow-2xl relative"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
+                <div>
+                  <h3 className="font-poppins font-bold text-base text-[var(--foreground)]">
+                    Inquire for {selectedPlan?.name}
+                  </h3>
+                  <p className="text-xs text-[var(--muted-foreground)]">
+                    Direct Corporate Invoicing & Onboarding
+                  </p>
                 </div>
+                <button
+                  onClick={() => setIsInquiryOpen(false)}
+                  className="p-1 rounded-lg hover:bg-[var(--muted)] text-[var(--muted-foreground)]"
+                >
+                  <X size={18} />
+                </button>
+              </div>
 
-                <div className="flex gap-2 pt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 text-xs"
-                    onClick={() => {
-                      toast.success("PDF Invoice downloaded!")
-                    }}
-                  >
-                    <Download size={13} className="mr-1" /> Download Invoice (PDF)
-                  </Button>
+              {inquirySubmitted ? (
+                <div className="py-8 text-center space-y-3">
+                  <CheckCircle2 size={48} className="text-emerald-500 mx-auto" />
+                  <h4 className="font-bold text-base text-[var(--foreground)]">
+                    Inquiry Received!
+                  </h4>
+                  <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                    Thank you for your interest in HireHub {selectedPlan?.name}. An enterprise hiring specialist will email your custom proposal and invoice options to <strong>{inquiryEmail}</strong>.
+                  </p>
                   <Button
                     variant="primary"
                     size="sm"
-                    className="flex-1 text-xs"
-                    onClick={() => setIsCheckoutOpen(false)}
+                    className="w-full mt-4"
+                    onClick={() => setIsInquiryOpen(false)}
                   >
-                    Done
+                    Close
                   </Button>
                 </div>
-              </div>
-            ) : (
-              <div className="py-4 space-y-4">
-                {/* Gateway Selector */}
-                <div>
-                  <label className="text-xs font-semibold text-[var(--foreground)] block mb-1.5">
-                    Select Payment Gateway
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setPaymentGateway("stripe")}
-                      className={`p-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-all ${
-                        paymentGateway === "stripe"
-                          ? "border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]"
-                          : "border-[var(--border)] text-[var(--muted-foreground)]"
-                      }`}
-                    >
-                      <CreditCard size={16} /> Stripe Global (Cards)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPaymentGateway("razorpay")}
-                      className={`p-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-all ${
-                        paymentGateway === "razorpay"
-                          ? "border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]"
-                          : "border-[var(--border)] text-[var(--muted-foreground)]"
-                      }`}
-                    >
-                      <Zap size={16} /> Razorpay (UPI, Netbanking)
-                    </button>
-                  </div>
-                </div>
+              ) : (
+                <form onSubmit={handleSubmitInquiry} className="space-y-3.5 py-4">
+                  <Input
+                    label="Work Email Address"
+                    type="email"
+                    value={inquiryEmail}
+                    onChange={(e) => setInquiryEmail(e.target.value)}
+                    placeholder="recruiter@company.com"
+                    required
+                  />
 
-                {/* Promo Coupon Input */}
-                <form onSubmit={handleApplyCoupon} className="flex gap-2">
-                  <div className="relative flex-1">
-                    <BadgePercent size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]" />
-                    <input
-                      type="text"
-                      placeholder="Promo code (e.g. HIREHUB20)"
-                      value={couponCode}
-                      onChange={(e) => setCouponCode(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-[var(--muted)]/50 border border-[var(--border)] text-[var(--foreground)] uppercase"
+                  <Input
+                    label="Company Name"
+                    value={inquiryCompany}
+                    onChange={(e) => setInquiryCompany(e.target.value)}
+                    placeholder="e.g. Acme Corporation"
+                    required
+                  />
+
+                  <div>
+                    <label className="text-xs font-semibold text-[var(--foreground)] block mb-1">
+                      Hiring Objectives & Timeline
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={inquiryNotes}
+                      onChange={(e) => setInquiryNotes(e.target.value)}
+                      placeholder="e.g. Planning to hire 5 React engineers this quarter..."
+                      className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] resize-none"
                     />
                   </div>
-                  <Button type="submit" variant="outline" size="sm" className="text-xs">
-                    Apply
+
+                  <div className="p-3 rounded-xl bg-[var(--muted)]/50 border border-[var(--border)] text-[11px] text-[var(--muted-foreground)] flex items-center gap-2">
+                    <Lock size={14} className="text-[var(--primary)] shrink-0" />
+                    <span>In-app card checkout is disabled. Plans are billed via official GST/VAT invoices.</span>
+                  </div>
+
+                  <Button type="submit" variant="primary" size="lg" className="w-full font-bold">
+                    Submit Recruitment Inquiry <ArrowRight size={14} />
                   </Button>
                 </form>
-
-                {/* Price Breakdown */}
-                <div className="p-4 rounded-2xl bg-[var(--muted)]/40 border border-[var(--border)] space-y-2 text-xs">
-                  <div className="flex justify-between text-[var(--muted-foreground)]">
-                    <span>Base Subscription ({billingCycle})</span>
-                    <span>{isINR ? `₹${selectedPlan.priceMonthlyINR}` : `$${selectedPlan.priceMonthlyUSD}`}</span>
-                  </div>
-                  {billingCycle === "yearly" && (
-                    <div className="flex justify-between text-emerald-500 font-medium">
-                      <span>Annual Savings (20%)</span>
-                      <span>-{isINR ? `₹${Math.round(selectedPlan.priceMonthlyINR * 0.2)}` : `$${Math.round(selectedPlan.priceMonthlyUSD * 0.2)}`}</span>
-                    </div>
-                  )}
-                  {couponDiscount > 0 && (
-                    <div className="flex justify-between text-emerald-500 font-medium">
-                      <span>Coupon Discount (20%)</span>
-                      <span>-{isINR ? `₹${Math.round(selectedPlan.priceMonthlyINR * 0.2)}` : `$${Math.round(selectedPlan.priceMonthlyUSD * 0.2)}`}</span>
-                    </div>
-                  )}
-                  <div className="pt-2 border-t border-[var(--border)] flex justify-between font-bold text-sm text-[var(--foreground)]">
-                    <span>Total Due:</span>
-                    <span>{isINR ? `₹${calculateFinalPrice()}` : `$${calculateFinalPrice()}`}</span>
-                  </div>
-                </div>
-
-                <Button
-                  variant="primary"
-                  size="lg"
-                  className="w-full text-xs font-bold"
-                  onClick={handlePay}
-                  disabled={isProcessing}
-                >
-                  {isProcessing ? "Processing via Gateway..." : `Pay ${isINR ? `₹${calculateFinalPrice()}` : `$${calculateFinalPrice()}`} & Activate`}
-                </Button>
-              </div>
-            )}
+              )}
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import {
   Users,
@@ -13,7 +13,12 @@ import {
   Eye,
   BarChart3,
   Activity,
-  ChevronRight,
+  Check,
+  Ban,
+  BadgeCheck,
+  Search,
+  Filter,
+  ExternalLink,
 } from "lucide-react"
 import {
   AreaChart,
@@ -29,16 +34,21 @@ import {
   Pie,
   Cell,
 } from "recharts"
+import { Link } from "react-router-dom"
 import Badge from "../../components/ui/Badge"
 import Button from "../../components/ui/Button"
+import Input from "../../components/ui/Input"
 import { mockStats } from "../../data/mockData"
 import { useJobStore } from "../../store/jobStore"
 import { useApplicationStore } from "../../store/applicationStore"
+import { companyService, moderationService } from "../../lib/supabase"
+import type { Company, JobReport } from "../../types"
+import toast from "react-hot-toast"
 
 const growthData = [
   { month: "Apr", users: 62000, jobs: 8200 },
   { month: "May", users: 68000, jobs: 9100 },
-  { month: "Jun", users: 72000, jobs: 10400 },
+  { month: "Jun", jobs: 10400, users: 72000 },
   { month: "Jul", users: 76000, jobs: 11200 },
   { month: "Aug", users: 80000, jobs: 11800 },
   { month: "Sep", users: 85000, jobs: 12400 },
@@ -53,66 +63,83 @@ const COLORS = [
   "#8B5CF6",
 ]
 
-const pendingRecruiters = [
-  {
-    name: "Innovation Labs",
-    email: "hr@innovationlabs.com",
-    company: "Innovation Labs Inc",
-    submittedAt: "2026-09-30",
-  },
-  {
-    name: "DataStream Corp",
-    email: "recruit@datastream.io",
-    company: "DataStream Corp",
-    submittedAt: "2026-09-29",
-  },
-  {
-    name: "CloudPeak Solutions",
-    email: "jobs@cloudpeak.com",
-    company: "CloudPeak Solutions",
-    submittedAt: "2026-09-28",
-  },
-]
-
-const recentActivity = [
-  {
-    action: "New recruiter registered",
-    subject: "TechFlow Inc",
-    time: "2 min ago",
-    type: "recruiter",
-  },
-  {
-    action: "Job posted",
-    subject: "Senior React Developer at Meta",
-    time: "15 min ago",
-    type: "job",
-  },
-  {
-    action: "Report submitted",
-    subject: "Job listing flagged",
-    time: "1 hr ago",
-    type: "report",
-  },
-  {
-    action: "User verified",
-    subject: "alex.johnson@gmail.com",
-    time: "2 hr ago",
-    type: "user",
-  },
-  {
-    action: "Company approved",
-    subject: "GreenTech Ventures",
-    time: "3 hr ago",
-    type: "company",
-  },
-]
-
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] =
-    useState<"overview" | "recruiters" | "reports">("overview")
-
+  const [activeTab, setActiveTab] = useState<"overview" | "companies" | "reports" | "jobs">("overview")
   const { jobs } = useJobStore()
   const { applications } = useApplicationStore()
+
+  // Real data state
+  const [companies, setCompanies] = useState<Company[]>([])
+  const [reports, setReports] = useState<JobReport[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [companySearch, setCompanySearch] = useState("")
+  const [companyFilter, setCompanyFilter] = useState<string>("all")
+
+  const loadData = async () => {
+    setIsLoading(true)
+    try {
+      const [comps, reps] = await Promise.all([
+        companyService.getCompanies(),
+        moderationService.getReports(),
+      ])
+      setCompanies(comps)
+      setReports(reps)
+    } catch (err) {
+      console.error("Error loading admin data:", err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const handleCompanyStatusChange = async (
+    companyId: string,
+    status: "pending" | "approved" | "rejected" | "blocked",
+    verified?: boolean
+  ) => {
+    try {
+      await companyService.updateStatus(companyId, status, verified)
+      toast.success(`Company status updated to "${status}"`)
+      loadData()
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update company status.")
+    }
+  }
+
+  const handleToggleVerified = async (company: Company) => {
+    try {
+      const newVerified = !company.isVerified
+      await companyService.updateStatus(company.id, company.status || "approved", newVerified)
+      toast.success(newVerified ? `Verified badge granted to ${company.name}` : `Verification revoked for ${company.name}`)
+      loadData()
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update verification.")
+    }
+  }
+
+  const handleUpdateReport = async (reportId: string, status: "pending" | "reviewed" | "dismissed") => {
+    try {
+      await moderationService.updateReportStatus(reportId, status)
+      toast.success(`Report marked as ${status}`)
+      loadData()
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update report status.")
+    }
+  }
+
+  const filteredCompanies = companies.filter((c) => {
+    const matchesSearch = c.name.toLowerCase().includes(companySearch.toLowerCase()) ||
+      c.industry?.toLowerCase().includes(companySearch.toLowerCase())
+    const matchesStatus =
+      companyFilter === "all" ? true : (c.status || "pending") === companyFilter
+    return matchesSearch && matchesStatus
+  })
+
+  const pendingCompanies = companies.filter((c) => (c.status || "pending") === "pending")
+  const pendingReports = reports.filter((r) => r.status === "pending")
 
   return (
     <div className="min-h-screen bg-[var(--background)] pt-20">
@@ -122,404 +149,508 @@ export default function AdminDashboard() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <div className="flex items-center gap-3 mb-1">
-            <Shield size={24} className="text-[var(--primary)]" />
-            <h1 className="font-poppins text-3xl font-bold text-[var(--foreground)]">
-              Admin Dashboard
-            </h1>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-3 mb-1">
+                <Shield size={24} className="text-[var(--primary)]" />
+                <h1 className="font-poppins text-3xl font-bold text-[var(--foreground)]">
+                  Admin Control Center
+                </h1>
+              </div>
+              <p className="text-[var(--muted-foreground)]">
+                Enterprise moderation, company verification, and platform oversight.
+              </p>
+            </div>
+
+            {/* Quick alert pill */}
+            {(pendingCompanies.length > 0 || pendingReports.length > 0) && (
+              <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 px-3.5 py-2 rounded-xl text-xs font-semibold text-amber-600 dark:text-amber-400">
+                <AlertTriangle size={15} />
+                <span>
+                  {pendingCompanies.length} pending review &bull; {pendingReports.length} flagged reports
+                </span>
+              </div>
+            )}
           </div>
-          <p className="text-[var(--muted-foreground)]">
-            Platform overview and management.
-          </p>
         </motion.div>
 
-        {/* Tabs */}
-        <div className="flex gap-1 p-1 bg-[var(--muted)] rounded-xl mb-8 w-fit">
-          {(["overview", "recruiters", "reports"] as const).map((tab) => (
+        {/* Navigation Tabs */}
+        <div className="flex flex-wrap gap-1 p-1 bg-[var(--muted)] rounded-xl mb-8 w-fit border border-[var(--border)]">
+          {(["overview", "companies", "reports", "jobs"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all ${
+              className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold capitalize transition-all ${
                 activeTab === tab
                   ? "bg-[var(--card)] text-[var(--primary)] shadow-sm"
                   : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
               }`}
             >
-              {tab}
+              {tab === "companies" ? `Companies (${companies.length})` : tab === "reports" ? `Moderation Reports (${reports.length})` : tab}
             </button>
           ))}
         </div>
 
-        {/* Platform Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {[
-            {
-              label: "Total Users",
-              value: "85,000",
-              change: "+3,200 this month",
-              icon: Users,
-              color: "var(--primary)",
-              bg: "bg-[var(--muted)] ",
-            },
-            {
-              label: "Active Jobs",
-              value: "12,400",
-              change: "+840 this week",
-              icon: Briefcase,
-              color: "#22C55E",
-              bg: "bg-green-100 dark:bg-green-900/30",
-            },
-            {
-              label: "Companies",
-              value: "3,200",
-              change: "+120 this month",
-              icon: Building2,
-              color: "#F59E0B",
-              bg: "bg-yellow-100 dark:bg-yellow-900/30",
-            },
-            {
-              label: "Applications",
-              value: "284k",
-              change: "+18k this month",
-              icon: FileText,
-              color: "#8B5CF6",
-              bg: "bg-purple-100 dark:bg-purple-900/30",
-            },
-          ].map((stat, i) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.07 }}
-              className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-5 shadow-[var(--shadow-card)]"
-            >
-              <div
-                className={`w-10 h-10 rounded-xl ${stat.bg} flex items-center justify-center mb-3`}
-              >
-                <stat.icon size={20} style={{ color: stat.color }} />
-              </div>
-              <p className="font-poppins text-2xl font-bold text-[var(--foreground)]">
-                {stat.value}
-              </p>
-              <p className="text-sm text-[var(--muted-foreground)] mt-0.5">
-                {stat.label}
-              </p>
-              <p className="text-xs font-medium mt-2 text-green-500 flex items-center gap-1">
-                <TrendingUp size={11} /> {stat.change}
-              </p>
-            </motion.div>
-          ))}
-        </div>
-
-        <div className="grid lg:grid-cols-3 gap-6 mb-6">
-          {/* Growth Chart */}
-          <div className="lg:col-span-2 bg-[var(--card)] rounded-2xl border border-[var(--border)] p-5 shadow-[var(--shadow-card)]">
-            <h3 className="font-poppins font-semibold text-[var(--foreground)] mb-5">
-              Platform Growth
-            </h3>
-            <ResponsiveContainer width="100%" height={220}>
-              <AreaChart
-                data={growthData}
-                margin={{ left: -16, right: 8, top: 4, bottom: 0 }}
-              >
-                <defs>
-                  <linearGradient id="userGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor="var(--primary)"
-                      stopOpacity={0.2}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="var(--primary)"
-                      stopOpacity={0}
-                    />
-                  </linearGradient>
-                  <linearGradient id="jobGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor="var(--accent)"
-                      stopOpacity={0.2}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="var(--accent)"
-                      stopOpacity={0}
-                    />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="var(--border)"
-                  vertical={false}
-                />
-                <XAxis
-                  dataKey="month"
-                  tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(v) =>
-                    v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v
-                  }
-                />
-                <Tooltip
-                  contentStyle={{
-                    background: "var(--card)",
-                    border: "1px solid var(--border)",
-                    borderRadius: 12,
-                    fontSize: 12,
-                  }}
-                  formatter={(v: any, name: any) => [
-                    Number(v).toLocaleString(),
-                    name === "users" ? "Users" : "Jobs",
-                  ]}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="users"
-                  stroke="var(--primary)"
-                  strokeWidth={2}
-                  fill="url(#userGrad)"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="jobs"
-                  stroke="var(--accent)"
-                  strokeWidth={2}
-                  fill="url(#jobGrad)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-            <div className="flex items-center gap-4 mt-3 justify-center">
-              <div className="flex items-center gap-1.5 text-xs text-[var(--muted-foreground)]">
-                <div className="w-3 h-3 rounded-full bg-[var(--primary)]" />{" "}
-                Users
-              </div>
-              <div className="flex items-center gap-1.5 text-xs text-[var(--muted-foreground)]">
-                <div className="w-3 h-3 rounded-full bg-[var(--accent)]" /> Jobs
-              </div>
-            </div>
-          </div>
-
-          {/* Category Pie */}
-          <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-5 shadow-[var(--shadow-card)]">
-            <h3 className="font-poppins font-semibold text-[var(--foreground)] mb-4">
-              Jobs by Category
-            </h3>
-            <PieChart width={200} height={160} className="mx-auto">
-              <Pie
-                data={categoryData}
-                cx={100}
-                cy={80}
-                innerRadius={45}
-                outerRadius={75}
-                dataKey="count"
-                paddingAngle={3}
-              >
-                {categoryData.map((_, i) => (
-                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                ))}
-              </Pie>
-            </PieChart>
-            <ul className="space-y-1.5 mt-2">
-              {categoryData.map((cat, i) => (
-                <li
-                  key={cat.category}
-                  className="flex items-center justify-between text-xs"
+        {/* 1. OVERVIEW TAB */}
+        {activeTab === "overview" && (
+          <div className="space-y-8">
+            {/* Platform Stats */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                {
+                  label: "Total Registered Users",
+                  value: "85,420",
+                  change: "+3,200 this month",
+                  icon: Users,
+                  color: "var(--primary)",
+                  bg: "bg-[var(--primary)]/10",
+                },
+                {
+                  label: "Published Jobs",
+                  value: jobs.length.toString(),
+                  change: `${jobs.filter(j => j.applyMode === "both" || j.applyMode === "external").length} multi-mode`,
+                  icon: Briefcase,
+                  color: "#22C55E",
+                  bg: "bg-green-100 dark:bg-green-900/30",
+                },
+                {
+                  label: "Companies Onboarded",
+                  value: companies.length.toString(),
+                  change: `${companies.filter(c => c.isVerified).length} verified`,
+                  icon: Building2,
+                  color: "#F59E0B",
+                  bg: "bg-yellow-100 dark:bg-yellow-900/30",
+                },
+                {
+                  label: "In-App Applications",
+                  value: applications.length.toString(),
+                  change: "Easy Apply tracker",
+                  icon: FileText,
+                  color: "#8B5CF6",
+                  bg: "bg-purple-100 dark:bg-purple-900/30",
+                },
+              ].map((stat, i) => (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.07 }}
+                  className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-5 shadow-[var(--shadow-card)]"
                 >
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-2.5 h-2.5 rounded-full"
-                      style={{ background: COLORS[i % COLORS.length] }}
-                    />
-                    <span className="text-[var(--foreground)]">
-                      {cat.category}
-                    </span>
+                  <div className={`w-10 h-10 rounded-xl ${stat.bg} flex items-center justify-center mb-3`}>
+                    <stat.icon size={20} style={{ color: stat.color }} />
                   </div>
-                  <span className="font-semibold text-[var(--muted-foreground)]">
-                    {cat.count.toLocaleString()}
-                  </span>
-                </li>
+                  <p className="text-xs text-[var(--muted-foreground)] font-medium mb-1">
+                    {stat.label}
+                  </p>
+                  <p className="font-poppins text-2xl font-bold text-[var(--foreground)] mb-1">
+                    {stat.value}
+                  </p>
+                  <p className="text-[11px] text-green-600 dark:text-green-400 font-medium">
+                    {stat.change}
+                  </p>
+                </motion.div>
               ))}
-            </ul>
-          </div>
-        </div>
-
-        <div className="grid lg:grid-cols-2 gap-6">
-          {/* Pending Recruiter Approvals */}
-          <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] shadow-[var(--shadow-card)]">
-            <div className="flex items-center justify-between p-5 border-b border-[var(--border)]">
-              <h3 className="font-poppins font-semibold text-[var(--foreground)] flex items-center gap-2">
-                <AlertTriangle size={16} className="text-[var(--warning)]" />
-                Pending Approvals
-                <span className="ml-1 w-5 h-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
-                  {pendingRecruiters.length}
-                </span>
-              </h3>
-              <Button variant="ghost" size="sm">
-                View all
-              </Button>
             </div>
-            {pendingRecruiters.map((r, i) => (
-              <div
-                key={i}
-                className={`p-4 flex items-center gap-4 ${
-                  i < pendingRecruiters.length - 1
-                    ? "border-b border-[var(--border)]"
-                    : ""
-                }`}
-              >
-                <div className="w-10 h-10 rounded-xl bg-[var(--muted)] flex items-center justify-center shrink-0">
-                  <Building2
-                    size={18}
-                    className="text-[var(--muted-foreground)]"
-                  />
+
+            {/* Charts Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 bg-[var(--card)] rounded-2xl border border-[var(--border)] p-6 shadow-[var(--shadow-card)]">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="font-poppins font-semibold text-[var(--foreground)]">
+                      Platform Growth & Marketplace Velocity
+                    </h3>
+                    <p className="text-xs text-[var(--muted-foreground)]">
+                      Candidate registrations and job listings volume
+                    </p>
+                  </div>
+                  <BarChart3 size={18} className="text-[var(--muted-foreground)]" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-[var(--foreground)] truncate">
-                    {r.company}
-                  </p>
-                  <p className="text-xs text-[var(--muted-foreground)]">
-                    {r.email}
-                  </p>
-                </div>
-                <div className="flex gap-1.5 shrink-0">
-                  <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 hover:bg-green-200 transition-colors">
-                    <CheckCircle size={15} />
-                  </button>
-                  <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-100 dark:bg-red-900/30 text-red-500 hover:bg-red-200 transition-colors">
-                    <XCircle size={15} />
-                  </button>
-                  <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-[var(--muted)] text-[var(--muted-foreground)] hover:bg-[var(--border)] transition-colors">
-                    <Eye size={15} />
-                  </button>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={growthData}>
+                      <defs>
+                        <linearGradient id="userGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.5} />
+                      <XAxis dataKey="month" stroke="var(--muted-foreground)" fontSize={12} />
+                      <YAxis stroke="var(--muted-foreground)" fontSize={12} />
+                      <Tooltip />
+                      <Area
+                        type="monotone"
+                        dataKey="users"
+                        stroke="var(--primary)"
+                        strokeWidth={2}
+                        fill="url(#userGrad)"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
-            ))}
-          </div>
 
-          {/* Recent Activity */}
-          <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] shadow-[var(--shadow-card)]">
-            <div className="flex items-center justify-between p-5 border-b border-[var(--border)]">
-              <h3 className="font-poppins font-semibold text-[var(--foreground)] flex items-center gap-2">
-                <Activity size={16} className="text-[var(--primary)]" /> Recent
-                Activity
-              </h3>
-            </div>
-            <div className="p-4 space-y-3">
-              {recentActivity.map((act, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                      act.type === "recruiter"
-                        ? "bg-[var(--muted)] "
-                        : act.type === "job"
-                          ? "bg-green-100 dark:bg-green-900/30"
-                          : act.type === "report"
-                            ? "bg-red-100 dark:bg-red-900/30"
-                            : "bg-[var(--muted)]"
-                    }`}
-                  >
-                    {act.type === "recruiter" ? (
-                      <Building2 size={14} className="text-[var(--primary)]" />
-                    ) : act.type === "job" ? (
-                      <Briefcase size={14} className="text-green-500" />
-                    ) : act.type === "report" ? (
-                      <AlertTriangle size={14} className="text-red-500" />
+              {/* Pending Approvals Queue */}
+              <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-6 shadow-[var(--shadow-card)] flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-poppins font-semibold text-[var(--foreground)] flex items-center gap-2">
+                      <Building2 size={16} className="text-[var(--primary)]" />
+                      Pending Verifications
+                    </h3>
+                    <Badge variant="warning">{pendingCompanies.length} queue</Badge>
+                  </div>
+                  <div className="space-y-3">
+                    {pendingCompanies.length === 0 ? (
+                      <p className="text-xs text-[var(--muted-foreground)] py-4 text-center">
+                        All companies are verified and reviewed!
+                      </p>
                     ) : (
-                      <Users
-                        size={14}
-                        className="text-[var(--muted-foreground)]"
-                      />
+                      pendingCompanies.slice(0, 3).map((comp) => (
+                        <div
+                          key={comp.id}
+                          className="p-3 rounded-xl bg-[var(--muted)]/50 border border-[var(--border)] flex items-center justify-between gap-3"
+                        >
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-[var(--foreground)] truncate">
+                              {comp.name}
+                            </p>
+                            <p className="text-[11px] text-[var(--muted-foreground)] truncate">
+                              {comp.industry} &bull; {comp.location}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => handleCompanyStatusChange(comp.id, "approved", true)}
+                              className="p-1.5 rounded-lg bg-green-500/10 text-green-600 hover:bg-green-500/20"
+                              title="Approve & Verify"
+                            >
+                              <Check size={14} />
+                            </button>
+                            <button
+                              onClick={() => handleCompanyStatusChange(comp.id, "rejected", false)}
+                              className="p-1.5 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20"
+                              title="Reject"
+                            >
+                              <XCircle size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      ))
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-[var(--foreground)]">
-                      {act.action}
-                    </p>
-                    <p className="text-xs text-[var(--muted-foreground)] truncate">
-                      {act.subject}
-                    </p>
-                  </div>
-                  <span className="text-xs text-[var(--muted-foreground)] shrink-0">
-                    {act.time}
-                  </span>
                 </div>
-              ))}
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveTab("companies")}
+                  className="w-full mt-4"
+                >
+                  View All Companies
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Jobs and Applications */}
-        <div className="mt-6 bg-[var(--card)] rounded-2xl border border-[var(--border)] shadow-[var(--shadow-card)]">
-          <div className="p-5 border-b border-[var(--border)]">
-            <h3 className="font-poppins font-semibold text-[var(--foreground)] flex items-center gap-2">
-              <Briefcase size={16} className="text-[var(--primary)]" /> All Job Posts & Applications
-            </h3>
-          </div>
-          <div className="p-0 max-h-[600px] overflow-y-auto">
-            {jobs.length === 0 ? (
-              <div className="p-6 text-center text-[var(--muted-foreground)]">
-                No jobs posted yet.
+        {/* 2. COMPANIES TAB */}
+        {activeTab === "companies" && (
+          <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] shadow-[var(--shadow-card)] overflow-hidden">
+            <div className="p-5 border-b border-[var(--border)] flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h3 className="font-poppins font-bold text-lg text-[var(--foreground)]">
+                  Company Directory & Verification
+                </h3>
+                <p className="text-xs text-[var(--muted-foreground)]">
+                  Only approved companies can publish jobs to the marketplace.
+                </p>
               </div>
-            ) : (
-              <table className="w-full text-sm text-left">
-                <thead className="bg-[var(--muted)] text-[var(--muted-foreground)] text-xs uppercase">
+
+              {/* Search & Filter */}
+              <div className="flex items-center gap-2">
+                <div className="relative w-64">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]" />
+                  <input
+                    type="text"
+                    value={companySearch}
+                    onChange={(e) => setCompanySearch(e.target.value)}
+                    placeholder="Search company..."
+                    className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]"
+                  />
+                </div>
+
+                <select
+                  value={companyFilter}
+                  onChange={(e) => setCompanyFilter(e.target.value)}
+                  className="px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs font-medium text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="rejected">Rejected</option>
+                  <option value="blocked">Blocked</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs text-left">
+                <thead className="bg-[var(--muted)] text-[var(--muted-foreground)] uppercase">
                   <tr>
-                    <th className="px-6 py-3">Job & Recruiter</th>
-                    <th className="px-6 py-3">Company</th>
-                    <th className="px-6 py-3">Posted Date</th>
-                    <th className="px-6 py-3">Applications</th>
+                    <th className="px-6 py-3.5">Company</th>
+                    <th className="px-6 py-3.5">Industry & Size</th>
+                    <th className="px-6 py-3.5">Location</th>
+                    <th className="px-6 py-3.5">Status</th>
+                    <th className="px-6 py-3.5">Verified Badge</th>
+                    <th className="px-6 py-3.5 text-right">Moderation Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border)]">
-                  {jobs.map((job) => {
-                    const jobApplications = applications.filter((app) => app?.job?.id === job.id);
-                    return (
-                      <tr key={job.id} className="hover:bg-[var(--muted)]/50">
-                        <td className="px-6 py-4">
-                          <p className="font-semibold text-[var(--foreground)]">{job.title || "Untitled Position"}</p>
-                          <p className="text-xs text-[var(--muted-foreground)]">{job.type || "Full-time"} &bull; {job.location || "Remote"}</p>
-                        </td>
-                        <td className="px-6 py-4">
-                          <p className="font-medium text-[var(--foreground)]">{job.company?.name || "Unknown Company"}</p>
-                        </td>
-                        <td className="px-6 py-4 text-[var(--muted-foreground)]">
-                          {job.postedAt ? new Date(job.postedAt).toLocaleDateString() : "Recent"}
-                        </td>
-                        <td className="px-6 py-4">
-                          {jobApplications.length > 0 ? (
-                            <div className="space-y-2">
-                              {jobApplications.map((app) => (
-                                <div key={app.id} className="flex items-center gap-2 text-xs p-2 bg-[var(--background)] rounded border border-[var(--border)]">
-                                  <div className="w-6 h-6 rounded-full bg-[var(--muted)] flex items-center justify-center shrink-0">
-                                    <Users size={12} className="text-[var(--primary)]" />
-                                  </div>
-                                  <div>
-                                    <p className="font-medium text-[var(--foreground)]">{app.applicant?.name || "Candidate"}</p>
-                                    <p className="text-[var(--muted-foreground)]">{app.status || "Applied"}</p>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <span className="text-xs text-[var(--muted-foreground)]">No applications yet</span>
+                  {filteredCompanies.map((comp) => (
+                    <tr key={comp.id} className="hover:bg-[var(--muted)]/40 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={comp.logo || "https://images.unsplash.com/photo-1549923746-c502d488b3ea?w=100"}
+                            alt={comp.name}
+                            className="w-9 h-9 rounded-xl object-cover border border-[var(--border)]"
+                          />
+                          <div>
+                            <Link
+                              to={`/companies/${comp.slug || comp.id}`}
+                              className="font-bold text-sm text-[var(--foreground)] hover:text-[var(--primary)] flex items-center gap-1.5"
+                            >
+                              {comp.name}
+                              <ExternalLink size={12} className="text-[var(--muted-foreground)]" />
+                            </Link>
+                            <span className="text-[11px] text-[var(--muted-foreground)]">
+                              /{comp.slug || comp.id}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 font-medium text-[var(--foreground)]">
+                        {comp.industry || "Technology"} &bull; {comp.size || "50-200"}
+                      </td>
+                      <td className="px-6 py-4 text-[var(--muted-foreground)]">
+                        {comp.location || "Remote"}
+                      </td>
+                      <td className="px-6 py-4">
+                        <Badge
+                          variant={
+                            comp.status === "approved"
+                              ? "success"
+                              : comp.status === "pending"
+                                ? "warning"
+                                : "error"
+                          }
+                        >
+                          {comp.status || "pending"}
+                        </Badge>
+                      </td>
+                      <td className="px-6 py-4">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleVerified(comp)}
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-colors ${
+                            comp.isVerified
+                              ? "bg-blue-500/10 text-blue-600 border-blue-500/30 hover:bg-blue-500/20"
+                              : "bg-[var(--muted)] text-[var(--muted-foreground)] border-[var(--border)] hover:bg-[var(--border)]"
+                          }`}
+                        >
+                          <BadgeCheck size={13} className={comp.isVerified ? "text-blue-500" : ""} />
+                          {comp.isVerified ? "Verified" : "Unverified"}
+                        </button>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          {comp.status !== "approved" && (
+                            <button
+                              onClick={() => handleCompanyStatusChange(comp.id, "approved", true)}
+                              className="px-2.5 py-1 rounded-lg bg-green-500/10 text-green-600 hover:bg-green-500/20 font-semibold"
+                            >
+                              Approve
+                            </button>
                           )}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                          {comp.status !== "rejected" && (
+                            <button
+                              onClick={() => handleCompanyStatusChange(comp.id, "rejected", false)}
+                              className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 font-semibold"
+                            >
+                              Reject
+                            </button>
+                          )}
+                          {comp.status !== "blocked" && (
+                            <button
+                              onClick={() => handleCompanyStatusChange(comp.id, "blocked", false)}
+                              className="px-2.5 py-1 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 font-semibold flex items-center gap-1"
+                            >
+                              <Ban size={12} /> Block
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* 3. MODERATION REPORTS TAB */}
+        {activeTab === "reports" && (
+          <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] shadow-[var(--shadow-card)] overflow-hidden">
+            <div className="p-5 border-b border-[var(--border)]">
+              <h3 className="font-poppins font-bold text-lg text-[var(--foreground)]">
+                Trust & Safety Moderation Queue
+              </h3>
+              <p className="text-xs text-[var(--muted-foreground)]">
+                Review flagged job postings and take compliance actions.
+              </p>
+            </div>
+
+            {reports.length === 0 ? (
+              <div className="p-12 text-center">
+                <CheckCircle size={36} className="mx-auto text-green-500 mb-2 opacity-80" />
+                <p className="font-semibold text-sm text-[var(--foreground)]">No unresolved reports</p>
+                <p className="text-xs text-[var(--muted-foreground)]">All job reports have been reviewed.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left">
+                  <thead className="bg-[var(--muted)] text-[var(--muted-foreground)] uppercase">
+                    <tr>
+                      <th className="px-6 py-3.5">Report Reason</th>
+                      <th className="px-6 py-3.5">Target Job ID</th>
+                      <th className="px-6 py-3.5">Details</th>
+                      <th className="px-6 py-3.5">Status</th>
+                      <th className="px-6 py-3.5">Reported Date</th>
+                      <th className="px-6 py-3.5 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--border)]">
+                    {reports.map((rep) => (
+                      <tr key={rep.id} className="hover:bg-[var(--muted)]/40 transition-colors">
+                        <td className="px-6 py-4 font-bold text-[var(--foreground)]">
+                          {rep.reason}
+                        </td>
+                        <td className="px-6 py-4 font-mono text-[var(--muted-foreground)]">
+                          <Link to={`/jobs/${rep.jobId}`} className="text-[var(--primary)] hover:underline">
+                            {rep.jobId.slice(0, 10)}...
+                          </Link>
+                        </td>
+                        <td className="px-6 py-4 text-[var(--foreground)] max-w-xs truncate">
+                          {rep.details || "No additional commentary provided"}
+                        </td>
+                        <td className="px-6 py-4">
+                          <Badge variant={rep.status === "reviewed" ? "success" : rep.status === "pending" ? "warning" : "default"}>
+                            {rep.status}
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-4 text-[var(--muted-foreground)]">
+                          {new Date(rep.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {rep.status !== "reviewed" && (
+                              <button
+                                onClick={() => handleUpdateReport(rep.id, "reviewed")}
+                                className="px-2.5 py-1 rounded-lg bg-green-500/10 text-green-600 hover:bg-green-500/20 font-semibold"
+                              >
+                                Mark Reviewed
+                              </button>
+                            )}
+                            {rep.status !== "dismissed" && (
+                              <button
+                                onClick={() => handleUpdateReport(rep.id, "dismissed")}
+                                className="px-2.5 py-1 rounded-lg bg-[var(--muted)] text-[var(--muted-foreground)] hover:bg-[var(--border)] font-semibold"
+                              >
+                                Dismiss
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
-        </div>
+        )}
 
+        {/* 4. JOBS TAB */}
+        {activeTab === "jobs" && (
+          <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] shadow-[var(--shadow-card)] overflow-hidden">
+            <div className="p-5 border-b border-[var(--border)] flex items-center justify-between">
+              <div>
+                <h3 className="font-poppins font-bold text-lg text-[var(--foreground)]">
+                  All Marketplace Listings
+                </h3>
+                <p className="text-xs text-[var(--muted-foreground)]">
+                  Monitoring apply modes (Easy Apply vs External ATS) and applicant flow.
+                </p>
+              </div>
+              <Badge variant="primary">{jobs.length} Active Listings</Badge>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs text-left">
+                <thead className="bg-[var(--muted)] text-[var(--muted-foreground)] uppercase">
+                  <tr>
+                    <th className="px-6 py-3.5">Job Title</th>
+                    <th className="px-6 py-3.5">Company</th>
+                    <th className="px-6 py-3.5">Apply Mode</th>
+                    <th className="px-6 py-3.5">Location</th>
+                    <th className="px-6 py-3.5">Applications</th>
+                    <th className="px-6 py-3.5 text-right">View</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[var(--border)]">
+                  {jobs.map((job) => (
+                    <tr key={job.id} className="hover:bg-[var(--muted)]/40 transition-colors">
+                      <td className="px-6 py-4 font-bold text-[var(--foreground)]">
+                        {job.title}
+                      </td>
+                      <td className="px-6 py-4 text-[var(--foreground)]">
+                        {job.company?.name || "Company"}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                          job.applyMode === "both"
+                            ? "bg-purple-500/10 text-purple-600"
+                            : job.applyMode === "external"
+                              ? "bg-blue-500/10 text-blue-600"
+                              : "bg-emerald-500/10 text-emerald-600"
+                        }`}>
+                          {job.applyMode === "both" ? "Easy & External" : job.applyMode === "external" ? "External ATS" : "Easy Apply"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-[var(--muted-foreground)]">
+                        {job.location || "Remote"}
+                      </td>
+                      <td className="px-6 py-4 font-semibold text-[var(--foreground)]">
+                        {job.applicationCount || 0} applicants
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <Link
+                          to={`/jobs/${job.id}`}
+                          className="px-2.5 py-1 rounded-lg bg-[var(--muted)] text-[var(--primary)] font-semibold hover:bg-[var(--primary)]/10"
+                        >
+                          Inspect
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

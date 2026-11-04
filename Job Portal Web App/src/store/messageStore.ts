@@ -34,7 +34,7 @@ export interface Conversation {
 interface MessageState {
   conversations: Conversation[]
   messages: Record<string, ChatMessage[]> // conversationId -> messages
-  sendMessage: (conversationId: string, message: Omit<ChatMessage, "id" | "timestamp" | "isRead">) => void
+  sendMessage: (conversationId: string, message: Omit<ChatMessage, "id" | "timestamp" | "isRead" | "conversationId">) => void
   markAsRead: (conversationId: string) => void
   scheduleInterview: (conversationId: string, interview: { jobTitle: string; date: string; time: string; meetLink: string }) => void
 }

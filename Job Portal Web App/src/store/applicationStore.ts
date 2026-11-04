@@ -4,6 +4,7 @@ import type { Application } from "../types"
 
 interface ApplicationState {
   applications: Application[]
+  setApplications: (applications: Application[]) => void
   addApplication: (application: Application) => void
   getApplicationsByJobId: (jobId: string) => Application[]
 }
@@ -12,6 +13,7 @@ export const useApplicationStore = create<ApplicationState>()(
   persist(
     (set, get) => ({
       applications: [],
+      setApplications: (applications) => set({ applications }),
       addApplication: (application) =>
         set((state) => ({ applications: [application, ...state.applications] })),
       getApplicationsByJobId: (jobId) =>

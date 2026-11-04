@@ -55,6 +55,7 @@ const TalentSearch = lazy(() => import("./pages/recruiter/TalentSearch"))
 import PWAInstallPrompt from "./components/layout/PWAInstallPrompt"
 import CookieConsent from "./components/layout/CookieConsent"
 import BackToTop from "./components/layout/BackToTop"
+import CareerHelpBot from "./components/layout/CareerHelpBot"
 
 function PageLoader() {
   return (
@@ -78,6 +79,7 @@ function Layout({ children }: { children: React.ReactNode }) {
       {!isAuth && <Footer />}
       <CookieConsent />
       <PWAInstallPrompt />
+      <CareerHelpBot />
       <BackToTop />
     </div>
   )

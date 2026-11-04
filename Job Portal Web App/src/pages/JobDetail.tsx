@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
 import {
@@ -19,6 +19,8 @@ import {
   Globe,
   ExternalLink,
   ShieldAlert,
+  Navigation,
+  ArrowRight,
 } from "lucide-react"
 import Button from "../components/ui/Button"
 import Badge from "../components/ui/Badge"
@@ -27,9 +29,12 @@ import { useJobStore } from "../store/jobStore"
 import { useAuthStore } from "../store/authStore"
 import { useApplicationStore } from "../store/applicationStore"
 import { useSavedJobsStore } from "../store/savedJobsStore"
-import { triggerConfetti } from "../utils/confetti"
+import { externalApplyService } from "../lib/supabase"
+import EasyApplyModal from "../components/jobs/EasyApplyModal"
+import ExternalApplyPromptModal from "../components/jobs/ExternalApplyPromptModal"
 import ShareJobModal from "../components/jobs/ShareJobModal"
 import ReportJobModal from "../components/jobs/ReportJobModal"
+import { Browser } from "@capacitor/browser"
 import toast from "react-hot-toast"
 
 export default function JobDetail() {
@@ -39,12 +44,37 @@ export default function JobDetail() {
   const { isAuthenticated, user } = useAuthStore()
   const { applications, addApplication } = useApplicationStore()
   const { isJobSaved, toggleSaveJob } = useSavedJobsStore()
-  const [applied, setApplied] = useState(false)
-  const [applying, setApplying] = useState(false)
+
   const [isShareOpen, setIsShareOpen] = useState(false)
   const [isReportOpen, setIsReportOpen] = useState(false)
+  const [isEasyApplyOpen, setIsEasyApplyOpen] = useState(false)
+
+  // External Apply Prompt tracking
+  const [pendingExternalClickId, setPendingExternalClickId] = useState<string | null>(null)
+  const [showExternalPrompt, setShowExternalPrompt] = useState(false)
 
   const job = storeJobs.find((j) => j.id === id) || (storeJobs.length > 0 ? storeJobs[0] : null)
+
+  // Check if already applied
+  const existingApp = applications.find((a) => a.job?.id === job?.id)
+  const isAlreadyApplied = Boolean(existingApp)
+
+  // Listen for window/tab refocus to prompt external apply follow-up
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible" && pendingExternalClickId && job) {
+        // User came back from external site
+        setTimeout(() => {
+          setShowExternalPrompt(true)
+        }, 600)
+      }
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
+    }
+  }, [pendingExternalClickId, job])
 
   if (!job) {
     return (
@@ -64,7 +94,6 @@ export default function JobDetail() {
   }
 
   const isSaved = isJobSaved(job.id)
-  const isAlreadySubmitted = applied || applications.some((a) => a.job?.id === job.id)
 
   const handleToggleSave = () => {
     const nowSaved = toggleSaveJob(job.id)
@@ -74,49 +103,70 @@ export default function JobDetail() {
       toast(`Removed "${job.title}" from saved jobs`, { icon: "🔖" })
     }
   }
+
+  // Handle External Apply Button Click
+  const handleExternalApply = async () => {
+    const url = job.externalApplyUrl || job.company.website
+    if (!url) {
+      toast.error("External application link not available.")
+      return
+    }
+
+    try {
+      // Log click
+      const clickId = await externalApplyService.logClick(job.id, user?.id)
+      setPendingExternalClickId(clickId)
+
+      // Open URL safely via Capacitor Browser on mobile, or window.open on web
+      try {
+        await Browser.open({ url })
+      } catch {
+        window.open(url, "_blank", "noopener,noreferrer")
+      }
+    } catch (err: any) {
+      window.open(url, "_blank", "noopener,noreferrer")
+    }
+  }
+
+  // User confirmed they applied on external site
+  const handleConfirmExternalApply = async () => {
+    if (pendingExternalClickId) {
+      await externalApplyService.confirmApplication(pendingExternalClickId, "applied")
+    }
+
+    if (user && job) {
+      addApplication({
+        id: "ext-" + Date.now(),
+        job,
+        applicant: user,
+        status: "Applied",
+        resumeUrl: "External Apply Submission",
+        source: "external",
+        appliedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+    }
+
+    setShowExternalPrompt(false)
+    setPendingExternalClickId(null)
+    toast.success("Great! Recorded in your Application Tracker as Applied.")
+  }
+
   const similarJobs = storeJobs
     .filter((j) => j.id !== job.id && j.category === job.category)
     .slice(0, 3)
+
   const daysAgo = Math.floor(
     (Date.now() - new Date(job.postedAt).getTime()) / 86400000,
   )
-
-  const handleApply = async () => {
-    if (!isAuthenticated || !user) {
-      toast("Please sign in or create an account to apply.", { icon: "🔒" })
-      navigate("/login")
-      return
-    }
-
-    if (isAlreadySubmitted) {
-      toast("You have already submitted an application for this role.", { icon: "ℹ️" })
-      return
-    }
-
-    setApplying(true)
-    await new Promise((r) => setTimeout(r, 1000))
-    
-    // Save application to store
-    addApplication({
-      id: Math.random().toString(36).substring(2, 9),
-      job: job,
-      applicant: user,
-      status: "Applied",
-      resumeUrl: "",
-      appliedAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    })
-
-    setApplied(true)
-    setApplying(false)
-    triggerConfetti()
-    toast.success("Application submitted successfully! Recruiter notified.")
-  }
 
   const salary =
     job.salaryMin && job.salaryMax
       ? `$${(job.salaryMin / 1000).toFixed(0)}k – $${(job.salaryMax / 1000).toFixed(0)}k/yr`
       : "Salary not specified"
+
+  const lat = job.coordinates?.lat || 37.7749
+  const lng = job.coordinates?.lng || -122.4194
 
   return (
     <div className="min-h-screen bg-[var(--background)] pt-20">
@@ -144,7 +194,7 @@ export default function JobDetail() {
               className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-6 shadow-[var(--shadow-card)]"
             >
               <div className="flex items-start gap-4">
-                <Link to={`/companies/${job.company.id}`} className="shrink-0">
+                <Link to={`/companies/${job.company.slug || job.company.id}`} className="shrink-0">
                   <div className="w-16 h-16 rounded-xl overflow-hidden bg-[var(--muted)] ring-1 ring-[var(--border)]">
                     {job.company.logo ? (
                       <img
@@ -153,100 +203,87 @@ export default function JobDetail() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-[var(--primary)]">
+                      <div className="w-full h-full flex items-center justify-center font-bold text-xl text-[var(--primary)]">
                         {job.company.name.charAt(0)}
                       </div>
                     )}
                   </div>
                 </Link>
+
                 <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    <Badge
-                      variant={
-                        job.type === "Full-time"
-                          ? "primary"
-                          : job.type === "Internship"
-                            ? "accent"
-                            : "default"
-                      }
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Link
+                      to={`/companies/${job.company.slug || job.company.id}`}
+                      className="text-sm font-semibold text-[var(--primary)] hover:underline"
                     >
-                      {job.type}
-                    </Badge>
-                    {job.isFeatured && (
-                      <Badge variant="accent">
-                        <Zap size={10} className="mr-0.5" />
-                        Featured
+                      {job.company.name}
+                    </Link>
+                    {job.company.isVerified && (
+                      <Badge variant="success" size="sm">
+                        ✓ Verified Company
                       </Badge>
                     )}
-                    {job.isUrgent && <Badge variant="error">Urgent Hire</Badge>}
+                    {job.isUrgent && (
+                      <Badge variant="error" size="sm">
+                        Urgent Hiring
+                      </Badge>
+                    )}
                   </div>
-                  <h1 className="font-poppins text-2xl font-bold text-[var(--foreground)] mb-1">
+
+                  <h1 className="font-poppins font-bold text-xl sm:text-2xl text-[var(--foreground)] mt-1 mb-2">
                     {job.title}
                   </h1>
-                  <Link
-                    to={`/companies/${job.company.id}`}
-                    className="flex items-center gap-1 text-[var(--muted-foreground)] text-sm hover:text-[var(--primary)] transition-colors"
-                  >
-                    <Building2 size={14} />
-                    <span className="font-medium">{job.company.name}</span>
-                    {job.company.isVerified && (
-                      <CheckCircle size={13} className="text-[var(--primary)] ml-0.5" />
+
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-[var(--muted-foreground)]">
+                    <span className="flex items-center gap-1.5">
+                      <MapPin size={15} className="text-[var(--primary)]" />
+                      {job.location}
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <Briefcase size={15} className="text-[var(--primary)]" />
+                      {job.type}
+                    </span>
+                    {job.isRemote && (
+                      <span className="flex items-center gap-1.5 text-green-600 dark:text-green-400 font-medium">
+                        <Globe size={15} /> Remote Available
+                      </span>
                     )}
-                  </Link>
+                  </div>
                 </div>
-                <div className="flex gap-2 shrink-0">
-                  <button
-                    onClick={handleToggleSave}
-                    className={`w-9 h-9 flex items-center justify-center rounded-lg border transition-all ${
-                      isSaved
-                        ? "border-[var(--primary)] bg-[var(--primary)]/10 text-[var(--primary)]"
-                        : "border-[var(--border)] hover:border-[var(--primary)] text-[var(--muted-foreground)]"
-                    }`}
-                    aria-label={isSaved ? "Unsave job" : "Save job"}
-                    title={isSaved ? "Remove from saved jobs" : "Save job"}
-                  >
-                    {isSaved ? (
-                      <BookmarkCheck
-                        size={16}
-                        className="text-[var(--primary)]"
-                      />
-                    ) : (
-                      <Bookmark
-                        size={16}
-                        className="text-[var(--muted-foreground)]"
-                      />
-                    )}
-                  </button>
+
+                <div className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={() => setIsShareOpen(true)}
-                    className="w-9 h-9 flex items-center justify-center rounded-lg border border-[var(--border)] hover:border-[var(--primary)] transition-colors"
-                    title="Share opening"
+                    className="p-2.5 rounded-xl border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors"
+                    title="Share this role"
                   >
-                    <Share2
-                      size={16}
-                      className="text-[var(--muted-foreground)]"
-                    />
+                    <Share2 size={16} />
                   </button>
                   <button
                     onClick={() => setIsReportOpen(true)}
-                    className="w-9 h-9 flex items-center justify-center rounded-lg border border-[var(--border)] hover:border-amber-500 hover:text-amber-500 transition-colors"
-                    title="Report suspicious job"
+                    className="p-2.5 rounded-xl border border-[var(--border)] text-[var(--muted-foreground)] hover:text-red-500 hover:bg-[var(--muted)] transition-colors"
+                    title="Report scam or issue"
                   >
-                    <ShieldAlert
-                      size={16}
-                      className="text-[var(--muted-foreground)] hover:text-amber-500"
-                    />
+                    <ShieldAlert size={16} />
                   </button>
                 </div>
               </div>
 
-              {/* Meta */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-5 border-t border-[var(--border)]">
+              {/* Key metadata grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-[var(--border)]">
                 {[
-                  { icon: MapPin, label: "Location", value: job.location },
-                  { icon: DollarSign, label: "Salary", value: salary },
+                  {
+                    icon: DollarSign,
+                    label: "Compensation",
+                    value: salary,
+                  },
                   {
                     icon: Briefcase,
+                    label: "Job Type",
+                    value: job.type,
+                  },
+                  {
+                    icon: Users,
                     label: "Experience",
                     value: job.experience,
                   },
@@ -279,47 +316,55 @@ export default function JobDetail() {
               <h2 className="font-poppins font-bold text-lg text-[var(--foreground)] mb-4">
                 Job Description
               </h2>
-              <p className="text-[var(--foreground)] text-sm leading-relaxed mb-6">
+              <p className="text-[var(--foreground)] text-sm leading-relaxed mb-6 whitespace-pre-line">
                 {job.description}
               </p>
 
-              <h3 className="font-semibold text-[var(--foreground)] mb-3">
-                Responsibilities
-              </h3>
-              <ul className="space-y-2 mb-6">
-                {job.responsibilities.map((r) => (
-                  <li
-                    key={r}
-                    className="flex items-start gap-2 text-sm text-[var(--foreground)]"
-                  >
-                    <CheckCircle
-                      size={15}
-                      className="text-[var(--primary)] shrink-0 mt-0.5"
-                    />
-                    {r}
-                  </li>
-                ))}
-              </ul>
+              {job.responsibilities && job.responsibilities.length > 0 && (
+                <>
+                  <h3 className="font-semibold text-[var(--foreground)] mb-3">
+                    Key Responsibilities
+                  </h3>
+                  <ul className="space-y-2 mb-6">
+                    {job.responsibilities.map((r) => (
+                      <li
+                        key={r}
+                        className="flex items-start gap-2 text-sm text-[var(--foreground)]"
+                      >
+                        <CheckCircle
+                          size={15}
+                          className="text-[var(--primary)] shrink-0 mt-0.5"
+                        />
+                        {r}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
 
-              <h3 className="font-semibold text-[var(--foreground)] mb-3">
-                Requirements
-              </h3>
-              <ul className="space-y-2 mb-6">
-                {job.requirements.map((r) => (
-                  <li
-                    key={r}
-                    className="flex items-start gap-2 text-sm text-[var(--foreground)]"
-                  >
-                    <div className="w-1.5 h-1.5 rounded-full bg-[var(--primary)] shrink-0 mt-2" />
-                    {r}
-                  </li>
-                ))}
-              </ul>
+              {job.requirements && job.requirements.length > 0 && (
+                <>
+                  <h3 className="font-semibold text-[var(--foreground)] mb-3">
+                    Requirements & Qualifications
+                  </h3>
+                  <ul className="space-y-2 mb-6">
+                    {job.requirements.map((r) => (
+                      <li
+                        key={r}
+                        className="flex items-start gap-2 text-sm text-[var(--foreground)]"
+                      >
+                        <div className="w-1.5 h-1.5 rounded-full bg-[var(--primary)] shrink-0 mt-2" />
+                        {r}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
 
               <h3 className="font-semibold text-[var(--foreground)] mb-3">
                 Skills Required
               </h3>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 mb-6">
                 {job.skills.map((skill) => (
                   <span
                     key={skill}
@@ -332,7 +377,7 @@ export default function JobDetail() {
 
               {job.benefits && job.benefits.length > 0 && (
                 <>
-                  <h3 className="font-semibold text-[var(--foreground)] mt-6 mb-3">
+                  <h3 className="font-semibold text-[var(--foreground)] mb-3">
                     Benefits & Perks
                   </h3>
                   <div className="grid grid-cols-2 gap-2">
@@ -353,11 +398,42 @@ export default function JobDetail() {
               )}
             </div>
 
+            {/* LOCATION MAP VIEW (User Request: "relateed to job location it is show in the map view also") */}
+            <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-6 shadow-[var(--shadow-card)] space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-poppins font-bold text-lg text-[var(--foreground)] flex items-center gap-2">
+                  <Navigation size={18} className="text-[var(--primary)]" />
+                  Office Location & GIS Map
+                </h3>
+                <span className="text-xs text-[var(--muted-foreground)]">
+                  {job.location}
+                </span>
+              </div>
+
+              {/* Embedded Interactive Map Frame */}
+              <div className="w-full h-64 rounded-2xl overflow-hidden border border-[var(--border)] shadow-sm relative bg-[var(--muted)]">
+                <iframe
+                  title="Job Location Map"
+                  width="100%"
+                  height="100%"
+                  loading="lazy"
+                  style={{ border: 0 }}
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent(
+                    job.address || job.location
+                  )}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
+                />
+              </div>
+              <p className="text-xs text-[var(--muted-foreground)] flex items-center gap-1.5">
+                <MapPin size={13} className="text-[var(--primary)] shrink-0" />
+                <span>{job.address || `${job.location} · Verified workplace coordinate`}</span>
+              </p>
+            </div>
+
             {/* Similar Jobs */}
             {similarJobs.length > 0 && (
               <div>
                 <h2 className="font-poppins font-bold text-xl text-[var(--foreground)] mb-4">
-                  Similar Jobs
+                  Similar Opportunities
                 </h2>
                 <div className="grid gap-4">
                   {similarJobs.map((j) => (
@@ -380,6 +456,7 @@ export default function JobDetail() {
                   Annual compensation
                 </p>
               </div>
+
               <div className="flex items-center justify-center gap-4 text-sm text-[var(--muted-foreground)] mb-5">
                 <span className="flex items-center gap-1">
                   <Users size={14} />
@@ -392,133 +469,193 @@ export default function JobDetail() {
                 </span>
               </div>
 
-              {isAlreadySubmitted ? (
+              {/* Application Status or Apply Buttons by Mode */}
+              {isAlreadyApplied ? (
                 <div className="text-center p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-                  <CheckCircle
-                    size={24}
-                    className="text-green-500 mx-auto mb-2"
-                  />
+                  <CheckCircle size={24} className="text-green-500 mx-auto mb-2" />
                   <p className="font-semibold text-green-700 dark:text-green-400 text-sm">
                     Application Submitted
                   </p>
                   <p className="text-xs text-green-600 dark:text-green-500 mt-1">
-                    Track status in your application tracker.
+                    Status: <span className="font-bold">{existingApp?.status || "Applied"}</span>
+                    {existingApp?.source === "external" && " (External)"}
                   </p>
                   <Link
                     to="/dashboard/applications"
                     className="inline-block mt-3 text-xs font-semibold text-[var(--primary)] hover:underline"
                   >
-                    View Application Status →
+                    View in Application Tracker →
                   </Link>
                 </div>
               ) : (
-                <Button
-                  variant="primary"
-                  size="lg"
-                  className="w-full"
-                  onClick={handleApply}
-                  isLoading={applying}
-                >
-                  Apply Now
-                </Button>
+                <div className="space-y-2.5">
+                  {/* Mode: Easy Apply */}
+                  {(job.applyMode === "easy" || job.applyMode === "both") && (
+                    <Button
+                      variant="primary"
+                      size="lg"
+                      className="w-full font-bold justify-center"
+                      onClick={() => {
+                        if (!isAuthenticated || !user) {
+                          toast("Please sign in or create an account to apply.", { icon: "🔒" })
+                          navigate("/login")
+                          return
+                        }
+                        setIsEasyApplyOpen(true)
+                      }}
+                    >
+                      <Zap size={16} className="mr-1.5" /> Easy Apply (In-App)
+                    </Button>
+                  )}
+
+                  {/* Mode: External Apply */}
+                  {(job.applyMode === "external" || job.applyMode === "both") && (
+                    <Button
+                      variant={job.applyMode === "both" ? "outline" : "primary"}
+                      size="lg"
+                      className="w-full font-bold justify-center"
+                      onClick={handleExternalApply}
+                    >
+                      <ExternalLink size={16} className="mr-1.5" /> Apply on Company Site
+                    </Button>
+                  )}
+                </div>
               )}
 
+              {/* Bookmark Save Button */}
               <Button
                 variant={isSaved ? "secondary" : "outline"}
                 size="md"
-                className={`w-full mt-2 ${isSaved ? "text-[var(--primary)] border-[var(--primary)]/30 bg-[var(--primary)]/10" : ""}`}
+                className={`w-full mt-2.5 ${
+                  isSaved
+                    ? "text-[var(--primary)] border-[var(--primary)]/30 bg-[var(--primary)]/10"
+                    : ""
+                }`}
                 onClick={handleToggleSave}
               >
                 {isSaved ? (
                   <>
-                    <BookmarkCheck size={15} className="text-[var(--primary)]" /> Saved
+                    <BookmarkCheck size={15} className="text-[var(--primary)] mr-1.5" /> Saved to Bookmarks
                   </>
                 ) : (
                   <>
-                    <Bookmark size={15} /> Save Job
+                    <Bookmark size={15} className="mr-1.5" /> Save Job
                   </>
                 )}
               </Button>
 
-              <div className="mt-4 pt-4 border-t border-[var(--border)] text-center">
+              <div className="mt-4 pt-4 border-t border-[var(--border)] text-center space-y-1">
                 <p className="text-xs text-[var(--muted-foreground)]">
-                  Responding in &lt; 3 days · {job.applicationCount} applicants
+                  ⚡ Recruiter responds in ~2-3 business days
+                </p>
+                <p className="text-[11px] text-[var(--muted-foreground)]">
+                  Apply Mode:{" "}
+                  <strong className="text-[var(--foreground)] uppercase font-mono">
+                    {job.applyMode}
+                  </strong>
                 </p>
               </div>
             </div>
 
-            {/* Company card */}
-            <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-5 shadow-[var(--shadow-card)]">
-              <h3 className="font-semibold text-[var(--foreground)] mb-4">
-                About the Company
-              </h3>
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-12 h-12 rounded-xl overflow-hidden bg-[var(--muted)] ring-1 ring-[var(--border)] shrink-0">
-                  {job.company.logo && (
+            {/* Company Sidebar Card */}
+            <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-5 shadow-[var(--shadow-card)] space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-[var(--muted)] overflow-hidden shrink-0">
+                  {job.company.logo ? (
                     <img
                       src={job.company.logo}
                       alt={job.company.name}
                       className="w-full h-full object-cover"
                     />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center font-bold text-lg text-[var(--primary)]">
+                      {job.company.name.charAt(0)}
+                    </div>
                   )}
                 </div>
                 <div>
-                  <p className="font-semibold text-sm text-[var(--foreground)]">
+                  <h4 className="font-bold text-sm text-[var(--foreground)]">
                     {job.company.name}
-                  </p>
+                  </h4>
                   <p className="text-xs text-[var(--muted-foreground)]">
-                    {job.company.industry}
+                    {job.company.industry || "Technology"}
                   </p>
                 </div>
               </div>
-              <p className="text-sm text-[var(--muted-foreground)] leading-relaxed mb-4 line-clamp-3">
-                {job.company.about}
+
+              <p className="text-xs text-[var(--muted-foreground)] line-clamp-3 leading-relaxed">
+                {job.company.description || job.company.about}
               </p>
-              <div className="space-y-2">
-                {[
-                  { label: "Industry", value: job.company.industry },
-                  { label: "Size", value: job.company.size + " employees" },
-                  { label: "Location", value: job.company.location },
-                ].map((item) => (
-                  <div
-                    key={item.label}
-                    className="flex justify-between text-xs"
-                  >
-                    <span className="text-[var(--muted-foreground)]">
-                      {item.label}
-                    </span>
-                    <span className="font-medium text-[var(--foreground)]">
-                      {item.value}
-                    </span>
-                  </div>
-                ))}
+
+              <div className="pt-2 border-t border-[var(--border)]">
+                <Link
+                  to={`/companies/${job.company.slug || job.company.id}`}
+                  className="text-xs font-bold text-[var(--primary)] hover:underline flex items-center justify-between"
+                >
+                  <span>View Full Company Profile & Jobs</span>
+                  <ArrowRight size={14} />
+                </Link>
               </div>
-              <Link
-                to={`/companies/${job.company.id}`}
-                className="mt-4 flex items-center justify-center gap-1 text-sm font-semibold text-[var(--primary)] hover:underline"
-              >
-                View company profile <ExternalLink size={13} />
-              </Link>
             </div>
           </div>
         </div>
-
-        {/* Share & Report Dialogs */}
-        <ShareJobModal
-          isOpen={isShareOpen}
-          onClose={() => setIsShareOpen(false)}
-          jobTitle={job.title}
-          companyName={job.company.name}
-          jobId={job.id}
-        />
-        <ReportJobModal
-          isOpen={isReportOpen}
-          onClose={() => setIsReportOpen(false)}
-          jobTitle={job.title}
-          companyName={job.company.name}
-          jobId={job.id}
-        />
       </div>
+
+      {/* Easy Apply In-App Modal */}
+      <EasyApplyModal
+        job={job}
+        user={user}
+        isOpen={isEasyApplyOpen}
+        onClose={() => setIsEasyApplyOpen(false)}
+        onSuccess={() => {
+          if (user) {
+            addApplication({
+              id: "app-" + Date.now(),
+              job,
+              applicant: user,
+              status: "Applied",
+              resumeUrl: "Profile Resume",
+              source: "easy",
+              appliedAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            })
+          }
+        }}
+      />
+
+      {/* External Apply Follow-Up Modal */}
+      <ExternalApplyPromptModal
+        job={job}
+        isOpen={showExternalPrompt}
+        onConfirm={handleConfirmExternalApply}
+        onDecline={() => {
+          if (pendingExternalClickId) {
+            externalApplyService.confirmApplication(pendingExternalClickId, "not_applied")
+          }
+          setShowExternalPrompt(false)
+          setPendingExternalClickId(null)
+        }}
+        onDismiss={() => {
+          setShowExternalPrompt(false)
+          setPendingExternalClickId(null)
+        }}
+      />
+
+      {/* Share & Report Modals */}
+      <ShareJobModal
+        isOpen={isShareOpen}
+        onClose={() => setIsShareOpen(false)}
+        jobId={job.id}
+        jobTitle={job.title}
+        companyName={job.company.name}
+      />
+      <ReportJobModal
+        isOpen={isReportOpen}
+        onClose={() => setIsReportOpen(false)}
+        jobId={job.id}
+        jobTitle={job.title}
+        companyName={job.company.name}
+      />
     </div>
   )
 }
