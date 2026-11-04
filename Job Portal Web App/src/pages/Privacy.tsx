@@ -92,6 +92,13 @@ export default function Privacy() {
               <p>
                 You retain the right to delete your HireHub account at any time through your Profile Settings. Account deletion triggers an immediate cascade delete across server-side databases, permanently erasing your profile, uploaded resumes, in-app applications, and external click logs.
               </p>
+              <p className="mt-2">
+                In compliance with Google Play Store policies and GDPR, you can also submit an account removal request at any time through our public{" "}
+                <Link to="/delete-account" className="text-[var(--primary)] font-bold hover:underline">
+                  Account & Data Deletion Request Portal
+                </Link>{" "}
+                without needing to be signed in.
+              </p>
             </section>
 
             <section>

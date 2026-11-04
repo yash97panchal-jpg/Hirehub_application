@@ -17,7 +17,9 @@ import {
   Zap,
   ChevronRight,
   Settings as SettingsIcon,
+  LogOut,
 } from "lucide-react"
+import toast from "react-hot-toast"
 import { useAuthStore } from "../../store/authStore"
 import { mockNotifications, mockJobs } from "../../data/mockData"
 import { useJobStore } from "../../store/jobStore"
@@ -72,7 +74,7 @@ const statusVariant: Record<string, "success" | "warning" | "primary" | "default
   }
 
 export default function UserDashboard() {
-  const { user } = useAuthStore()
+  const { user, logout } = useAuthStore()
   const { jobs: storeJobs } = useJobStore()
   const { savedJobIds } = useSavedJobsStore()
   const { applications: storeApplications } = useApplicationStore()
@@ -117,12 +119,26 @@ export default function UserDashboard() {
               Here's what's happening with your job search.
             </p>
           </div>
-          <Button
-            variant="primary"
-            onClick={() => (window.location.href = "/jobs")}
-          >
-            Find Jobs <ArrowRight size={16} />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="md"
+              onClick={() => {
+                logout()
+                toast.success("Signed out successfully.")
+                window.location.href = "/"
+              }}
+              className="text-red-500 border-red-500/30 hover:bg-red-500/10 font-bold"
+            >
+              <LogOut size={15} /> Sign out
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => (window.location.href = "/jobs")}
+            >
+              Find Jobs <ArrowRight size={16} />
+            </Button>
+          </div>
         </motion.div>
 
         {/* Profile Strength */}

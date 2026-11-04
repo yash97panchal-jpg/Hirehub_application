@@ -11,6 +11,7 @@ import {
   Briefcase,
   FileText,
   CheckCircle2,
+  LogOut,
 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import Button from "../components/ui/Button"
@@ -20,7 +21,7 @@ import toast from "react-hot-toast"
 
 export default function Profile() {
   const navigate = useNavigate()
-  const { user, updateUser } = useAuthStore()
+  const { user, updateUser, logout } = useAuthStore()
 
   const [formData, setFormData] = useState({
     name: "",
@@ -136,9 +137,22 @@ export default function Profile() {
           <Button variant="ghost" onClick={() => navigate(-1)}>
             <ArrowLeft size={16} className="mr-2" /> Back
           </Button>
-          <Button variant="primary" onClick={handleSave}>
-            <Save size={16} className="mr-2" /> Save Changes
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                logout()
+                toast.success("Signed out successfully.")
+                navigate("/")
+              }}
+              className="text-red-500 border-red-500/30 hover:bg-red-500/10 font-bold"
+            >
+              <LogOut size={16} className="mr-1.5" /> Sign out
+            </Button>
+            <Button variant="primary" onClick={handleSave}>
+              <Save size={16} className="mr-2" /> Save Changes
+            </Button>
+          </div>
         </div>
 
         <motion.div

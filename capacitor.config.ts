@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.hirehub.app',
+  appId: 'com.hirehub.jobportal',
   appName: 'HireHub',
   webDir: 'Job Portal Web App/dist',
   server: {

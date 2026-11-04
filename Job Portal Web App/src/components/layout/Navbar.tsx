@@ -487,6 +487,20 @@ export default function Navbar() {
               </div>
             ) : null}
 
+            {/* Mobile Log Out button when authenticated */}
+            {isAuthenticated && !isAuthPage && (
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="lg:hidden flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-red-500 bg-red-500/10 hover:bg-red-500/20 text-xs font-bold transition-colors"
+                title="Log Out of HireHub"
+                aria-label="Sign out"
+              >
+                <LogOut size={14} />
+                <span>Log out</span>
+              </button>
+            )}
+
             {/* Mobile menu button (Hidden on auth pages) */}
             {!isAuthPage && (
               <button
@@ -514,6 +528,29 @@ export default function Navbar() {
             <nav className="px-4 py-4 flex flex-col gap-1">
               {isAuthenticated && user ? (
                 <>
+                  <div className="mb-2 p-3 rounded-2xl bg-[var(--muted)]/60 border border-[var(--border)] flex items-center justify-between">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-8 h-8 rounded-full bg-[var(--primary)] flex items-center justify-center text-white text-xs font-bold shrink-0">
+                        {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-[var(--foreground)] truncate">
+                          {user.name || user.email}
+                        </p>
+                        <p className="text-[10px] text-[var(--primary)] capitalize font-semibold">
+                          {user.role} Account
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="px-2.5 py-1 rounded-lg bg-red-500/10 text-red-500 text-xs font-bold hover:bg-red-500/20 transition-colors flex items-center gap-1 shrink-0"
+                    >
+                      <LogOut size={12} /> Log out
+                    </button>
+                  </div>
+
                   {[
                     { label: "Find Jobs", to: "/jobs", icon: Briefcase },
                     { label: "Companies", to: "/companies", icon: Building2 },

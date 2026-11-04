@@ -3,9 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "cd \"Job Portal Web App\" && npm install && npm run build",
+    "build": "cd \"Job Portal Web App\" && npm run build",
     "dev": "cd \"Job Portal Web App\" && npm run dev",
     "typecheck": "cd \"Job Portal Web App\" && npm run typecheck",
+    "test": "cd \"Job Portal Web App\" && npm run test",
+    "assets": "cd \"Job Portal Web App\" && npm run assets",
+    "android": "cd \"Job Portal Web App\" && npm run android",
+    "ios": "cd \"Job Portal Web App\" && npm run ios",
     "cap": "cd \"Job Portal Web App\" && npx cap"
   }
 }

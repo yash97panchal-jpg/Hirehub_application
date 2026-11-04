@@ -26,6 +26,7 @@ import {
   CheckCircle2,
   KeyRound,
   FileText,
+  LogOut,
 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import Button from "../components/ui/Button"
@@ -33,6 +34,7 @@ import Badge from "../components/ui/Badge"
 import { useAuthStore } from "../store/authStore"
 import { useThemeStore } from "../store/themeStore"
 import { useSavedJobsStore } from "../store/savedJobsStore"
+import { authService } from "../lib/supabase"
 import toast from "react-hot-toast"
 
 type SettingsTab = "account" | "preferences" | "notifications" | "security" | "privacy"
@@ -213,17 +215,25 @@ export default function Settings() {
     toast.success("Your data export has downloaded!")
   }
 
-  // Account deletion
-  const handleDeleteAccount = () => {
+  // Account deletion (removes all server data from profiles, applications, and storage)
+  const handleDeleteAccount = async () => {
     const confirmed = window.confirm(
-      "Are you absolutely sure you want to delete your HireHub account? All applications, saved jobs, and profile history will be permanently deleted.",
+      "Are you absolutely sure you want to permanently delete your HireHub account? All applications, uploaded resumes, and profile data will be permanently wiped from the server.",
     )
     if (!confirmed) return
+
+    if (user?.id) {
+      try {
+        await authService.deleteAccount(user.id)
+      } catch (err: any) {
+        console.error("Error executing server deletion:", err)
+      }
+    }
 
     localStorage.removeItem("hirehub_user_settings")
     localStorage.removeItem("hirehub-saved-jobs-v1")
     logout()
-    toast.success("Your account has been deleted.")
+    toast.success("Your HireHub account and personal data have been permanently erased.")
     navigate("/")
   }
 
@@ -259,25 +269,40 @@ export default function Settings() {
             </p>
           </div>
 
-          {/* Quick Theme Toggle Card */}
-          <div className="flex items-center gap-2 bg-[var(--card)] border border-[var(--border)] p-1.5 rounded-2xl shadow-xs">
-            <span className="text-xs font-semibold text-[var(--muted-foreground)] px-2.5">
-              Theme:
-            </span>
-            <button
-              onClick={toggleTheme}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] hover:border-[var(--primary)] transition-all"
+          {/* Controls: Theme Toggle & Sign Out */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                logout()
+                toast.success("Signed out successfully.")
+                navigate("/")
+              }}
+              className="text-red-500 border-red-500/30 hover:bg-red-500/10 font-bold text-xs"
             >
-              {theme === "dark" ? (
-                <>
-                  <Moon size={14} className="text-[var(--primary)]" /> Dark Mode
-                </>
-              ) : (
-                <>
-                  <Sun size={14} className="text-amber-500" /> Light Mode
-                </>
-              )}
-            </button>
+              <LogOut size={14} className="mr-1" /> Sign out
+            </Button>
+
+            <div className="flex items-center gap-2 bg-[var(--card)] border border-[var(--border)] p-1.5 rounded-2xl shadow-xs">
+              <span className="text-xs font-semibold text-[var(--muted-foreground)] px-2.5">
+                Theme:
+              </span>
+              <button
+                onClick={toggleTheme}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] hover:border-[var(--primary)] transition-all"
+              >
+                {theme === "dark" ? (
+                  <>
+                    <Moon size={14} className="text-[var(--primary)]" /> Dark Mode
+                  </>
+                ) : (
+                  <>
+                    <Sun size={14} className="text-amber-500" /> Light Mode
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
 

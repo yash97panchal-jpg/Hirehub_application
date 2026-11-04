@@ -69,13 +69,13 @@ function projectCoordinates(lat: number, lng: number): { x: number; y: number } 
 
 const WORLD_TECH_HUBS = [
   { name: "All Worldwide", query: "", lat: 25, lng: 10, zoom: 2 },
+  { name: "Bengaluru, India", query: "Bengaluru", lat: 12.9716, lng: 77.5946, zoom: 12 },
   { name: "London, UK", query: "London", lat: 51.5074, lng: -0.1278, zoom: 12 },
   { name: "San Francisco, USA", query: "San Francisco", lat: 37.7749, lng: -122.4194, zoom: 12 },
   { name: "New York, USA", query: "New York", lat: 40.7128, lng: -74.006, zoom: 12 },
   { name: "Tokyo, Japan", query: "Tokyo", lat: 35.6762, lng: 139.6503, zoom: 12 },
   { name: "Berlin, Germany", query: "Berlin", lat: 52.52, lng: 13.405, zoom: 12 },
   { name: "Singapore", query: "Singapore", lat: 1.3521, lng: 103.8198, zoom: 12 },
-  { name: "Bengaluru, India", query: "Bengaluru", lat: 12.9716, lng: 77.5946, zoom: 12 },
   { name: "Toronto, Canada", query: "Toronto", lat: 43.6532, lng: -79.3832, zoom: 12 },
   { name: "Sydney, Australia", query: "Sydney", lat: -33.8688, lng: 151.2093, zoom: 12 },
   { name: "Zurich, Switzerland", query: "Zurich", lat: 47.3769, lng: 8.5417, zoom: 12 },
@@ -399,6 +399,46 @@ export default function JobMap({
     }
   }, [selectedJob, mapStyle])
 
+  // --- Auto-center & fly to activeLocation or fitBounds of filtered jobs ---
+  useEffect(() => {
+    if (!leafletMapRef.current || mapStyle === "vector") return
+    if (!activeLocation) return
+
+    const loc = activeLocation.toLowerCase().trim()
+    const isBangalore = loc.includes("bengaluru") || loc.includes("bangalore") || loc === "blr"
+
+    if (isBangalore) {
+      leafletMapRef.current.flyTo([12.9716, 77.5946], 12, { duration: 1.2 })
+      const bGroup = markerGroups.find(
+        (g) =>
+          g.city.toLowerCase().includes("bengaluru") ||
+          g.address.toLowerCase().includes("bengaluru") ||
+          g.city.toLowerCase().includes("bangalore")
+      )
+      if (bGroup) {
+        setActiveCompanyId(bGroup.companyId)
+        setIsDismissed(false)
+        if (bGroup.jobs.length > 0 && onSelectJob) {
+          onSelectJob(bGroup.jobs[0])
+        }
+      }
+      return
+    }
+
+    const matchedHub = WORLD_TECH_HUBS.find(
+      (h) => h.query && loc.includes(h.query.toLowerCase())
+    )
+    if (matchedHub) {
+      leafletMapRef.current.flyTo([matchedHub.lat, matchedHub.lng], matchedHub.zoom, { duration: 1.2 })
+      return
+    }
+
+    if (markerGroups.length > 0) {
+      const bounds = L.latLngBounds(markerGroups.map((g) => [g.coordinates.lat, g.coordinates.lng]))
+      leafletMapRef.current.fitBounds(bounds, { maxZoom: 13, padding: [40, 40] })
+    }
+  }, [activeLocation, markerGroups, mapStyle])
+
   // --- World Tech Hub Quick Navigation ---
   const handleHubSelect = (hub: (typeof WORLD_TECH_HUBS)[number]) => {
     onLocationChange?.(hub.query)
@@ -416,11 +456,15 @@ export default function JobMap({
       return
     }
 
-    const matched = markerGroups.find(
-      (g) =>
-        g.city.toLowerCase().includes(hub.query.toLowerCase()) ||
-        g.address.toLowerCase().includes(hub.query.toLowerCase()),
-    )
+    const matched = markerGroups.find((g) => {
+      const city = g.city.toLowerCase()
+      const addr = g.address.toLowerCase()
+      const q = hub.query.toLowerCase()
+      if (q.includes("bengaluru") || q.includes("bangalore")) {
+        return city.includes("bengaluru") || city.includes("bangalore") || addr.includes("bengaluru") || addr.includes("bangalore")
+      }
+      return city.includes(q) || addr.includes(q)
+    })
 
     if (matched) {
       setIsDismissed(false)

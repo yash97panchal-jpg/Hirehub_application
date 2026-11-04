@@ -28,6 +28,7 @@ const FAQ = lazy(() => import("./pages/FAQ"))
 const Privacy = lazy(() => import("./pages/Privacy"))
 const Terms = lazy(() => import("./pages/Terms"))
 const Cookies = lazy(() => import("./pages/Cookies"))
+const DeleteAccountRequest = lazy(() => import("./pages/DeleteAccountRequest"))
 const Login = lazy(() => import("./pages/auth/Login"))
 const Register = lazy(() => import("./pages/auth/Register"))
 const UserDashboard = lazy(() => import("./pages/dashboard/UserDashboard"))
@@ -133,6 +134,8 @@ export default function App() {
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/cookies" element={<Cookies />} />
+            <Route path="/delete-account" element={<DeleteAccountRequest />} />
+            <Route path="/data-deletion" element={<DeleteAccountRequest />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/pricing" element={<Pricing />} />
 

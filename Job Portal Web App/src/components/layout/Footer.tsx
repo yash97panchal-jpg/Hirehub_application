@@ -68,6 +68,7 @@ export default function Footer() {
     { label: "Pricing & Plans", href: "/pricing" },
     { label: "Platform FAQs", href: "/faq" },
     { label: "Contact Support", href: "/contact" },
+    { label: "Data Deletion Request", href: "/delete-account" },
   ]
 
   return (
@@ -298,6 +299,8 @@ export default function Footer() {
             <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
             <span>·</span>
             <Link to="/cookies" className="hover:text-white transition-colors">Cookie Preferences</Link>
+            <span>·</span>
+            <Link to="/delete-account" className="hover:text-red-400 transition-colors">Data Deletion</Link>
           </div>
 
           {/* Global Currency & Region indicator + Social icons */}
