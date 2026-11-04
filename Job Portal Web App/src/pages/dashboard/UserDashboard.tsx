@@ -297,12 +297,12 @@ export default function UserDashboard() {
                     key={job.id}
                     className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-4 flex items-center gap-4 hover:border-[var(--primary)] transition-colors shadow-[var(--shadow-card)]"
                   >
-                    <div className="w-11 h-11 rounded-xl overflow-hidden bg-[var(--muted)] shrink-0 ring-1 ring-[var(--border)] flex items-center justify-center font-bold text-[var(--primary)]">
+                    <div className="w-11 h-11 rounded-xl overflow-hidden bg-white dark:bg-slate-900 shrink-0 ring-1 ring-[var(--border)] p-1 flex items-center justify-center font-bold text-[var(--primary)] shadow-xs">
                       {job.company?.logo ? (
                         <img
                           src={job.company.logo}
                           alt={job.company.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain"
                         />
                       ) : (
                         <span>{job.company?.name?.charAt(0) || "J"}</span>

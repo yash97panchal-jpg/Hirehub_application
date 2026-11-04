@@ -119,12 +119,18 @@ export default function JobCard({ job, compact = false }: JobCardProps) {
           to={`/companies/${job.company.id}`}
           className="flex items-center gap-3 min-w-0"
         >
-          <div className="w-12 h-12 rounded-xl overflow-hidden bg-[var(--muted)] shrink-0 ring-1 ring-[var(--border)]">
+          <div className="w-12 h-12 rounded-xl overflow-hidden bg-white dark:bg-slate-900 shrink-0 ring-1 ring-[var(--border)] p-1 flex items-center justify-center shadow-xs">
             {job.company.logo ? (
               <img
                 src={job.company.logo}
                 alt={job.company.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  if (e.currentTarget.parentElement) {
+                    e.currentTarget.parentElement.innerHTML = `<span class="text-base font-bold text-[var(--primary)]">${job.company.name.charAt(0)}</span>`;
+                  }
+                }}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-lg font-bold text-[var(--primary)]">

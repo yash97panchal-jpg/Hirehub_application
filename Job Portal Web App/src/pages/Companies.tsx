@@ -145,12 +145,12 @@ export default function Companies() {
                   </div>
                   {/* Content */}
                   <div className="p-4 -mt-8 relative">
-                    <div className="w-16 h-16 rounded-xl bg-[var(--card)] ring-4 ring-[var(--card)] overflow-hidden mb-3 shadow-[var(--shadow-card)]">
+                    <div className="w-16 h-16 rounded-xl bg-white dark:bg-slate-900 ring-4 ring-[var(--card)] overflow-hidden mb-3 shadow-[var(--shadow-card)] p-1.5 flex items-center justify-center">
                       {company.logo ? (
                         <img
                           src={company.logo}
                           alt={company.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-xl font-bold text-[var(--primary)] bg-[var(--muted)]">

@@ -121,9 +121,9 @@ export default function ApplicationSuccessModal({
 
             <div className="flex items-center gap-3">
               <img
-                src={job.company.logo || "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=80&h=80"}
+                src={job.company.logo || "https://www.google.com/s2/favicons?domain=google.com&sz=128"}
                 alt={job.company.name}
-                className="w-12 h-12 rounded-xl object-cover border border-[var(--border)]"
+                className="w-12 h-12 rounded-xl object-contain p-1 bg-white dark:bg-slate-900 border border-[var(--border)] shadow-xs"
               />
               <div className="flex-1 min-w-0">
                 <h3 className="font-bold text-[var(--foreground)] text-sm truncate">{job.title}</h3>

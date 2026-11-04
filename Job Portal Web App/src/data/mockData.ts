@@ -1,5 +1,6 @@
 import type { Job, Company, User, Application, Notification } from "../types"
 import { globalCompanies, worldwideOpenPositions } from "./worldwideJobs"
+import { getCompanyRealLogo } from "./companyLogos"
 
 const baseCompanies: Company[] = [
   {
@@ -517,7 +518,10 @@ export const mockCompanies: Company[] = [
   ...baseCompanies.filter(
     (b) => !globalCompanies.some((g) => g.id === b.id || g.name.toLowerCase() === b.name.toLowerCase())
   ),
-]
+].map((c) => ({
+  ...c,
+  logo: getCompanyRealLogo(c.name, c.website, c.logo),
+}))
 
 const baseJobs: Job[] = [
   {
@@ -1716,7 +1720,13 @@ const baseJobs: Job[] = [
 export const mockJobs: Job[] = [
   ...worldwideOpenPositions,
   ...baseJobs.filter((b) => !worldwideOpenPositions.some((w) => w.id === b.id)),
-]
+].map((j) => ({
+  ...j,
+  company: {
+    ...j.company,
+    logo: getCompanyRealLogo(j.company.name, j.company.website, j.company.logo),
+  },
+}))
 
 export const mockNotifications: Notification[] = [
   {

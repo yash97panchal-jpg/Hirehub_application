@@ -143,12 +143,12 @@ export default function CompanyPage() {
           {/* Company Header */}
           <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-end justify-between">
             <div className="flex flex-col sm:flex-row gap-5 items-start sm:items-end">
-              <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-[var(--card)] border-4 border-[var(--card)] flex items-center justify-center shrink-0 shadow-lg overflow-hidden ring-1 ring-[var(--border)]">
+              <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-white dark:bg-slate-900 border-4 border-[var(--card)] flex items-center justify-center shrink-0 shadow-lg overflow-hidden ring-1 ring-[var(--border)] p-2">
                 {company.logo ? (
                   <img
                     src={company.logo}
                     alt={company.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
                 ) : (
                   <Building size={48} className="text-[var(--primary)]" />

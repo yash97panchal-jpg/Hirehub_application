@@ -186,12 +186,18 @@ export default function ApplicationTracker() {
                   className="p-5 sm:p-6 hover:bg-[var(--muted)]/20 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4"
                 >
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-[var(--muted)] overflow-hidden shrink-0 flex items-center justify-center font-bold text-lg text-[var(--primary)] border border-[var(--border)]">
+                    <div className="w-12 h-12 rounded-xl bg-white dark:bg-slate-900 overflow-hidden shrink-0 flex items-center justify-center font-bold text-lg text-[var(--primary)] border border-[var(--border)] p-1 shadow-xs">
                       {app.job?.company?.logo ? (
                         <img
                           src={app.job.company.logo}
                           alt={app.job.company.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            if (e.currentTarget.parentElement) {
+                              e.currentTarget.parentElement.innerHTML = `<span class="text-base font-bold text-[var(--primary)]">${app.job?.company?.name?.charAt(0) || "C"}</span>`;
+                            }
+                          }}
                         />
                       ) : (
                         app.job?.company?.name?.charAt(0) || "C"

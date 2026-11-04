@@ -16,7 +16,7 @@ export const useJobStore = create<JobState>()(
       addJob: (job) => set((state) => ({ jobs: [job, ...state.jobs] })),
     }),
     {
-      name: "hirehub-jobs-v6",
+      name: "hirehub-jobs-v7",
     }
   )
 )
