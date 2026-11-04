@@ -21,6 +21,7 @@ import Input from "../../components/ui/Input"
 import Badge from "../../components/ui/Badge"
 import { useAuthStore } from "../../store/authStore"
 import { companyService } from "../../lib/supabase"
+import { getCompanyRealLogo } from "../../data/companyLogos"
 import type { Company } from "../../types"
 
 export default function CompanyProfile() {
@@ -37,7 +38,7 @@ export default function CompanyProfile() {
     website: "https://techcorp.example.com",
     about: "We engineer resilient distributed systems, developer platforms, and enterprise AI.",
     size: "50-200 employees",
-    logo: "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=80&h=80&fit=crop&auto=format",
+    logo: getCompanyRealLogo("TechCorp Labs", "https://github.com"),
     banner: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=300&fit=crop&auto=format",
   })
 
@@ -209,9 +210,16 @@ export default function CompanyProfile() {
 
           <div className="p-6 pt-0 relative">
             {/* Logo */}
-            <div className="w-20 h-20 rounded-2xl bg-[var(--card)] border-4 border-[var(--card)] -mt-10 mb-4 overflow-hidden shadow-md flex items-center justify-center">
+            <div className="w-20 h-20 rounded-2xl bg-white dark:bg-slate-900 border-4 border-[var(--card)] -mt-10 mb-4 overflow-hidden shadow-md flex items-center justify-center p-1">
               {formData.logo ? (
-                <img src={formData.logo} alt="Logo" className="w-full h-full object-cover" />
+                <img
+                  src={getCompanyRealLogo(formData.name, formData.website, formData.logo)}
+                  alt="Logo"
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    e.currentTarget.src = getCompanyRealLogo(formData.name, formData.website)
+                  }}
+                />
               ) : (
                 <Building size={28} className="text-[var(--primary)]" />
               )}

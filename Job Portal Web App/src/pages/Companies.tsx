@@ -14,6 +14,7 @@ import {
 import Badge from "../components/ui/Badge"
 import { companyService } from "../lib/supabase"
 import { mockCompanies } from "../data/mockData"
+import { getCompanyRealLogo } from "../data/companyLogos"
 import type { Company } from "../types"
 
 const industries = [
@@ -39,13 +40,28 @@ export default function Companies() {
       try {
         const comps = await companyService.getCompanies()
         if (comps && comps.length > 0) {
-          setCompaniesList(comps)
+          setCompaniesList(
+            comps.map((c) => ({
+              ...c,
+              logo: getCompanyRealLogo(c.name, c.website, c.logo),
+            }))
+          )
         } else {
-          setCompaniesList(mockCompanies)
+          setCompaniesList(
+            mockCompanies.map((c) => ({
+              ...c,
+              logo: getCompanyRealLogo(c.name, c.website, c.logo),
+            }))
+          )
         }
       } catch (err) {
         console.error("Error loading companies:", err)
-        setCompaniesList(mockCompanies)
+        setCompaniesList(
+          mockCompanies.map((c) => ({
+            ...c,
+            logo: getCompanyRealLogo(c.name, c.website, c.logo),
+          }))
+        )
       } finally {
         setIsLoading(false)
       }
@@ -146,17 +162,14 @@ export default function Companies() {
                   {/* Content */}
                   <div className="p-4 -mt-8 relative">
                     <div className="w-16 h-16 rounded-xl bg-white dark:bg-slate-900 ring-4 ring-[var(--card)] overflow-hidden mb-3 shadow-[var(--shadow-card)] p-1.5 flex items-center justify-center">
-                      {company.logo ? (
-                        <img
-                          src={company.logo}
-                          alt={company.name}
-                          className="w-full h-full object-contain"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-xl font-bold text-[var(--primary)] bg-[var(--muted)]">
-                          {company.name.charAt(0)}
-                        </div>
-                      )}
+                      <img
+                        src={getCompanyRealLogo(company.name, company.website, company.logo)}
+                        alt={company.name}
+                        className="w-full h-full object-contain"
+                        onError={(e) => {
+                          e.currentTarget.src = getCompanyRealLogo(company.name, company.website)
+                        }}
+                      />
                     </div>
                     <div className="flex items-start justify-between">
                       <div>

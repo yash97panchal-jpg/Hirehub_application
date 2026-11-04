@@ -13,6 +13,8 @@ import {
 } from "recharts"
 import Button from "../components/ui/Button"
 import Badge from "../components/ui/Badge"
+import { getCompanyRealLogo } from "../data/companyLogos"
+import { Link } from "react-router-dom"
 
 const expData = [
   { name: "0-1 yrs", salary: 75000 },
@@ -23,10 +25,10 @@ const expData = [
 ]
 
 const topCompanies = [
-  { name: "TechCorp Solutions", salary: "$160k", role: "Senior Engineer", logo: "T" },
-  { name: "FinanceFlow Inc", salary: "$145k", role: "Full Stack Dev", logo: "F" },
-  { name: "GreenTech Ventures", salary: "$130k", role: "Data Scientist", logo: "G" },
-  { name: "DesignHub Agency", salary: "$110k", role: "UX/UI Designer", logo: "D" },
+  { name: "Google", salary: "$240k", role: "Staff AI Engineer", website: "google.com" },
+  { name: "Stripe", salary: "$225k", role: "Principal Systems Architect", website: "stripe.com" },
+  { name: "Netflix", salary: "$215k", role: "Senior Distributed Systems", website: "netflix.com" },
+  { name: "Apple", salary: "$195k", role: "CoreOS / ML Engineer", website: "apple.com" },
 ]
 
 const relatedRoles = [
@@ -246,8 +248,12 @@ export default function SalaryInsights() {
               <div className="space-y-4">
                 {topCompanies.map((company, i) => (
                   <div key={i} className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--primary-deep)] text-white flex items-center justify-center font-bold text-sm shrink-0">
-                      {company.logo}
+                    <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 border border-[var(--border)] p-1 flex items-center justify-center shrink-0 shadow-xs">
+                      <img
+                        src={getCompanyRealLogo(company.name, company.website)}
+                        alt={company.name}
+                        className="w-full h-full object-contain"
+                      />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm text-[var(--foreground)] truncate">{company.name}</p>
@@ -260,9 +266,11 @@ export default function SalaryInsights() {
                   </div>
                 ))}
               </div>
-              <Button variant="outline" className="w-full mt-6 text-sm">
-                View all companies
-              </Button>
+              <Link to="/companies" className="block w-full mt-6">
+                <Button variant="outline" className="w-full text-sm">
+                  View all companies
+                </Button>
+              </Link>
             </motion.div>
 
             {/* Related Roles */}

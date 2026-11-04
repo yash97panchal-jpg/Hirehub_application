@@ -6,7 +6,7 @@ const baseCompanies: Company[] = [
   {
     id: "1",
     name: "TechCorp Solutions",
-    logo: "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=80&h=80&fit=crop&auto=format",
+    logo: "https://www.google.com/s2/favicons?domain=github.com&sz=128",
     banner:
       "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=300&fit=crop&auto=format",
     about:
@@ -26,7 +26,7 @@ const baseCompanies: Company[] = [
   {
     id: "2",
     name: "DesignHub Agency",
-    logo: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=80&h=80&fit=crop&auto=format",
+    logo: "https://www.google.com/s2/favicons?domain=figma.com&sz=128",
     banner:
       "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=1200&h=300&fit=crop&auto=format",
     about:
@@ -46,7 +46,7 @@ const baseCompanies: Company[] = [
   {
     id: "3",
     name: "FinanceFlow Inc",
-    logo: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=80&h=80&fit=crop&auto=format",
+    logo: "https://www.google.com/s2/favicons?domain=paypal.com&sz=128",
     banner:
       "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&h=300&fit=crop&auto=format",
     about:
@@ -66,7 +66,7 @@ const baseCompanies: Company[] = [
   {
     id: "4",
     name: "GreenTech Ventures",
-    logo: "https://images.unsplash.com/photo-1535378917042-10a22c95931a?w=80&h=80&fit=crop&auto=format",
+    logo: "https://www.google.com/s2/favicons?domain=tesla.com&sz=128",
     banner:
       "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=1200&h=300&fit=crop&auto=format",
     about:
@@ -84,7 +84,7 @@ const baseCompanies: Company[] = [
   {
     id: "5",
     name: "CloudScale Systems",
-    logo: "https://images.unsplash.com/photo-1551434678-e076c223a692?w=80&h=80&fit=crop&auto=format",
+    logo: "https://www.google.com/s2/favicons?domain=cloudflare.com&sz=128",
     banner:
       "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&h=300&fit=crop&auto=format",
     about:
@@ -104,7 +104,7 @@ const baseCompanies: Company[] = [
   {
     id: "6",
     name: "BioHealth Labs",
-    logo: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=80&h=80&fit=crop&auto=format",
+    logo: "https://www.google.com/s2/favicons?domain=google.com&sz=128",
     banner:
       "https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=1200&h=300&fit=crop&auto=format",
     about:
@@ -124,7 +124,7 @@ const baseCompanies: Company[] = [
   {
     id: "7",
     name: "NovaAI Technologies",
-    logo: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=80&h=80&fit=crop&auto=format",
+    logo: "https://www.google.com/s2/favicons?domain=google.com&sz=128",
     banner:
       "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1200&h=300&fit=crop&auto=format",
     about:
@@ -144,7 +144,7 @@ const baseCompanies: Company[] = [
   {
     id: "8",
     name: "Apex CyberSecurity",
-    logo: "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=80&h=80&fit=crop&auto=format",
+    logo: "https://www.google.com/s2/favicons?domain=google.com&sz=128",
     banner:
       "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1200&h=300&fit=crop&auto=format",
     about:
@@ -164,7 +164,7 @@ const baseCompanies: Company[] = [
   {
     id: "9",
     name: "DeepMind Matrix Labs",
-    logo: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=80&h=80&fit=crop&auto=format",
+    logo: "https://www.google.com/s2/favicons?domain=deepmind.google&sz=128",
     banner:
       "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1200&h=300&fit=crop&auto=format",
     about:
@@ -184,7 +184,7 @@ const baseCompanies: Company[] = [
   {
     id: "10",
     name: "Koto Robotics & AI",
-    logo: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=80&h=80&fit=crop&auto=format",
+    logo: "https://www.google.com/s2/favicons?domain=google.com&sz=128",
     banner:
       "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=1200&h=300&fit=crop&auto=format",
     about:
@@ -204,7 +204,7 @@ const baseCompanies: Company[] = [
   {
     id: "11",
     name: "FinBavaria Digital",
-    logo: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=80&h=80&fit=crop&auto=format",
+    logo: "https://www.google.com/s2/favicons?domain=google.com&sz=128",
     banner:
       "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=1200&h=300&fit=crop&auto=format",
     about:
@@ -224,7 +224,7 @@ const baseCompanies: Company[] = [
   {
     id: "12",
     name: "SingaCloud Solutions",
-    logo: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=80&h=80&fit=crop&auto=format",
+    logo: "https://www.google.com/s2/favicons?domain=google.com&sz=128",
     banner:
       "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=1200&h=300&fit=crop&auto=format",
     about:
@@ -244,7 +244,7 @@ const baseCompanies: Company[] = [
   {
     id: "13",
     name: "IndusTech Innovations",
-    logo: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=80&h=80&fit=crop&auto=format",
+    logo: "https://www.google.com/s2/favicons?domain=google.com&sz=128",
     banner:
       "https://images.unsplash.com/photo-1596176530529-78163a4f7af2?w=1200&h=300&fit=crop&auto=format",
     about:
@@ -264,7 +264,7 @@ const baseCompanies: Company[] = [
   {
     id: "14",
     name: "MapleSoft Enterprise",
-    logo: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=80&h=80&fit=crop&auto=format",
+    logo: "https://www.google.com/s2/favicons?domain=google.com&sz=128",
     banner:
       "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1200&h=300&fit=crop&auto=format",
     about:
@@ -284,7 +284,7 @@ const baseCompanies: Company[] = [
   {
     id: "15",
     name: "Pacific Quantum",
-    logo: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=80&h=80&fit=crop&auto=format",
+    logo: "https://www.google.com/s2/favicons?domain=google.com&sz=128",
     banner:
       "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=1200&h=300&fit=crop&auto=format",
     about:
@@ -304,7 +304,7 @@ const baseCompanies: Company[] = [
   {
     id: "16",
     name: "Helvetia HealthTech",
-    logo: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=80&h=80&fit=crop&auto=format",
+    logo: "https://www.google.com/s2/favicons?domain=google.com&sz=128",
     banner:
       "https://images.unsplash.com/photo-1515488764276-beab7607c1e6?w=1200&h=300&fit=crop&auto=format",
     about:
@@ -325,7 +325,7 @@ const baseCompanies: Company[] = [
     id: "17",
     name: "Flipkart Tech Hub",
     slug: "flipkart-tech",
-    logo: "https://images.unsplash.com/photo-1572021335469-31706a17aaef?w=80&h=80&fit=crop&auto=format",
+    logo: "https://www.google.com/s2/favicons?domain=flipkart.com&sz=128",
     banner: "https://images.unsplash.com/photo-1596176530529-78163a4f7af2?w=1200&h=300&fit=crop&auto=format",
     about: "India's leading e-commerce ecosystem building hyper-scale retail, payments, and supply-chain platforms.",
     industry: "E-Commerce",
@@ -344,7 +344,7 @@ const baseCompanies: Company[] = [
     id: "18",
     name: "Razorpay Payments",
     slug: "razorpay-payments",
-    logo: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=80&h=80&fit=crop&auto=format",
+    logo: "https://www.google.com/s2/favicons?domain=razorpay.com&sz=128",
     banner: "https://images.unsplash.com/photo-1556742049-0a67c5574f73?w=1200&h=300&fit=crop&auto=format",
     about: "India's leading full-stack financial services platform revolutionizing digital payments and banking APIs.",
     industry: "Fintech",
@@ -363,7 +363,7 @@ const baseCompanies: Company[] = [
     id: "19",
     name: "Swiggy Tech Labs",
     slug: "swiggy-tech",
-    logo: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=80&h=80&fit=crop&auto=format",
+    logo: "https://www.google.com/s2/favicons?domain=swiggy.com&sz=128",
     banner: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&h=300&fit=crop&auto=format",
     about: "Pioneering on-demand convenience and real-time dispatch intelligence across 500+ Indian cities.",
     industry: "Consumer Tech",
@@ -382,7 +382,7 @@ const baseCompanies: Company[] = [
     id: "20",
     name: "Tata Consultancy Services",
     slug: "tcs-global",
-    logo: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=80&h=80&fit=crop&auto=format",
+    logo: "https://www.google.com/s2/favicons?domain=tata.com&sz=128",
     banner: "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=1200&h=300&fit=crop&auto=format",
     about: "Global IT services and digital transformation leader headquartered in Mumbai, serving worldwide enterprises.",
     industry: "Enterprise IT & Cloud",
@@ -401,7 +401,7 @@ const baseCompanies: Company[] = [
     id: "21",
     name: "Zomato Tech Labs",
     slug: "zomato-tech",
-    logo: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=80&h=80&fit=crop&auto=format",
+    logo: "https://www.google.com/s2/favicons?domain=zomato.com&sz=128",
     banner: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1200&h=300&fit=crop&auto=format",
     about: "Hyperlocal commerce and rapid grocery delivery technology engine processing millions of orders daily.",
     industry: "Consumer Tech",
@@ -420,7 +420,7 @@ const baseCompanies: Company[] = [
     id: "22",
     name: "Microsoft IDC Hyderabad",
     slug: "microsoft-hyderabad",
-    logo: "https://images.unsplash.com/photo-1551434678-e076c223a692?w=80&h=80&fit=crop&auto=format",
+    logo: "https://www.google.com/s2/favicons?domain=microsoft.com&sz=128",
     banner: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1200&h=300&fit=crop&auto=format",
     about: "Microsoft India Development Center pioneering Azure cloud infrastructure, AI models, and Teams collaboration.",
     industry: "Cloud & AI",
@@ -439,7 +439,7 @@ const baseCompanies: Company[] = [
     id: "23",
     name: "Zoho Corporation",
     slug: "zoho-corp",
-    logo: "https://images.unsplash.com/photo-1535378917042-10a22c95931a?w=80&h=80&fit=crop&auto=format",
+    logo: "https://www.google.com/s2/favicons?domain=zoho.com&sz=128",
     banner: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=300&fit=crop&auto=format",
     about: "Global SaaS pioneer with 55+ business applications serving over 100 million users worldwide.",
     industry: "Enterprise SaaS",
@@ -458,7 +458,7 @@ const baseCompanies: Company[] = [
     id: "24",
     name: "Tech Mahindra Pune",
     slug: "tech-mahindra-pune",
-    logo: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=80&h=80&fit=crop&auto=format",
+    logo: "https://www.google.com/s2/favicons?domain=techmahindra.com&sz=128",
     banner: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&h=300&fit=crop&auto=format",
     about: "Telecommunications and next-generation cloud migration engineering hub in Pune's IT corridor.",
     industry: "Telecom & Cloud",
@@ -477,7 +477,7 @@ const baseCompanies: Company[] = [
     id: "25",
     name: "Bavarian AutoTech",
     slug: "bavarian-autotech",
-    logo: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=80&h=80&fit=crop&auto=format",
+    logo: "https://www.google.com/s2/favicons?domain=bmwgroup.com&sz=128",
     banner: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=1200&h=300&fit=crop&auto=format",
     about: "Munich-based autonomous driving and electric powertrain telematics software laboratory.",
     industry: "Automotive Tech & AI",
@@ -496,7 +496,7 @@ const baseCompanies: Company[] = [
     id: "26",
     name: "Emirates NextGen Labs",
     slug: "emirates-nextgen",
-    logo: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=80&h=80&fit=crop&auto=format",
+    logo: "https://www.google.com/s2/favicons?domain=emirates.com&sz=128",
     banner: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1200&h=300&fit=crop&auto=format",
     about: "Dubai Future District accelerator pioneering AI governance, smart cities, and sovereign financial cloud.",
     industry: "Smart Cities & FinTech",

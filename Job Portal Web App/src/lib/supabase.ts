@@ -10,6 +10,7 @@ import type {
   FilterState,
 } from "../types"
 import { mockCompanies, mockJobs } from "../data/mockData"
+import { getCompanyRealLogo } from "../data/companyLogos"
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ""
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ""
@@ -35,12 +36,12 @@ export const supabase: SupabaseClient | null = isSupabaseConfigured
 // LOCAL FALLBACK STORE (Ensures instant zero-config preview if env vars not set)
 // -----------------------------------------------------------------------------
 const STORAGE_KEYS = {
-  COMPANIES: "hirehub_supabase_companies_v1",
-  JOBS: "hirehub_supabase_jobs_v1",
-  APPLICATIONS: "hirehub_supabase_applications_v1",
-  CLICKS: "hirehub_supabase_clicks_v1",
-  REPORTS: "hirehub_supabase_reports_v1",
-  MEMBERS: "hirehub_supabase_members_v1",
+  COMPANIES: "hirehub_supabase_companies_v4",
+  JOBS: "hirehub_supabase_jobs_v4",
+  APPLICATIONS: "hirehub_supabase_applications_v4",
+  CLICKS: "hirehub_supabase_clicks_v4",
+  REPORTS: "hirehub_supabase_reports_v4",
+  MEMBERS: "hirehub_supabase_members_v4",
 }
 
 function getStored<T>(key: string, fallback: T): T {
@@ -261,7 +262,11 @@ export const companyService = {
       return (data || []).map(formatCompanyFromDb)
     }
 
-    return getStored<Company[]>(STORAGE_KEYS.COMPANIES, mockCompanies)
+    const stored = getStored<Company[]>(STORAGE_KEYS.COMPANIES, mockCompanies)
+    return (stored || []).map((c) => ({
+      ...c,
+      logo: getCompanyRealLogo(c.name, c.website, c.logo),
+    }))
   },
 
   async getCompanyBySlug(slug: string): Promise<Company | null> {
@@ -276,14 +281,17 @@ export const companyService = {
     }
 
     const all = getStored<Company[]>(STORAGE_KEYS.COMPANIES, mockCompanies)
-    return (
-      all.find(
-        (c) =>
-          c.slug?.toLowerCase() === slug.toLowerCase() ||
-          c.id === slug ||
-          c.name.toLowerCase().replace(/\s+/g, "-") === slug.toLowerCase()
-      ) || null
+    const found = all.find(
+      (c) =>
+        c.slug?.toLowerCase() === slug.toLowerCase() ||
+        c.id === slug ||
+        c.name.toLowerCase().replace(/\s+/g, "-") === slug.toLowerCase()
     )
+    if (!found) return null
+    return {
+      ...found,
+      logo: getCompanyRealLogo(found.name, found.website, found.logo),
+    }
   },
 
   async createCompany(
@@ -915,7 +923,7 @@ function formatCompanyFromDb(row: any): Company {
     id: row.id,
     name: row.name,
     slug: row.slug || row.name?.toLowerCase().replace(/\s+/g, "-"),
-    logo: row.logo,
+    logo: getCompanyRealLogo(row.name, row.website, row.logo),
     banner: row.banner,
     about: row.description || row.about,
     description: row.description || row.about,

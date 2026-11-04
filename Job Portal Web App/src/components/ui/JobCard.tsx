@@ -14,6 +14,7 @@ import {
 import Badge from "./Badge"
 import type { Job } from "../../types"
 import { useSavedJobsStore } from "../../store/savedJobsStore"
+import { getCompanyRealLogo } from "../../data/companyLogos"
 
 interface JobCardProps {
   job: Job
@@ -120,23 +121,14 @@ export default function JobCard({ job, compact = false }: JobCardProps) {
           className="flex items-center gap-3 min-w-0"
         >
           <div className="w-12 h-12 rounded-xl overflow-hidden bg-white dark:bg-slate-900 shrink-0 ring-1 ring-[var(--border)] p-1 flex items-center justify-center shadow-xs">
-            {job.company.logo ? (
-              <img
-                src={job.company.logo}
-                alt={job.company.name}
-                className="w-full h-full object-contain"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                  if (e.currentTarget.parentElement) {
-                    e.currentTarget.parentElement.innerHTML = `<span class="text-base font-bold text-[var(--primary)]">${job.company.name.charAt(0)}</span>`;
-                  }
-                }}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-lg font-bold text-[var(--primary)]">
-                {job.company.name.charAt(0)}
-              </div>
-            )}
+            <img
+              src={getCompanyRealLogo(job.company.name, job.company.website, job.company.logo)}
+              alt={job.company.name}
+              className="w-full h-full object-contain"
+              onError={(e) => {
+                e.currentTarget.src = getCompanyRealLogo(job.company.name, job.company.website)
+              }}
+            />
           </div>
           <div className="min-w-0">
             <p className="text-xs font-semibold text-[var(--muted-foreground)] truncate">

@@ -50,7 +50,12 @@ export const OFFICIAL_COMPANY_LOGOS: Record<string, string> = {
   "emirates-nextgen": "https://www.google.com/s2/favicons?domain=emirates.com&sz=128",
   emirates: "https://www.google.com/s2/favicons?domain=emirates.com&sz=128",
 
-  // Core Tech Ecosystem
+  // Additional Core Ecosystem
+  apex: "https://www.google.com/s2/favicons?domain=paloaltonetworks.com&sz=128",
+  biohealth: "https://www.google.com/s2/favicons?domain=pfizer.com&sz=128",
+  industech: "https://www.google.com/s2/favicons?domain=infosys.com&sz=128",
+  maplesoft: "https://www.google.com/s2/favicons?domain=opentext.com&sz=128",
+  novaai: "https://www.google.com/s2/favicons?domain=anthropic.com&sz=128",
   techcorp: "https://www.google.com/s2/favicons?domain=github.com&sz=128",
   designhub: "https://www.google.com/s2/favicons?domain=figma.com&sz=128",
   financeflow: "https://www.google.com/s2/favicons?domain=paypal.com&sz=128",
@@ -78,8 +83,12 @@ export function getCompanyRealLogo(
   website?: string,
   existingLogo?: string
 ): string {
-  // If already a valid non-Unsplash URL (e.g. SVG or favicon), use it
-  if (existingLogo && !existingLogo.includes("images.unsplash.com") && existingLogo.startsWith("http")) {
+  // If already a valid non-Unsplash URL (e.g. SVG, favicon, data URL), use it
+  if (
+    existingLogo &&
+    !existingLogo.includes("images.unsplash.com") &&
+    (existingLogo.startsWith("http") || existingLogo.startsWith("data:image") || existingLogo.startsWith("/"))
+  ) {
     return existingLogo
   }
 

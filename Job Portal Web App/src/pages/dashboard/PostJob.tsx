@@ -21,6 +21,7 @@ import Input from "../../components/ui/Input"
 import { useJobStore } from "../../store/jobStore"
 import { useAuthStore } from "../../store/authStore"
 import { jobService, companyService } from "../../lib/supabase"
+import { getCompanyRealLogo } from "../../data/companyLogos"
 import type { ApplyMode, JobType, RemoteType, ScreeningQuestion } from "../../types"
 
 const steps = ["Role Basics", "Apply Mode & Screening", "Requirements & Perks", "Review & Post"]
@@ -146,7 +147,7 @@ export default function PostJob() {
         id: user?.companyId || "comp-meta",
         name: user?.name ? `${user.name}'s Company` : "TechCorp Labs",
         slug: "techcorp-labs",
-        logo: "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=80&h=80&fit=crop&auto=format",
+        logo: getCompanyRealLogo(user?.name ? `${user.name}'s Company` : "TechCorp Labs"),
         banner: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=300&fit=crop&auto=format",
         about: "Leading technology innovation laboratory building high-performance systems.",
         industry: "Technology",

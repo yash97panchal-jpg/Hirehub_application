@@ -42,6 +42,7 @@ import { mockStats } from "../../data/mockData"
 import { useJobStore } from "../../store/jobStore"
 import { useApplicationStore } from "../../store/applicationStore"
 import { companyService, moderationService } from "../../lib/supabase"
+import { getCompanyRealLogo } from "../../data/companyLogos"
 import type { Company, JobReport } from "../../types"
 import toast from "react-hot-toast"
 
@@ -413,11 +414,16 @@ export default function AdminDashboard() {
                     <tr key={comp.id} className="hover:bg-[var(--muted)]/40 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <img
-                            src={comp.logo || "https://images.unsplash.com/photo-1549923746-c502d488b3ea?w=100"}
-                            alt={comp.name}
-                            className="w-9 h-9 rounded-xl object-cover border border-[var(--border)]"
-                          />
+                          <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 border border-[var(--border)] p-1 flex items-center justify-center shrink-0 shadow-xs">
+                            <img
+                              src={getCompanyRealLogo(comp.name, comp.website, comp.logo)}
+                              alt={comp.name}
+                              className="w-full h-full object-contain"
+                              onError={(e) => {
+                                e.currentTarget.src = getCompanyRealLogo(comp.name, comp.website)
+                              }}
+                            />
+                          </div>
                           <div>
                             <Link
                               to={`/companies/${comp.slug || comp.id}`}

@@ -15,6 +15,7 @@ import {
 } from "lucide-react"
 import { Link } from "react-router-dom"
 import Button from "../ui/Button"
+import { getCompanyRealLogo } from "../../data/companyLogos"
 import type { Job, User } from "../../types"
 import type { SentEmailRecord } from "../../services/emailService"
 
@@ -121,9 +122,12 @@ export default function ApplicationSuccessModal({
 
             <div className="flex items-center gap-3">
               <img
-                src={job.company.logo || "https://www.google.com/s2/favicons?domain=google.com&sz=128"}
+                src={getCompanyRealLogo(job.company.name, job.company.website, job.company.logo)}
                 alt={job.company.name}
                 className="w-12 h-12 rounded-xl object-contain p-1 bg-white dark:bg-slate-900 border border-[var(--border)] shadow-xs"
+                onError={(e) => {
+                  e.currentTarget.src = getCompanyRealLogo(job.company.name, job.company.website)
+                }}
               />
               <div className="flex-1 min-w-0">
                 <h3 className="font-bold text-[var(--foreground)] text-sm truncate">{job.title}</h3>

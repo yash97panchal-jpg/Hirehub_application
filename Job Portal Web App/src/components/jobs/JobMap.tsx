@@ -16,6 +16,7 @@ import {
   Layers,
 } from "lucide-react"
 import type { Job } from "../../types"
+import { getCompanyRealLogo } from "../../data/companyLogos"
 import {
   ALL_LOCATION_HUBS,
   COUNTRIES_CATALOG,
@@ -120,7 +121,7 @@ function createCustomPinIcon(group: CompanyMarkerGroup, isSelected: boolean): L.
           <path d="M18 44C18 44 34 27.5 34 18C34 9.16344 26.8366 2 18 2C9.16344 2 2 9.16344 2 18C2 27.5 18 44 18 44Z" fill="${pinFill}" stroke="#FFFFFF" stroke-width="${isSelected ? 2.5 : 1.5}"/>
           <circle cx="18" cy="18" r="11" fill="#FFFFFF"/>
         </svg>
-        <img src="${group.logo}" alt="${group.companyName}" class="hirehub-marker-logo" onerror="this.src='https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=80&h=80&fit=crop&auto=format'" />
+        <img src="${group.logo}" alt="${group.companyName}" class="hirehub-marker-logo" onerror="this.src='https://www.google.com/s2/favicons?domain=google.com&sz=128'" />
       </div>
       <div class="hirehub-marker-badge">
         <span>${shortName}</span>
@@ -191,9 +192,7 @@ export default function JobMap({
         groupsMap.set(key, {
           companyId: job.company.id,
           companyName: job.company.name,
-          logo:
-            job.company.logo ||
-            "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=80&h=80&fit=crop&auto=format",
+          logo: getCompanyRealLogo(job.company.name, job.company.website, job.company.logo),
           banner: job.company.banner,
           address: addr,
           city: job.location,
@@ -890,11 +889,11 @@ export default function JobMap({
                 </button>
 
                 {/* Company Logo badge */}
-                <div className="absolute -bottom-3 left-4 w-12 h-12 rounded-xl bg-white dark:bg-[#20102b] p-1 shadow-lg border border-black/10 dark:border-white/10">
+                <div className="absolute -bottom-3 left-4 w-12 h-12 rounded-xl bg-white dark:bg-[#20102b] p-1.5 shadow-lg border border-black/10 dark:border-white/10 flex items-center justify-center">
                   <img
-                    src={activeGroup.logo}
+                    src={getCompanyRealLogo(activeGroup.companyName, undefined, activeGroup.logo)}
                     alt={activeGroup.companyName}
-                    className="w-full h-full object-cover rounded-lg"
+                    className="w-full h-full object-contain rounded-lg"
                   />
                 </div>
               </div>

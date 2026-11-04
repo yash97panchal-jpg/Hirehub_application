@@ -24,6 +24,7 @@ import { useAuthStore } from "../../store/authStore"
 import { applicationService } from "../../lib/supabase"
 import ApplicationSuccessModal from "../../components/jobs/ApplicationSuccessModal"
 import { emailService } from "../../services/emailService"
+import { getCompanyRealLogo } from "../../data/companyLogos"
 import type { Application, ApplicationStatus } from "../../types"
 import toast from "react-hot-toast"
 
@@ -187,16 +188,13 @@ export default function ApplicationTracker() {
                 >
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 rounded-xl bg-white dark:bg-slate-900 overflow-hidden shrink-0 flex items-center justify-center font-bold text-lg text-[var(--primary)] border border-[var(--border)] p-1 shadow-xs">
-                      {app.job?.company?.logo ? (
+                      {app.job?.company?.name ? (
                         <img
-                          src={app.job.company.logo}
+                          src={getCompanyRealLogo(app.job.company.name, app.job.company.website, app.job.company.logo)}
                           alt={app.job.company.name}
                           className="w-full h-full object-contain"
                           onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            if (e.currentTarget.parentElement) {
-                              e.currentTarget.parentElement.innerHTML = `<span class="text-base font-bold text-[var(--primary)]">${app.job?.company?.name?.charAt(0) || "C"}</span>`;
-                            }
+                            e.currentTarget.src = getCompanyRealLogo(app.job?.company?.name || "Company", app.job?.company?.website);
                           }}
                         />
                       ) : (
@@ -312,7 +310,11 @@ export default function ApplicationTracker() {
             timestamp: previewApp.appliedAt,
             status: "delivered",
             companyName: previewApp.job?.company?.name || "Company",
-            companyLogo: previewApp.job?.company?.logo,
+            companyLogo: getCompanyRealLogo(
+              previewApp.job?.company?.name || "Company",
+              previewApp.job?.company?.website,
+              previewApp.job?.company?.logo
+            ),
             companyLocation: previewApp.job?.company?.location || previewApp.job?.location,
             companyWebsite: previewApp.job?.company?.website,
             jobTitle: previewApp.job?.title || "Role",

@@ -36,6 +36,7 @@ import ApplicationSuccessModal from "../components/jobs/ApplicationSuccessModal"
 import ShareJobModal from "../components/jobs/ShareJobModal"
 import ReportJobModal from "../components/jobs/ReportJobModal"
 import { emailService, type SentEmailRecord } from "../services/emailService"
+import { getCompanyRealLogo } from "../data/companyLogos"
 import { Browser } from "@capacitor/browser"
 import toast from "react-hot-toast"
 
@@ -213,17 +214,14 @@ export default function JobDetail() {
               <div className="flex items-start gap-4">
                 <Link to={`/companies/${job.company.slug || job.company.id}`} className="shrink-0">
                   <div className="w-16 h-16 rounded-xl overflow-hidden bg-white dark:bg-slate-900 ring-1 ring-[var(--border)] p-1.5 flex items-center justify-center shadow-xs">
-                    {job.company.logo ? (
-                      <img
-                        src={job.company.logo}
-                        alt={job.company.name}
-                        className="w-full h-full object-contain"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center font-bold text-xl text-[var(--primary)]">
-                        {job.company.name.charAt(0)}
-                      </div>
-                    )}
+                    <img
+                      src={getCompanyRealLogo(job.company.name, job.company.website, job.company.logo)}
+                      alt={job.company.name}
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        e.currentTarget.src = getCompanyRealLogo(job.company.name, job.company.website)
+                      }}
+                    />
                   </div>
                 </Link>
 
@@ -578,17 +576,14 @@ export default function JobDetail() {
             <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-5 shadow-[var(--shadow-card)] space-y-4">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-white dark:bg-slate-900 ring-1 ring-[var(--border)] overflow-hidden shrink-0 p-1 flex items-center justify-center shadow-xs">
-                  {job.company.logo ? (
-                    <img
-                      src={job.company.logo}
-                      alt={job.company.name}
-                      className="w-full h-full object-contain"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center font-bold text-lg text-[var(--primary)]">
-                      {job.company.name.charAt(0)}
-                    </div>
-                  )}
+                  <img
+                    src={getCompanyRealLogo(job.company.name, job.company.website, job.company.logo)}
+                    alt={job.company.name}
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      e.currentTarget.src = getCompanyRealLogo(job.company.name, job.company.website)
+                    }}
+                  />
                 </div>
                 <div>
                   <h4 className="font-bold text-sm text-[var(--foreground)]">

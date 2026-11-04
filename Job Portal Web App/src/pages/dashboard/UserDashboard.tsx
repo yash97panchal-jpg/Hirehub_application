@@ -29,6 +29,7 @@ import { isLocalhost } from "../../utils/env"
 import Badge from "../../components/ui/Badge"
 import Button from "../../components/ui/Button"
 import ProfileStrengthRing from "../../components/dashboard/ProfileStrengthRing"
+import { getCompanyRealLogo } from "../../data/companyLogos"
 
 const applicationStats = [
   {
@@ -237,12 +238,15 @@ export default function UserDashboard() {
                         : ""
                     }`}
                   >
-                    <div className="w-11 h-11 rounded-xl overflow-hidden bg-[var(--muted)] shrink-0 ring-1 ring-[var(--border)] flex items-center justify-center font-bold text-[var(--primary)]">
-                      {app.job?.company?.logo ? (
+                    <div className="w-11 h-11 rounded-xl overflow-hidden bg-white dark:bg-slate-900 shrink-0 ring-1 ring-[var(--border)] p-1 flex items-center justify-center font-bold text-[var(--primary)] shadow-xs">
+                      {app.job?.company?.name ? (
                         <img
-                          src={app.job?.company?.logo}
+                          src={getCompanyRealLogo(app.job?.company?.name, app.job?.company?.website, app.job?.company?.logo)}
                           alt={app.job?.company?.name || "Company"}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain"
+                          onError={(e) => {
+                            e.currentTarget.src = getCompanyRealLogo(app.job?.company?.name || "Company")
+                          }}
                         />
                       ) : (
                         <span>{app.job?.company?.name?.charAt(0) || "J"}</span>
@@ -298,11 +302,14 @@ export default function UserDashboard() {
                     className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-4 flex items-center gap-4 hover:border-[var(--primary)] transition-colors shadow-[var(--shadow-card)]"
                   >
                     <div className="w-11 h-11 rounded-xl overflow-hidden bg-white dark:bg-slate-900 shrink-0 ring-1 ring-[var(--border)] p-1 flex items-center justify-center font-bold text-[var(--primary)] shadow-xs">
-                      {job.company?.logo ? (
+                      {job.company?.name ? (
                         <img
-                          src={job.company.logo}
+                          src={getCompanyRealLogo(job.company.name, job.company.website, job.company.logo)}
                           alt={job.company.name}
                           className="w-full h-full object-contain"
+                          onError={(e) => {
+                            e.currentTarget.src = getCompanyRealLogo(job.company.name, job.company.website)
+                          }}
                         />
                       ) : (
                         <span>{job.company?.name?.charAt(0) || "J"}</span>

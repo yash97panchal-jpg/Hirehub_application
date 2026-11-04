@@ -20,6 +20,7 @@ import Button from "../components/ui/Button"
 import Badge from "../components/ui/Badge"
 import { companyService, jobService } from "../lib/supabase"
 import { mockCompanies, mockJobs } from "../data/mockData"
+import { getCompanyRealLogo } from "../data/companyLogos"
 import type { Company, Job } from "../types"
 import toast from "react-hot-toast"
 
@@ -39,7 +40,10 @@ export default function CompanyPage() {
       try {
         const found = await companyService.getCompanyBySlug(id)
         if (found) {
-          setCompany(found)
+          setCompany({
+            ...found,
+            logo: getCompanyRealLogo(found.name, found.website, found.logo),
+          })
           // Fetch open jobs for this company
           const allJobs = await jobService.getJobs()
           const matched = allJobs.filter(
@@ -49,7 +53,22 @@ export default function CompanyPage() {
               j.company?.name.toLowerCase() === found.name.toLowerCase() ||
               (j as any).companyId === found.id
           )
-          setCompanyJobs(matched.length > 0 ? matched : mockJobs.filter((j) => j.company?.id === found.id || j.company?.name.toLowerCase() === found.name.toLowerCase()))
+          setCompanyJobs(
+            (matched.length > 0
+              ? matched
+              : mockJobs.filter(
+                  (j) =>
+                    j.company?.id === found.id ||
+                    j.company?.name.toLowerCase() === found.name.toLowerCase()
+                )
+            ).map((j) => ({
+              ...j,
+              company: {
+                ...j.company,
+                logo: getCompanyRealLogo(j.company.name, j.company.website, j.company.logo),
+              },
+            }))
+          )
         } else {
           // Fallback to mock search
           const fallback = mockCompanies.find(
@@ -60,9 +79,25 @@ export default function CompanyPage() {
               c.name.toLowerCase() === id.toLowerCase()
           )
           if (fallback) {
-            setCompany(fallback)
+            setCompany({
+              ...fallback,
+              logo: getCompanyRealLogo(fallback.name, fallback.website, fallback.logo),
+            })
             setCompanyJobs(
-              mockJobs.filter((j) => j.company.id === fallback.id || j.company.name.toLowerCase() === fallback.name.toLowerCase() || (j as any).companyId === fallback.id)
+              mockJobs
+                .filter(
+                  (j) =>
+                    j.company.id === fallback.id ||
+                    j.company.name.toLowerCase() === fallback.name.toLowerCase() ||
+                    (j as any).companyId === fallback.id
+                )
+                .map((j) => ({
+                  ...j,
+                  company: {
+                    ...j.company,
+                    logo: getCompanyRealLogo(j.company.name, j.company.website, j.company.logo),
+                  },
+                }))
             )
           }
         }
@@ -144,15 +179,14 @@ export default function CompanyPage() {
           <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-end justify-between">
             <div className="flex flex-col sm:flex-row gap-5 items-start sm:items-end">
               <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-white dark:bg-slate-900 border-4 border-[var(--card)] flex items-center justify-center shrink-0 shadow-lg overflow-hidden ring-1 ring-[var(--border)] p-2">
-                {company.logo ? (
-                  <img
-                    src={company.logo}
-                    alt={company.name}
-                    className="w-full h-full object-contain"
-                  />
-                ) : (
-                  <Building size={48} className="text-[var(--primary)]" />
-                )}
+                <img
+                  src={getCompanyRealLogo(company.name, company.website, company.logo)}
+                  alt={company.name}
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    e.currentTarget.src = getCompanyRealLogo(company.name, company.website)
+                  }}
+                />
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
