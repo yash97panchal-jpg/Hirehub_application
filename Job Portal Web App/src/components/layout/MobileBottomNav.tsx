@@ -14,7 +14,15 @@ export default function MobileBottomNav() {
   const totalUnread = conversations.reduce((acc, c) => acc + (c.unreadCount || 0), 0)
 
   // Don't show bottom nav on auth screens
-  const isAuthScreen = ["/login", "/register", "/forgot-password"].includes(location.pathname)
+  const isAuthScreen = [
+    "/login",
+    "/signin",
+    "/sign-in",
+    "/register",
+    "/signup",
+    "/sign-up",
+    "/forgot-password",
+  ].includes(location.pathname)
   if (isAuthScreen) return null
 
   const isSeeker = !user || user.role === "job_seeker"

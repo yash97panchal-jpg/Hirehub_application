@@ -62,7 +62,15 @@ export default function Navbar() {
   const notifRef = useRef<HTMLDivElement>(null)
   const profileRef = useRef<HTMLDivElement>(null)
 
-  const isAuthPage = ["/login", "/register", "/forgot-password"].includes(location.pathname)
+  const isAuthPage = [
+    "/login",
+    "/signin",
+    "/sign-in",
+    "/register",
+    "/signup",
+    "/sign-up",
+    "/forgot-password",
+  ].includes(location.pathname)
 
   const { conversations } = useMessageStore()
   const unreadMsgCount = conversations.reduce((acc, c) => acc + (c.unreadCount || 0), 0)
@@ -544,7 +552,7 @@ export default function Navbar() {
                       onClick={handleLogout}
                       className="px-2.5 py-1 rounded-lg bg-red-500/10 text-red-500 text-xs font-bold hover:bg-red-500/20 transition-colors flex items-center gap-1 shrink-0"
                     >
-                      <LogOut size={12} /> Log out
+                      <LogOut size={12} /> Sign out
                     </button>
                   </div>
 

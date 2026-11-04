@@ -241,7 +241,7 @@ export default function Settings() {
     { id: "account", label: "Account & Profile", icon: User },
     { id: "preferences", label: "Job Preferences", icon: Briefcase },
     { id: "notifications", label: "Notifications", icon: Bell },
-    { id: "security", label: "Security & Login", icon: Shield },
+    { id: "security", label: "Security & Sign In", icon: Shield },
     { id: "privacy", label: "Privacy & Data", icon: Lock },
   ]
 
@@ -960,13 +960,13 @@ export default function Settings() {
                     </div>
                   </div>
 
-                  {/* Active Login Sessions */}
+                  {/* Active Sign In Sessions */}
                   <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-6 shadow-xs">
                     <h3 className="font-semibold text-base text-[var(--foreground)] mb-1">
-                      Active Login Sessions
+                      Active Sign In Sessions
                     </h3>
                     <p className="text-xs text-[var(--muted-foreground)] mb-4">
-                      Devices currently authorized and logged into your account.
+                      Devices currently authorized and signed into your account.
                     </p>
 
                     <div className="space-y-3">
@@ -1000,7 +1000,7 @@ export default function Settings() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => toast.success("Logged out of mobile session")}
+                          onClick={() => toast.success("Signed out of mobile session")}
                         >
                           Revoke
                         </Button>

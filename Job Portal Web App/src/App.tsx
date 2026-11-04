@@ -73,7 +73,15 @@ function PageLoader() {
 
 function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation()
-  const isAuth = ["/login", "/register", "/forgot-password"].includes(location.pathname)
+  const isAuth = [
+    "/login",
+    "/signin",
+    "/sign-in",
+    "/register",
+    "/signup",
+    "/sign-up",
+    "/forgot-password",
+  ].includes(location.pathname)
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--background)] text-[var(--foreground)]">
@@ -221,6 +229,8 @@ export default function App() {
 
             {/* Public Auth */}
             <Route path="/login" element={<Login />} />
+            <Route path="/signin" element={<Login />} />
+            <Route path="/sign-in" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
 

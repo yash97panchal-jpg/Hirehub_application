@@ -36,6 +36,7 @@ export default function Login() {
 
   // Auto-redirect if already authenticated
   useEffect(() => {
+    document.title = "Sign In — HireHub"
     if (isAuthenticated && user) {
       const target =
         user.role === "admin"

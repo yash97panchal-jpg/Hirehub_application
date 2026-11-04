@@ -23,7 +23,7 @@ const translations: Record<Language, Record<string, string>> = {
     signIn: "Sign In",
     postJob: "Post a Job",
     dashboard: "Dashboard",
-    logout: "Log Out",
+    logout: "Sign Out",
     searchPlaceholder: "Job title, keywords, or company...",
     locationPlaceholder: "City, state, or remote...",
   },

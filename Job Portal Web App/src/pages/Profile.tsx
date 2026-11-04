@@ -122,10 +122,17 @@ export default function Profile() {
 
   if (!user) {
     return (
-      <div className="min-h-screen pt-24 flex items-center justify-center">
-        <p className="text-[var(--muted-foreground)]">
-          Please log in to view your profile.
-        </p>
+      <div className="min-h-screen pt-24 px-4 flex items-center justify-center">
+        <div className="max-w-md w-full bg-[var(--card)] p-8 rounded-3xl border border-[var(--border)] text-center shadow-lg">
+          <User size={48} className="mx-auto text-[var(--muted-foreground)] mb-3 opacity-60" />
+          <h2 className="text-xl font-bold text-[var(--foreground)]">Sign In Required</h2>
+          <p className="text-sm text-[var(--muted-foreground)] mt-2 mb-6">
+            Please sign in to view and manage your profile details, resume, and preferences.
+          </p>
+          <Button variant="primary" className="w-full font-bold" onClick={() => navigate("/login")}>
+            Sign In
+          </Button>
+        </div>
       </div>
     )
   }
