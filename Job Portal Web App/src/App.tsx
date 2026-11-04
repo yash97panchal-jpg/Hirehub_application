@@ -1,10 +1,12 @@
-import { lazy, Suspense, useEffect } from "react"
+import { lazy, Suspense, useEffect, useState } from "react"
 import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom"
 import { Toaster } from "react-hot-toast"
 import Navbar from "./components/layout/Navbar"
 import Footer from "./components/layout/Footer"
 import ProtectedRoute from "./components/layout/ProtectedRoute"
 import { ErrorBoundary } from "./components/layout/ErrorBoundary"
+import SplashScreen from "./components/layout/SplashScreen"
+import { setupAppProtection } from "./utils/securityAndControls"
 import { useThemeStore } from "./store/themeStore"
 import symbolLogo from "./imports/symbol_only.jpeg"
 
@@ -83,13 +85,20 @@ function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   const { theme } = useThemeStore()
+  const [showSplash, setShowSplash] = useState(true)
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark")
   }, [theme])
 
+  useEffect(() => {
+    const cleanupProtection = setupAppProtection()
+    return () => cleanupProtection()
+  }, [])
+
   return (
     <ErrorBoundary>
+      {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
       <BrowserRouter>
         <Toaster
           position="top-right"
