@@ -46,21 +46,23 @@ export default function CompanyPage() {
             (j) =>
               j.company?.id === found.id ||
               j.company?.slug === found.slug ||
-              j.company?.name.toLowerCase() === found.name.toLowerCase()
+              j.company?.name.toLowerCase() === found.name.toLowerCase() ||
+              (j as any).companyId === found.id
           )
-          setCompanyJobs(matched)
+          setCompanyJobs(matched.length > 0 ? matched : mockJobs.filter((j) => j.company?.id === found.id || j.company?.name.toLowerCase() === found.name.toLowerCase()))
         } else {
           // Fallback to mock search
           const fallback = mockCompanies.find(
             (c) =>
               c.id === id ||
               c.slug === id ||
-              c.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") === id.toLowerCase()
+              c.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") === id.toLowerCase() ||
+              c.name.toLowerCase() === id.toLowerCase()
           )
           if (fallback) {
             setCompany(fallback)
             setCompanyJobs(
-              mockJobs.filter((j) => j.company.id === fallback.id || j.company.name === fallback.name)
+              mockJobs.filter((j) => j.company.id === fallback.id || j.company.name.toLowerCase() === fallback.name.toLowerCase() || (j as any).companyId === fallback.id)
             )
           }
         }

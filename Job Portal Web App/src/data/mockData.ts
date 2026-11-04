@@ -1,6 +1,7 @@
 import type { Job, Company, User, Application, Notification } from "../types"
+import { globalCompanies, worldwideOpenPositions } from "./worldwideJobs"
 
-export const mockCompanies: Company[] = [
+const baseCompanies: Company[] = [
   {
     id: "1",
     name: "TechCorp Solutions",
@@ -511,7 +512,14 @@ export const mockCompanies: Company[] = [
   },
 ]
 
-export const mockJobs: Job[] = [
+export const mockCompanies: Company[] = [
+  ...globalCompanies,
+  ...baseCompanies.filter(
+    (b) => !globalCompanies.some((g) => g.id === b.id || g.name.toLowerCase() === b.name.toLowerCase())
+  ),
+]
+
+const baseJobs: Job[] = [
   {
     id: "1",
     title: "Senior Frontend Engineer",
@@ -1703,6 +1711,11 @@ export const mockJobs: Job[] = [
     applyMode: "easy",
     category: "Engineering",
   },
+]
+
+export const mockJobs: Job[] = [
+  ...worldwideOpenPositions,
+  ...baseJobs.filter((b) => !worldwideOpenPositions.some((w) => w.id === b.id)),
 ]
 
 export const mockNotifications: Notification[] = [
