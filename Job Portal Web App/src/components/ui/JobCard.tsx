@@ -10,6 +10,8 @@ import {
   BookmarkCheck,
   Users,
   Zap,
+  ArrowRight,
+  Building2,
 } from "lucide-react"
 import Badge from "./Badge"
 import type { Job } from "../../types"
@@ -216,6 +218,27 @@ export default function JobCard({ job, compact = false }: JobCardProps) {
           <Clock size={11} />
           {daysAgo === 0 ? "Today" : `${daysAgo}d ago`}
         </span>
+      </div>
+
+      {/* Action Buttons: Apply Now & Company Profile */}
+      <div className="flex items-center gap-2 pt-3 mt-3 border-t border-[var(--border)]/70">
+        <Link
+          to={`/jobs/${job.id}`}
+          onClick={(e) => e.stopPropagation()}
+          className="flex-1 py-2 px-3.5 rounded-xl bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+        >
+          <span>Apply Now</span>
+          <ArrowRight size={13} />
+        </Link>
+        <Link
+          to={`/companies/${job.company.id || job.company.slug || job.company.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+          onClick={(e) => e.stopPropagation()}
+          className="py-2 px-3 rounded-xl border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--muted)] text-[var(--foreground)] font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors whitespace-nowrap"
+          title={`View ${job.company.name} profile and other openings`}
+        >
+          <Building2 size={13} className="text-[var(--primary)] shrink-0" />
+          <span>Company Profile</span>
+        </Link>
       </div>
     </motion.div>
   )

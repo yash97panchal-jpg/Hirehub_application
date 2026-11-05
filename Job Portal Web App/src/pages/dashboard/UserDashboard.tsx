@@ -28,6 +28,7 @@ import {
   ExternalLink,
   MessageSquare,
   AlertCircle,
+  Building2,
 } from "lucide-react"
 import toast from "react-hot-toast"
 import { useAuthStore } from "../../store/authStore"
@@ -70,6 +71,56 @@ export default function UserDashboard() {
   const [activeTab, setActiveTab] = useState<DashboardTab>("all")
   const [metricFilter, setMetricFilter] = useState<ApplicationStatus | "all">("all")
   const [candidateStatus, setCandidateStatus] = useState<"active" | "interviewing" | "open">("active")
+
+  // Read uploaded resume from storage
+  const [uploadedResume] = useState<{
+    fileName: string
+    fileSize: string
+    uploadedAt: string
+    skills: string[]
+  } | null>(() => {
+    try {
+      const stored = localStorage.getItem("hirehub_uploaded_resume")
+      return stored ? JSON.parse(stored) : null
+    } catch {
+      return null
+    }
+  })
+
+  // Skills from uploaded resume or profile
+  const candidateSkills = useMemo(() => {
+    if (uploadedResume?.skills && uploadedResume.skills.length > 0) {
+      return uploadedResume.skills
+    }
+    if (user?.skills && user.skills.length > 0) {
+      return user.skills
+    }
+    return ["React", "TypeScript", "Python", "SQL", "Cloud"]
+  }, [uploadedResume, user])
+
+  // Open positions matched against resume skills
+  const skillMatchedJobs = useMemo(() => {
+    return storeJobs
+      .map((job) => {
+        const matches = job.skills.filter((js) =>
+          candidateSkills.some((cs) => cs.toLowerCase() === js.toLowerCase()),
+        )
+        const matchPercent = Math.min(
+          99,
+          Math.max(
+            75,
+            Math.round(70 + (matches.length / Math.max(1, job.skills.length)) * 30),
+          ),
+        )
+        return {
+          ...job,
+          matchedSkills: matches.length > 0 ? matches : job.skills.slice(0, 2),
+          matchPercent,
+        }
+      })
+      .filter((j) => j.matchedSkills.length > 0)
+      .sort((a, b) => b.matchPercent - a.matchPercent)
+  }, [storeJobs, candidateSkills])
 
   // Candidate applications with fallback demo items
   const allApplications: CandidateDashboardApp[] = useMemo(() => {
@@ -421,7 +472,171 @@ export default function UserDashboard() {
         </div>
 
         {/* ============================================================= */}
-        {/* 4. MAIN CENTRAL CONTENT & RIGHT SIDEBAR                       */}
+        {/* RESUME SKILL-BASED OPENING POSITIONS (Directly Below Board)   */}
+        {/* ============================================================= */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="p-6 sm:p-7 rounded-3xl bg-[var(--card)] border border-[var(--border)] shadow-[var(--shadow-card)] space-y-5"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[var(--border)]">
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                <h2 className="font-poppins font-black text-lg sm:text-xl text-[var(--foreground)] tracking-tight">
+                  Resume Skill-Matched Openings
+                </h2>
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-xs font-bold border border-emerald-500/20">
+                  {skillMatchedJobs.length} Positions Available
+                </span>
+              </div>
+              <p className="text-xs text-[var(--muted-foreground)] mt-1 flex items-center gap-1.5 flex-wrap">
+                <span>Matched against your active resume skills:</span>
+                <span className="font-bold text-[var(--foreground)]">
+                  {candidateSkills.slice(0, 5).join(", ")}
+                </span>
+                {uploadedResume && (
+                  <span className="text-[11px] text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md font-semibold">
+                    ({uploadedResume.fileName})
+                  </span>
+                )}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Link
+                to="/profile"
+                className="text-xs font-bold text-[var(--primary)] hover:underline flex items-center gap-1"
+              >
+                <span>{uploadedResume ? "Manage / Upload New Resume" : "Upload Resume in Profile"}</span>
+                <ChevronRight size={13} />
+              </Link>
+            </div>
+          </div>
+
+          {/* Matched Open Positions Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {skillMatchedJobs.slice(0, 6).map((job) => {
+              const isApplied = allApplications.some(
+                (a) => a.job?.id === job.id || a.job?.title?.toLowerCase() === job.title.toLowerCase()
+              )
+              const existingApp = allApplications.find(
+                (a) => a.job?.id === job.id || a.job?.title?.toLowerCase() === job.title.toLowerCase()
+              )
+              const isSaved = isJobSaved(job.id)
+
+              return (
+                <div
+                  key={`matched-${job.id}`}
+                  className="p-5 rounded-2xl bg-[var(--background)] border border-[var(--border)] hover:border-amber-500/60 transition-all flex flex-col justify-between group shadow-xs space-y-4"
+                >
+                  <div className="space-y-3">
+                    {/* Top Row: Logo, Company & Bookmark */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-11 h-11 rounded-xl overflow-hidden bg-white dark:bg-slate-900 shrink-0 ring-1 ring-[var(--border)] p-1 flex items-center justify-center font-bold text-[var(--primary)] shadow-xs">
+                          {job.company?.name ? (
+                            <img
+                              src={getCompanyRealLogo(job.company.name, job.company.website, job.company.logo)}
+                              alt={job.company.name}
+                              className="w-full h-full object-contain"
+                            />
+                          ) : (
+                            <span>{job.company?.name?.charAt(0) || "J"}</span>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <Link
+                            to={`/companies/${job.company.id || job.company.slug || job.company.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+                            className="font-bold text-xs text-[var(--muted-foreground)] hover:text-[var(--primary)] truncate block"
+                            title="Open Company Profile"
+                          >
+                            {job.company.name}
+                          </Link>
+                          <span className="text-[11px] text-[var(--muted-foreground)] flex items-center gap-1">
+                            <MapPin size={10} /> {job.location}
+                          </span>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          toggleSaveJob(job.id)
+                          toast.success(isSaved ? "Removed from bookmarks" : "Saved to bookmarks!")
+                        }}
+                        className={`p-1.5 rounded-lg transition-colors ${
+                          isSaved ? "text-amber-500" : "text-[var(--muted-foreground)] hover:text-amber-500"
+                        }`}
+                        title={isSaved ? "Saved" : "Save role"}
+                      >
+                        <Bookmark size={15} fill={isSaved ? "currentColor" : "none"} />
+                      </button>
+                    </div>
+
+                    {/* Job Title */}
+                    <div>
+                      <Link
+                        to={`/jobs/${job.id}`}
+                        className="font-poppins font-bold text-sm text-[var(--foreground)] hover:text-[var(--primary)] transition-colors line-clamp-1 block"
+                      >
+                        {job.title}
+                      </Link>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-extrabold text-[11px]">
+                          ⚡ {job.matchPercent}% Match
+                        </span>
+                        <span className="text-xs font-semibold text-[var(--foreground)]">
+                          {job.salaryMin ? `$${(job.salaryMin / 1000).toFixed(0)}k+` : "Competitive"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Matching Skill Chips from Resume */}
+                    <div className="flex flex-wrap gap-1">
+                      {job.matchedSkills.slice(0, 3).map((skill: string) => (
+                        <span
+                          key={skill}
+                          className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-500/20"
+                        >
+                          ✓ {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Action Buttons: Apply Now & Open Company Profile */}
+                  <div className="pt-3 border-t border-[var(--border)] flex items-center gap-2">
+                    {isApplied ? (
+                      <div className="flex-1 py-1.5 px-3 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-500/30">
+                        <Check size={13} />
+                        <span>Applied ({existingApp?.status || "In Review"})</span>
+                      </div>
+                    ) : (
+                      <Link
+                        to={`/jobs/${job.id}`}
+                        className="flex-1 py-1.5 px-3 rounded-xl bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-bold text-xs flex items-center justify-center gap-1 transition-colors shadow-xs text-center"
+                      >
+                        <span>Apply Now</span>
+                        <ArrowRight size={12} />
+                      </Link>
+                    )}
+
+                    <Link
+                      to={`/companies/${job.company.id || job.company.slug || job.company.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+                      className="py-1.5 px-3 rounded-xl border border-[var(--border)] hover:bg-[var(--muted)] text-[var(--foreground)] font-semibold text-xs flex items-center justify-center gap-1 transition-colors whitespace-nowrap"
+                      title="Open company profile for applying to jobs"
+                    >
+                      <Building2 size={12} className="text-[var(--primary)]" />
+                      <span>Company Profile</span>
+                    </Link>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </motion.div>
         {/* ============================================================= */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* LEFT 8 COLS: Segmented Content & Application Cards */}

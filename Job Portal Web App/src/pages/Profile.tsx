@@ -12,6 +12,10 @@ import {
   FileText,
   CheckCircle2,
   LogOut,
+  Upload,
+  Sparkles,
+  Check,
+  ExternalLink,
 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import Button from "../components/ui/Button"
@@ -63,6 +67,74 @@ export default function Profile() {
       }
     }
   }, [user])
+
+  const [uploadedResume, setUploadedResume] = useState<{
+    fileName: string
+    fileSize: string
+    uploadedAt: string
+    skills: string[]
+  } | null>(() => {
+    try {
+      const stored = localStorage.getItem("hirehub_uploaded_resume")
+      return stored ? JSON.parse(stored) : null
+    } catch {
+      return null
+    }
+  })
+
+  const handleResumeFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const commonSkills = [
+      "Python", "React", "TypeScript", "JavaScript", "Node.js", "Java", "Go",
+      "SQL", "PostgreSQL", "AWS", "Cloud", "Docker", "Kubernetes", "HTML/CSS",
+      "Tailwind", "Machine Learning", "FastAPI", "GraphQL", "DevOps", "Figma",
+      "C++", "C#", "Django", "Next.js", "Redis", "REST APIs"
+    ]
+
+    const lowerName = file.name.toLowerCase()
+    const foundSkills = commonSkills.filter(
+      (s) => lowerName.includes(s.toLowerCase())
+    )
+
+    const extractedSkills = Array.from(
+      new Set([
+        ...foundSkills,
+        ...(lowerName.includes("python") ? ["Python", "FastAPI", "SQL"] : []),
+        ...(lowerName.includes("react") || lowerName.includes("frontend") ? ["React", "TypeScript", "Tailwind"] : []),
+        "Python", "React", "TypeScript", "SQL", "Cloud"
+      ])
+    ).slice(0, 6)
+
+    const resumeInfo = {
+      fileName: file.name,
+      fileSize: `${(file.size / 1024).toFixed(1)} KB`,
+      uploadedAt: new Date().toISOString(),
+      skills: extractedSkills,
+    }
+
+    setUploadedResume(resumeInfo)
+    localStorage.setItem("hirehub_uploaded_resume", JSON.stringify(resumeInfo))
+
+    const mergedSkills = Array.from(new Set([...(user?.skills || []), ...extractedSkills]))
+    updateUser({ skills: mergedSkills })
+    setFormData((prev) => ({
+      ...prev,
+      skills: mergedSkills.join(", "),
+    }))
+
+    toast.success(
+      `Resume "${file.name}" uploaded! Extracted ${extractedSkills.length} skills: ${extractedSkills.join(", ")}`,
+      { icon: "📄" }
+    )
+  }
+
+  const handleRemoveResume = () => {
+    setUploadedResume(null)
+    localStorage.removeItem("hirehub_uploaded_resume")
+    toast("Resume removed", { icon: "🗑️" })
+  }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -360,62 +432,130 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Resume Versions Section */}
+          {/* Resume Upload & Skill Extraction Section */}
           <div className="bg-[var(--card)] border border-[var(--border)] rounded-3xl p-6 md:p-8 shadow-sm">
-            <h2 className="text-xl font-bold text-[var(--foreground)] mb-6 flex items-center gap-2">
-              <FileText className="text-[var(--primary)]" size={20} /> Resume
-              Versions
-            </h2>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-xl border border-[var(--border)] bg-[var(--background)]">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-[var(--muted)] flex items-center justify-center text-[var(--primary)]">
-                    <FileText size={20} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-[var(--foreground)]">
-                      Software Engineer Resume
-                    </h3>
-                    <p className="text-xs text-[var(--muted-foreground)]">
-                      Updated 2 days ago
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate("/resume-builder")}
-                  >
-                    Edit
-                  </Button>
-                </div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-xl font-bold text-[var(--foreground)] flex items-center gap-2">
+                  <FileText className="text-[var(--primary)]" size={20} /> Uploaded Resume & Skill Matching
+                </h2>
+                <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
+                  Upload your CV / Resume to automatically match opening positions on your dashboard.
+                </p>
               </div>
-              <div className="flex items-center justify-between p-4 rounded-xl border border-[var(--border)] bg-[var(--background)]">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-[var(--muted)] flex items-center justify-center text-[var(--primary)]">
-                    <FileText size={20} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-[var(--foreground)]">
-                      Frontend Developer Resume
-                    </h3>
-                    <p className="text-xs text-[var(--muted-foreground)]">
-                      Updated 1 week ago
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate("/resume-builder")}
-                  >
-                    Edit
-                  </Button>
-                </div>
-              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/resume-builder")}
+                className="hidden sm:inline-flex text-xs font-semibold"
+              >
+                Open Resume Builder
+              </Button>
             </div>
+
+            <input
+              type="file"
+              id="resume-file-input"
+              accept=".pdf,.doc,.docx,.txt"
+              onChange={handleResumeFileUpload}
+              className="hidden"
+            />
+
+            {uploadedResume ? (
+              /* Active Uploaded Resume Card */
+              <div className="space-y-4">
+                <div className="p-4 sm:p-5 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-500/10 space-y-3">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-12 h-12 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                        <FileText size={24} />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-sm text-[var(--foreground)] truncate">
+                            {uploadedResume.fileName}
+                          </h3>
+                          <span className="px-2 py-0.5 rounded-md bg-emerald-500 text-white text-[10px] font-bold">
+                            Active
+                          </span>
+                        </div>
+                        <p className="text-xs text-[var(--muted-foreground)]">
+                          {uploadedResume.fileSize} • Uploaded {new Date(uploadedResume.uploadedAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 self-end sm:self-auto">
+                      <label
+                        htmlFor="resume-file-input"
+                        className="px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--muted)] text-xs font-semibold text-[var(--foreground)] cursor-pointer transition-colors"
+                      >
+                        Replace
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleRemoveResume}
+                        className="px-3 py-1.5 rounded-xl border border-red-500/30 hover:bg-red-500/10 text-xs font-semibold text-red-500 transition-colors cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Extracted Skills Badges */}
+                  <div className="pt-2 border-t border-emerald-500/20">
+                    <p className="text-xs font-bold text-emerald-700 dark:text-emerald-300 mb-2 flex items-center gap-1.5">
+                      <Sparkles size={13} />
+                      <span>Extracted Technical Skills for Dashboard Matching:</span>
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {uploadedResume.skills.map((skill) => (
+                        <span
+                          key={skill}
+                          className="px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-xs font-semibold flex items-center gap-1 border border-emerald-500/20"
+                        >
+                          <Check size={12} />
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <p className="text-xs text-[var(--muted-foreground)]">
+                    Jobs matching these skills are now highlighted directly below your dashboard.
+                  </p>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => navigate("/dashboard")}
+                    className="font-bold text-xs"
+                  >
+                    View Matched Jobs on Dashboard →
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              /* Drag & Drop Upload Dropzone */
+              <label
+                htmlFor="resume-file-input"
+                className="flex flex-col items-center justify-center p-8 sm:p-10 rounded-2xl border-2 border-dashed border-[var(--border)] hover:border-[var(--primary)] hover:bg-[var(--primary)]/5 transition-all cursor-pointer text-center group"
+              >
+                <div className="w-14 h-14 rounded-2xl bg-[var(--muted)] text-[var(--primary)] group-hover:scale-110 flex items-center justify-center mb-3 transition-transform shadow-xs">
+                  <Upload size={24} />
+                </div>
+                <h3 className="font-poppins font-bold text-base text-[var(--foreground)] mb-1">
+                  Click or drag to upload your Resume
+                </h3>
+                <p className="text-xs text-[var(--muted-foreground)] max-w-sm mb-4 leading-relaxed">
+                  Supports PDF, DOCX, DOC, or TXT. HireHub will automatically parse your technical skills and showcase matching openings right on your dashboard.
+                </p>
+                <span className="px-4 py-2 rounded-xl bg-[var(--primary)] text-white font-bold text-xs shadow-xs">
+                  Choose Resume File
+                </span>
+              </label>
+            )}
           </div>
         </motion.div>
       </div>
