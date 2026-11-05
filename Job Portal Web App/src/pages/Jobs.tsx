@@ -73,6 +73,7 @@ export default function Jobs() {
   )
   const [viewMode, setViewMode] = useState<ViewMode>("split")
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
+  const [selectedCompany, setSelectedCompany] = useState<string | null>(null)
   const jobCardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
 
   // Synchronize scroll: when a pin on the map is clicked, scroll the job list on the right straight to that position
@@ -206,6 +207,16 @@ export default function Jobs() {
     storeJobs,
   ])
 
+  // Filter jobs by selected company from the map
+  const splitViewJobs = useMemo(() => {
+    if (!selectedCompany) return filtered
+    return filtered.filter(
+      (j) =>
+        j.company?.name?.toLowerCase() === selectedCompany.toLowerCase() ||
+        j.company?.id === selectedCompany,
+    )
+  }, [filtered, selectedCompany])
+
   const clearAll = () => {
     setKeyword("")
     setLocation("")
@@ -214,6 +225,7 @@ export default function Jobs() {
     setSelectedExp([])
     setSalaryMin(0)
     setDatePosted("")
+    setSelectedCompany(null)
   }
 
   const activeFilterCount =
@@ -340,41 +352,63 @@ export default function Jobs() {
             onLocationChange={(loc) => setLocation(loc)}
             roleKeyword={debouncedKeyword || category}
             mapHeightClass="h-[580px] lg:h-[660px]"
+            selectedCompany={selectedCompany}
+            onSelectCompany={(compName) => setSelectedCompany(compName)}
           />
         </div>
       ) : viewMode === "split" ? (
-        /* VIEW MODE 2: TRUE SPLIT VIEW (Side-by-Side Map & Job List) */
+        /* VIEW MODE 2: TRUE SPLIT VIEW (Opening Positions on LEFT, Interactive Map on RIGHT) */
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Left Column: Interactive Map (sticky) */}
-            <div className="lg:col-span-7 sticky top-24">
-              <JobMap
-                jobs={filtered}
-                selectedJob={selectedJob}
-                onSelectJob={(j) => setSelectedJob(j)}
-                activeLocation={location}
-                onLocationChange={(loc) => setLocation(loc)}
-                roleKeyword={debouncedKeyword || category}
-                mapHeightClass="h-[480px] lg:h-[600px]"
-              />
-            </div>
-
-            {/* Right Column: Scrollable List of Job Cards */}
-            <div className="lg:col-span-5 space-y-4">
+            {/* LEFT Column: Scrollable List of Job Openings */}
+            <div className="lg:col-span-5 space-y-4 order-2 lg:order-1">
               <div className="flex items-center justify-between pb-2 border-b border-[var(--border)]">
-                <h3 className="font-poppins font-bold text-sm text-[var(--foreground)]">
-                  Open Positions ({filtered.length})
-                </h3>
-                {location && (
-                  <span className="text-xs text-[var(--primary)] font-semibold">
-                    📍 {location}
-                  </span>
-                )}
+                <div className="flex items-center gap-2 flex-wrap min-w-0">
+                  <h3 className="font-poppins font-bold text-sm text-[var(--foreground)] truncate">
+                    {selectedCompany ? `${selectedCompany} Openings` : "Open Positions"} ({splitViewJobs.length})
+                  </h3>
+                  {selectedCompany && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                      <span className="truncate max-w-[120px]">{selectedCompany}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedCompany(null)
+                          setSelectedJob(null)
+                        }}
+                        className="hover:text-red-500 ml-0.5 font-bold cursor-pointer"
+                        title="Show all company openings"
+                      >
+                        <X size={12} />
+                      </button>
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  {selectedCompany && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedCompany(null)
+                        setSelectedJob(null)
+                      }}
+                      className="text-xs font-semibold text-[var(--primary)] hover:underline cursor-pointer"
+                    >
+                      Show All
+                    </button>
+                  )}
+                  {location && (
+                    <span className="text-xs text-[var(--primary)] font-semibold truncate max-w-[100px]">
+                      📍 {location}
+                    </span>
+                  )}
+                </div>
               </div>
 
-              {filtered.length > 0 ? (
+              {splitViewJobs.length > 0 ? (
                 <div className="space-y-4 max-h-[640px] overflow-y-auto pr-1">
-                  {filtered.map((job) => (
+                  {splitViewJobs.map((job) => (
                     <div
                       key={job.id}
                       ref={(el) => {
@@ -398,16 +432,46 @@ export default function Jobs() {
                     className="text-[var(--muted-foreground)] mb-3"
                   />
                   <h4 className="font-bold text-sm text-[var(--foreground)] mb-1">
-                    No openings match this exact location or role
+                    {selectedCompany
+                      ? `No open positions match ${selectedCompany}`
+                      : "No openings match this exact location or role"}
                   </h4>
                   <p className="text-xs text-[var(--muted-foreground)] max-w-xs mb-4">
-                    Try entering another city or clearing your search filters.
+                    {selectedCompany
+                      ? "Clear the company filter or click another location pin on the map."
+                      : "Try entering another city or clearing your search filters."}
                   </p>
-                  <Button variant="outline" size="sm" onClick={clearAll}>
-                    Reset Search
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (selectedCompany) {
+                        setSelectedCompany(null)
+                        setSelectedJob(null)
+                      } else {
+                        clearAll()
+                      }
+                    }}
+                  >
+                    {selectedCompany ? "Show All Companies" : "Reset Search"}
                   </Button>
                 </div>
               )}
+            </div>
+
+            {/* RIGHT Column: Interactive Map (sticky) */}
+            <div className="lg:col-span-7 sticky top-24 order-1 lg:order-2">
+              <JobMap
+                jobs={filtered}
+                selectedJob={selectedJob}
+                onSelectJob={(j) => setSelectedJob(j)}
+                activeLocation={location}
+                onLocationChange={(loc) => setLocation(loc)}
+                roleKeyword={debouncedKeyword || category}
+                mapHeightClass="h-[480px] lg:h-[600px]"
+                selectedCompany={selectedCompany}
+                onSelectCompany={(compName) => setSelectedCompany(compName)}
+              />
             </div>
           </div>
         </div>

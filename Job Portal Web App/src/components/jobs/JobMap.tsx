@@ -14,6 +14,7 @@ import {
   Moon,
   Map as MapIcon,
   Layers,
+  Briefcase,
 } from "lucide-react"
 import type { Job } from "../../types"
 import { getCompanyRealLogo } from "../../data/companyLogos"
@@ -36,6 +37,8 @@ interface JobMapProps {
   className?: string
   mapHeightClass?: string
   showToolbar?: boolean
+  selectedCompany?: string | null
+  onSelectCompany?: (companyName: string | null) => void
 }
 
 export interface CompanyMarkerGroup {
@@ -147,6 +150,8 @@ export default function JobMap({
   className = "",
   mapHeightClass = "h-[480px] sm:h-[540px]",
   showToolbar = true,
+  selectedCompany = null,
+  onSelectCompany,
 }: JobMapProps) {
   const [activeCompanyId, setActiveCompanyId] = useState<string | null>(null)
   const [isDismissed, setIsDismissed] = useState(false)
@@ -248,6 +253,11 @@ export default function JobMap({
       setVectorZoomLevel((z) => Math.max(z, 1.85))
     }
 
+    // Filter openings in the jobs list to this clicked company
+    if (onSelectCompany) {
+      onSelectCompany(group.companyName)
+    }
+
     if (group.jobs.length > 0 && onSelectJob) {
       onSelectJob(group.jobs[0])
     }
@@ -260,6 +270,23 @@ export default function JobMap({
     setIsDismissed(true)
     onSelectJob?.(null)
   }
+
+  // Sync activeCompanyId when selectedCompany changes externally
+  useEffect(() => {
+    if (selectedCompany) {
+      const matched = markerGroups.find(
+        (g) =>
+          g.companyName.toLowerCase() === selectedCompany.toLowerCase() ||
+          g.companyId === selectedCompany
+      )
+      if (matched) {
+        setActiveCompanyId(matched.companyId)
+        setIsDismissed(false)
+      }
+    } else if (selectedCompany === null && !selectedJob) {
+      setActiveCompanyId(null)
+    }
+  }, [selectedCompany, markerGroups, selectedJob])
 
   // --- Initialize Leaflet Map ---
   useEffect(() => {
@@ -938,8 +965,25 @@ export default function JobMap({
                   </span>
                 </div>
 
+                {/* Open Positions Filter Trigger */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onSelectCompany) {
+                      onSelectCompany(activeGroup.companyName)
+                    }
+                    if (activeGroup.jobs.length > 0 && onSelectJob) {
+                      onSelectJob(activeGroup.jobs[0])
+                    }
+                  }}
+                  className="w-full py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer"
+                >
+                  <Briefcase size={13} />
+                  <span>Show Only {activeGroup.companyName} Openings ({activeGroup.jobs.length})</span>
+                </button>
+
                 {/* Action Buttons */}
-                <div className="pt-2 flex gap-2">
+                <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => copyAddressToClipboard(activeGroup.address)}
