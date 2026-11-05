@@ -3,9 +3,9 @@ import { Globe, ChevronDown } from "lucide-react"
 import { useLanguageStore, type Language } from "../../store/languageStore"
 
 const languages: { code: Language; label: string; flag: string }[] = [
-  { code: "en", label: "English", flag: "🇺🇸" },
-  { code: "hi", label: "हिन्दी", flag: "🇮🇳" },
-  { code: "gu", label: "ગુજરાતી", flag: "🇮🇳" },
+  { code: "en", label: "English", flag: "EN" },
+  { code: "hi", label: "Hindi", flag: "HI" },
+  { code: "gu", label: "Gujarati", flag: "GU" },
 ]
 
 export default function LanguageSwitcher() {

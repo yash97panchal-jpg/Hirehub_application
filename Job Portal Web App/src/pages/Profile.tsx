@@ -125,15 +125,14 @@ export default function Profile() {
     }))
 
     toast.success(
-      `Resume "${file.name}" uploaded! Extracted ${extractedSkills.length} skills: ${extractedSkills.join(", ")}`,
-      { icon: "📄" }
+      `Resume "${file.name}" uploaded! Extracted ${extractedSkills.length} skills: ${extractedSkills.join(", ")}`
     )
   }
 
   const handleRemoveResume = () => {
     setUploadedResume(null)
     localStorage.removeItem("hirehub_uploaded_resume")
-    toast("Resume removed", { icon: "🗑️" })
+    toast.success("Resume removed successfully.")
   }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -141,10 +140,23 @@ export default function Profile() {
     if (file) {
       const reader = new FileReader()
       reader.onloadend = () => {
-        setFormData({ ...formData, avatar: reader.result as string })
+        const result = reader.result as string
+        setFormData((prev) => ({ ...prev, avatar: result }))
+        if (user) {
+          updateUser({ avatar: result })
+        }
+        toast.success("Profile picture updated!")
       }
       reader.readAsDataURL(file)
     }
+  }
+
+  const handleRemovePhoto = () => {
+    setFormData((prev) => ({ ...prev, avatar: "" }))
+    if (user) {
+      updateUser({ avatar: "" })
+    }
+    toast.success("Profile picture removed.")
   }
 
   const handleSave = () => {
@@ -247,18 +259,19 @@ export default function Profile() {
               Information
             </h2>
 
-            <div className="flex flex-col md:flex-row gap-8 mb-6">
-              <div className="flex-shrink-0 relative">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8 pb-8 border-b border-[var(--border)]">
+              <div className="relative shrink-0">
                 <input
                   type="file"
                   id="avatar-upload"
-                  accept="image/*"
+                  accept="image/png,image/jpeg,image/webp,image/jpg"
                   className="hidden"
                   onChange={handleImageUpload}
                 />
                 <label
                   htmlFor="avatar-upload"
-                  className="w-32 h-32 rounded-full bg-[var(--muted)] flex items-center justify-center relative overflow-hidden group cursor-pointer block border-2 border-[var(--border)]"
+                  className="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl bg-[var(--muted)] flex items-center justify-center relative overflow-hidden group cursor-pointer block border-2 border-[var(--border)] shadow-sm hover:border-[var(--primary)] transition-all"
+                  title="Click to change profile picture"
                 >
                   {formData.avatar ? (
                     <img
@@ -267,15 +280,49 @@ export default function Profile() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <span className="text-4xl text-[var(--primary)] font-bold">
-                      {formData.name.charAt(0).toUpperCase() || "U"}
-                    </span>
+                    <div className="flex flex-col items-center justify-center text-center p-2">
+                      <span className="text-3xl sm:text-4xl text-[var(--primary)] font-black">
+                        {formData.name.charAt(0).toUpperCase() || "U"}
+                      </span>
+                    </div>
                   )}
-                  <div className="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center transition-all">
-                    <Camera className="text-white" size={24} />
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-all text-white">
+                    <Camera size={22} />
+                    <span className="text-[10px] font-bold mt-1">Upload</span>
                   </div>
                 </label>
               </div>
+
+              <div className="flex flex-col justify-center items-center sm:items-start text-center sm:text-left space-y-2">
+                <h3 className="font-poppins font-bold text-base text-[var(--foreground)]">
+                  Profile Picture
+                </h3>
+                <p className="text-xs text-[var(--muted-foreground)] max-w-sm">
+                  Upload a high-resolution JPG, PNG or WEBP portrait (recommended 400×400px).
+                </p>
+
+                <div className="flex items-center gap-2.5 pt-1">
+                  <label
+                    htmlFor="avatar-upload"
+                    className="px-3.5 py-2 rounded-xl bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] transition-all text-xs font-bold cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
+                  >
+                    <Upload size={14} />
+                    <span>Upload Picture</span>
+                  </label>
+
+                  {formData.avatar && (
+                    <button
+                      type="button"
+                      onClick={handleRemovePhoto}
+                      className="px-3 py-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all text-xs font-bold inline-flex items-center gap-1.5"
+                    >
+                      <Trash2 size={14} />
+                      <span>Remove Picture</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
 
               <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
@@ -342,7 +389,6 @@ export default function Profile() {
                 </div>
               </div>
             </div>
-          </div>
 
           {/* Skills Section */}
           <div className="bg-[var(--card)] border border-[var(--border)] rounded-3xl p-6 md:p-8 shadow-sm">

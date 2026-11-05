@@ -31,7 +31,6 @@ import {
 } from "lucide-react"
 import ThemeToggle from "../ui/ThemeToggle"
 import Button from "../ui/Button"
-import LanguageSwitcher from "./LanguageSwitcher"
 import { useAuthStore } from "../../store/authStore"
 import { useSavedJobsStore } from "../../store/savedJobsStore"
 import { useMessageStore } from "../../store/messageStore"
@@ -124,16 +123,21 @@ export default function Navbar() {
   }
 
   const handleLogoClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
     const currentAuth = useAuthStore.getState()
-    if (currentAuth.isAuthenticated && currentAuth.user) {
-      e.preventDefault()
+    const isAuthed = currentAuth.isAuthenticated || !!currentAuth.user
+    if (isAuthed) {
+      const role = currentAuth.user?.role
       const target =
-        currentAuth.user.role === "admin"
+        role === "admin"
           ? "/admin"
-          : currentAuth.user.role === "recruiter"
+          : role === "recruiter"
             ? "/recruiter"
             : "/dashboard"
       navigate(target)
+    } else {
+      navigate("/")
     }
   }
 
@@ -310,9 +314,6 @@ export default function Navbar() {
 
           {/* Right Actions */}
           <div className="flex items-center gap-1.5 sm:gap-2">
-            <div className="hidden sm:block">
-              <LanguageSwitcher />
-            </div>
             <ThemeToggle />
 
             {isAuthenticated && user ? (

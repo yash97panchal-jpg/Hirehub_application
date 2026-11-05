@@ -125,7 +125,7 @@ export default function TalentSearch() {
 
   const handleInvite = (candidate: Candidate) => {
     if (invitedIds.includes(candidate.id)) {
-      toast("Invitation already sent to this candidate.", { icon: "ℹ️" })
+      toast("Invitation already sent to this candidate.")
       return
     }
     setInvitedIds([...invitedIds, candidate.id])

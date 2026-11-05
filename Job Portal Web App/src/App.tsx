@@ -9,6 +9,7 @@ import SplashScreen from "./components/layout/SplashScreen"
 import { setupAppProtection } from "./utils/securityAndControls"
 import { useThemeStore } from "./store/themeStore"
 import { useAuthStore } from "./store/authStore"
+import { supabase, isSupabaseConfigured } from "./lib/supabase"
 import symbolLogo from "./imports/symbol_only.jpeg"
 
 const Home = lazy(() => import("./pages/Home"))
@@ -123,21 +124,80 @@ function AppRoutes() {
   const navigate = useNavigate()
   const { isAuthenticated, user } = useAuthStore()
 
+  // Keep useAuthStore synchronized with Supabase OAuth sessions across reloads
+  useEffect(() => {
+    if (isSupabaseConfigured && supabase) {
+      supabase.auth.getSession().then(({ data }) => {
+        if (data?.session?.user) {
+          const authUser = data.session.user
+          const current = useAuthStore.getState()
+          if (!current.isAuthenticated || !current.user) {
+            useAuthStore.getState().login(
+              {
+                id: authUser.id,
+                email: authUser.email || "",
+                name:
+                  authUser.user_metadata?.full_name ||
+                  authUser.email?.split("@")[0] ||
+                  "User",
+                role:
+                  (authUser.user_metadata?.role as any) || "job_seeker",
+                skills: authUser.user_metadata?.skills || [],
+                profileCompletion: 80,
+                isVerified: true,
+                createdAt: authUser.created_at,
+              },
+              data.session.access_token,
+            )
+          }
+        }
+      })
+
+      const { data: authListener } = supabase.auth.onAuthStateChange(
+        (_event, session) => {
+          if (session?.user) {
+            const authUser = session.user
+            useAuthStore.getState().login(
+              {
+                id: authUser.id,
+                email: authUser.email || "",
+                name:
+                  authUser.user_metadata?.full_name ||
+                  authUser.email?.split("@")[0] ||
+                  "User",
+                role:
+                  (authUser.user_metadata?.role as any) || "job_seeker",
+                skills: authUser.user_metadata?.skills || [],
+                profileCompletion: 80,
+                isVerified: true,
+                createdAt: authUser.created_at,
+              },
+              session.access_token,
+            )
+          }
+        },
+      )
+
+      return () => {
+        authListener?.subscription?.unsubscribe()
+      }
+    }
+  }, [])
+
   const handleSplashFinish = () => {
     setShowSplash(false)
-    // Read the freshest auth state directly from the store
+    // Read freshest auth state directly from the store
     const currentAuth = useAuthStore.getState()
+    const isAuthed = currentAuth.isAuthenticated || !!currentAuth.user
     if (location.pathname === "/" || location.pathname === "") {
-      if (currentAuth.isAuthenticated && currentAuth.user) {
+      if (isAuthed) {
         const target =
-          currentAuth.user.role === "admin"
+          currentAuth.user?.role === "admin"
             ? "/admin"
-            : currentAuth.user.role === "recruiter"
+            : currentAuth.user?.role === "recruiter"
               ? "/recruiter"
               : "/dashboard"
         navigate(target, { replace: true })
-      } else {
-        navigate("/login", { replace: true })
       }
     }
   }

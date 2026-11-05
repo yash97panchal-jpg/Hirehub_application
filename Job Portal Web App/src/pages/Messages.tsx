@@ -507,7 +507,7 @@ END:VCALENDAR`
               <button
                 onClick={() => {
                   setIsVideoModalOpen(false)
-                  toast("Interview video session ended.", { icon: "📞" })
+                  toast("Interview video session ended.")
                 }}
                 className="px-6 py-3 rounded-full bg-red-600 hover:bg-red-700 text-white font-semibold text-xs flex items-center gap-2 transition-colors shadow-lg"
               >

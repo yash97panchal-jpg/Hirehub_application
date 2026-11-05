@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Copy, Check, X, Share2 } from "lucide-react"
+import { Copy, Check, X, Share2, MessageSquare, Send, Globe, ExternalLink } from "lucide-react"
 import toast from "react-hot-toast"
 import Button from "../ui/Button"
 
@@ -37,25 +37,25 @@ export default function ShareJobModal({
   const shareOptions = [
     {
       name: "WhatsApp",
-      icon: "💬",
+      icon: MessageSquare,
       url: `https://api.whatsapp.com/send?text=${shareText}%20${encodeURIComponent(shareUrl)}`,
       color: "bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20",
     },
     {
       name: "LinkedIn",
-      icon: "💼",
+      icon: ExternalLink,
       url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
       color: "bg-[#0077B5]/10 text-[#0077B5] hover:bg-[#0077B5]/20",
     },
     {
       name: "X (Twitter)",
-      icon: "🐦",
+      icon: Globe,
       url: `https://twitter.com/intent/tweet?text=${shareText}&url=${encodeURIComponent(shareUrl)}`,
       color: "bg-black/10 dark:bg-white/10 text-foreground hover:bg-black/20",
     },
     {
       name: "Telegram",
-      icon: "✈️",
+      icon: Send,
       url: `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${shareText}`,
       color: "bg-[#0088cc]/10 text-[#0088cc] hover:bg-[#0088cc]/20",
     },
@@ -104,7 +104,7 @@ export default function ShareJobModal({
                 rel="noopener noreferrer"
                 className={`flex items-center gap-2 p-3 rounded-xl border border-[var(--border)] text-xs font-semibold transition-colors ${opt.color}`}
               >
-                <span className="text-base">{opt.icon}</span>
+                <opt.icon size={15} />
                 <span>{opt.name}</span>
               </a>
             ))}

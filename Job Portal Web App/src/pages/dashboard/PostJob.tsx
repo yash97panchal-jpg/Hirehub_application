@@ -643,8 +643,8 @@ export default function PostJob() {
                   onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
                   className="px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs font-bold text-[var(--foreground)]"
                 >
-                  <option value="published">🚀 Publish to Marketplace</option>
-                  <option value="draft">📁 Save as Draft</option>
+                  <option value="published">Publish to Marketplace</option>
+                  <option value="draft">Save as Draft</option>
                 </select>
               </div>
             </div>

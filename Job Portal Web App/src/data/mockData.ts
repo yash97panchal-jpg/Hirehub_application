@@ -1779,14 +1779,14 @@ export const mockStats = {
 }
 
 export const categories = [
-  { name: "Engineering", icon: "⚙️", count: 4200 },
-  { name: "Design", icon: "🎨", count: 1800 },
-  { name: "Marketing", icon: "📢", count: 1400 },
-  { name: "Sales", icon: "💼", count: 1200 },
-  { name: "Product", icon: "📦", count: 980 },
-  { name: "Data Science", icon: "📊", count: 860 },
-  { name: "Finance", icon: "💰", count: 720 },
-  { name: "HR", icon: "👥", count: 640 },
-  { name: "Operations", icon: "🔧", count: 520 },
-  { name: "Legal", icon: "⚖️", count: 310 },
+  { name: "Engineering", icon: "Code", count: 4200 },
+  { name: "Design", icon: "Palette", count: 1800 },
+  { name: "Marketing", icon: "TrendingUp", count: 1400 },
+  { name: "Sales", icon: "Briefcase", count: 1200 },
+  { name: "Product", icon: "Box", count: 980 },
+  { name: "Data Science", icon: "BarChart3", count: 860 },
+  { name: "Finance", icon: "DollarSign", count: 720 },
+  { name: "HR", icon: "Users", count: 640 },
+  { name: "Operations", icon: "Settings", count: 520 },
+  { name: "Legal", icon: "Scale", count: 310 },
 ]

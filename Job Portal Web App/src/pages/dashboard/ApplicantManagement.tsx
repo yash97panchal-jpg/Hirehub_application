@@ -338,7 +338,7 @@ export default function ApplicantManagement() {
 
                         {app.notes && (
                           <div className="p-1.5 rounded-lg bg-amber-500/10 text-[10px] text-amber-700 dark:text-amber-300 truncate">
-                            📝 {app.notes}
+                            <span className="font-semibold">Note:</span> {app.notes}
                           </div>
                         )}
                       </div>
@@ -452,7 +452,7 @@ export default function ApplicantManagement() {
                       if (url && url.startsWith("http")) {
                         window.open(url, "_blank")
                       } else {
-                        toast("Resume document accessed securely.", { icon: "📄" })
+                        toast("Resume document accessed securely.")
                       }
                     }}
                   >

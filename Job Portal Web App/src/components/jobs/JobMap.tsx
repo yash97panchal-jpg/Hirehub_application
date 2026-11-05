@@ -15,6 +15,7 @@ import {
   Map as MapIcon,
   Layers,
   Briefcase,
+  Star,
 } from "lucide-react"
 import type { Job } from "../../types"
 import { getCompanyRealLogo } from "../../data/companyLogos"
@@ -27,7 +28,7 @@ import {
 
 export type MapStyle = "real-world" | "satellite" | "dark" | "streets" | "vector"
 
-interface JobMapProps {
+export interface JobMapProps {
   jobs: Job[]
   selectedJob?: Job | null
   onSelectJob?: (job: Job | null) => void
@@ -38,7 +39,28 @@ interface JobMapProps {
   mapHeightClass?: string
   showToolbar?: boolean
   selectedCompany?: string | null
-  onSelectCompany?: (companyName: string | null) => void
+  onSelectCompany?: (companyName: string | null, countryOrRegion?: string | null) => void
+}
+
+export function extractCountry(locationStr: string): string {
+  if (!locationStr) return ""
+  const lower = locationStr.toLowerCase()
+  if (lower.includes("india") || lower.includes("bengaluru") || lower.includes("bangalore") || lower.includes("mumbai") || lower.includes("delhi") || lower.includes("hyderabad") || lower.includes("pune")) return "India"
+  if (lower.includes("usa") || lower.includes("united states") || lower.includes("san francisco") || lower.includes("new york") || lower.includes("austin") || lower.includes("seattle") || lower.includes("boston") || lower.includes("chicago") || lower.includes("los angeles")) return "USA"
+  if (lower.includes("uk") || lower.includes("united kingdom") || lower.includes("london") || lower.includes("manchester") || lower.includes("cambridge")) return "UK"
+  if (lower.includes("germany") || lower.includes("berlin") || lower.includes("munich") || lower.includes("frankfurt")) return "Germany"
+  if (lower.includes("canada") || lower.includes("toronto") || lower.includes("vancouver") || lower.includes("montreal")) return "Canada"
+  if (lower.includes("japan") || lower.includes("tokyo") || lower.includes("osaka")) return "Japan"
+  if (lower.includes("singapore")) return "Singapore"
+  if (lower.includes("australia") || lower.includes("sydney") || lower.includes("melbourne")) return "Australia"
+  if (lower.includes("switzerland") || lower.includes("zurich") || lower.includes("geneva")) return "Switzerland"
+  if (lower.includes("france") || lower.includes("paris")) return "France"
+  if (lower.includes("netherlands") || lower.includes("amsterdam")) return "Netherlands"
+  if (lower.includes("ireland") || lower.includes("dublin")) return "Ireland"
+  if (lower.includes("remote")) return "Remote"
+
+  const parts = locationStr.split(",")
+  return parts[parts.length - 1].trim()
 }
 
 export interface CompanyMarkerGroup {
@@ -253,9 +275,10 @@ export default function JobMap({
       setVectorZoomLevel((z) => Math.max(z, 1.85))
     }
 
-    // Filter openings in the jobs list to this clicked company
+    // Filter openings in the jobs list to this clicked company and related country
     if (onSelectCompany) {
-      onSelectCompany(group.companyName)
+      const country = extractCountry(group.address || group.city || group.jobs[0]?.location || "")
+      onSelectCompany(group.companyName, country)
     }
 
     if (group.jobs.length > 0 && onSelectJob) {
@@ -637,7 +660,7 @@ export default function JobMap({
                   : "bg-[var(--card)] text-[var(--muted-foreground)] border border-[var(--border)] hover:border-[var(--primary)]"
               }`}
             >
-              🌍 All Countries
+              All Countries
             </button>
             {COUNTRIES_CATALOG.map((c) => {
               const isSelected = activeLocation.toLowerCase() === c.name.toLowerCase() || activeLocation.toLowerCase() === c.code.toLowerCase()
@@ -942,7 +965,11 @@ export default function JobMap({
                   <span className="font-bold text-slate-800 dark:text-slate-200">
                     {activeGroup.rating || 4.8}
                   </span>
-                  <div className="flex text-amber-400 text-xs">{"★".repeat(5)}</div>
+                  <div className="flex text-amber-400 gap-0.5">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <Star key={s} size={11} className="fill-amber-400 text-amber-400" />
+                    ))}
+                  </div>
                   <span className="text-slate-400 text-[11px]">
                     ({activeGroup.reviewCount || 180} reviews)
                   </span>
@@ -970,7 +997,8 @@ export default function JobMap({
                   type="button"
                   onClick={() => {
                     if (onSelectCompany) {
-                      onSelectCompany(activeGroup.companyName)
+                      const country = extractCountry(activeGroup.address || activeGroup.city || activeGroup.jobs[0]?.location || "")
+                      onSelectCompany(activeGroup.companyName, country)
                     }
                     if (activeGroup.jobs.length > 0 && onSelectJob) {
                       onSelectJob(activeGroup.jobs[0])
@@ -979,7 +1007,7 @@ export default function JobMap({
                   className="w-full py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer"
                 >
                   <Briefcase size={13} />
-                  <span>Show Only {activeGroup.companyName} Openings ({activeGroup.jobs.length})</span>
+                  <span>Show {activeGroup.companyName} & Related Openings ({activeGroup.jobs.length})</span>
                 </button>
 
                 {/* Action Buttons */}

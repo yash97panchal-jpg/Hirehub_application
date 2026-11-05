@@ -27,6 +27,8 @@ import {
   KeyRound,
   FileText,
   LogOut,
+  Upload,
+  Camera,
 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import Button from "../components/ui/Button"
@@ -133,6 +135,26 @@ export default function Settings() {
       }))
     }
   }, [user])
+
+  const handleAvatarFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        const result = reader.result as string
+        setProfileForm((prev) => ({ ...prev, avatar: result }))
+        updateUser({ avatar: result })
+        toast.success("Profile picture updated!")
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleRemoveAvatar = () => {
+    setProfileForm((prev) => ({ ...prev, avatar: "" }))
+    updateUser({ avatar: "" })
+    toast.success("Profile picture removed.")
+  }
 
   // Save profile to store & notify
   const handleSaveProfile = (e: React.FormEvent) => {
@@ -354,29 +376,57 @@ export default function Settings() {
                     </p>
 
                     <form onSubmit={handleSaveProfile} className="space-y-5">
-                      {/* Avatar preview and URL */}
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pb-6 border-b border-[var(--border)]">
-                        <img
-                          src={profileForm.avatar}
-                          alt={profileForm.name}
-                          className="w-20 h-20 rounded-2xl object-cover ring-2 ring-[var(--primary)]/30"
+                      {/* Avatar preview and file actions */}
+                      <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 pb-6 border-b border-[var(--border)]">
+                        <input
+                          type="file"
+                          id="settings-avatar-upload"
+                          accept="image/png,image/jpeg,image/webp,image/jpg"
+                          className="hidden"
+                          onChange={handleAvatarFileUpload}
                         />
-                        <div className="flex-1 w-full">
-                          <label className="block text-xs font-semibold text-[var(--foreground)] mb-1">
-                            Avatar Image URL
+                        <div className="w-20 h-20 rounded-2xl overflow-hidden bg-[var(--muted)] flex items-center justify-center ring-2 ring-[var(--primary)]/30 shrink-0">
+                          {profileForm.avatar ? (
+                            <img
+                              src={profileForm.avatar}
+                              alt={profileForm.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-2xl font-black text-[var(--primary)]">
+                              {profileForm.name.charAt(0).toUpperCase() || "U"}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex-1 text-center sm:text-left space-y-1.5">
+                          <label className="block text-xs font-bold text-[var(--foreground)]">
+                            Profile Picture
                           </label>
-                          <input
-                            type="text"
-                            value={profileForm.avatar}
-                            onChange={(e) =>
-                              setProfileForm({ ...profileForm, avatar: e.target.value })
-                            }
-                            className="w-full px-3.5 py-2 bg-[var(--background)] border border-[var(--border)] rounded-xl text-sm text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                            placeholder="https://..."
-                          />
-                          <p className="text-[11px] text-[var(--muted-foreground)] mt-1">
-                            Paste an image link to update your profile photo instantly.
+                          <p className="text-[11px] text-[var(--muted-foreground)]">
+                            Upload a JPG, PNG or WEBP file from your device.
                           </p>
+
+                          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
+                            <label
+                              htmlFor="settings-avatar-upload"
+                              className="px-3 py-1.5 rounded-xl bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] transition-all text-xs font-bold cursor-pointer inline-flex items-center gap-1.5 shadow-xs"
+                            >
+                              <Upload size={13} />
+                              <span>Upload Picture</span>
+                            </label>
+
+                            {profileForm.avatar && (
+                              <button
+                                type="button"
+                                onClick={handleRemoveAvatar}
+                                className="px-3 py-1.5 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all text-xs font-bold inline-flex items-center gap-1.5"
+                              >
+                                <Trash2 size={13} />
+                                <span>Remove Picture</span>
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
 

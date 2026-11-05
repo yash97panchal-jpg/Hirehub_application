@@ -80,7 +80,7 @@ export default function ApplicationTracker() {
       case "Interview":
         return <Badge variant="warning">Interview Scheduled</Badge>
       case "Offered":
-        return <Badge variant="success">Offer Extended 🎉</Badge>
+        return <Badge variant="success">Offer Extended</Badge>
       case "Rejected":
         return <Badge variant="error">Not Selected</Badge>
       case "Withdrawn":
@@ -113,8 +113,8 @@ export default function ApplicationTracker() {
               className="px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--card)] text-xs font-semibold text-[var(--foreground)]"
             >
               <option value="all">All Sources</option>
-              <option value="easy">⚡ Easy Apply (In-App)</option>
-              <option value="external">🌐 External Website</option>
+              <option value="easy">Easy Apply (In-App)</option>
+              <option value="external">External Website</option>
             </select>
 
             <select

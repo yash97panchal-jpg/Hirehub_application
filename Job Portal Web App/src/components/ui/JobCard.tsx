@@ -97,7 +97,7 @@ export default function JobCard({ job, compact = false }: JobCardProps) {
     if (nowSaved) {
       toast.success(`Saved "${job.title}" to bookmarks!`)
     } else {
-      toast(`Removed "${job.title}" from saved jobs`, { icon: "🔖" })
+      toast(`Removed "${job.title}" from saved jobs`)
     }
   }
 

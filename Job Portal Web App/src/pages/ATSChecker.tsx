@@ -711,7 +711,7 @@ Tools: Git, VS Code, REST API`)
                 <div className="flex flex-wrap gap-1.5">
                   {result.recommendedInDemandSkills.map((sk) => (
                     <Badge key={sk} variant="primary" className="text-xs">
-                      ★ {sk}
+                      {sk}
                     </Badge>
                   ))}
                 </div>

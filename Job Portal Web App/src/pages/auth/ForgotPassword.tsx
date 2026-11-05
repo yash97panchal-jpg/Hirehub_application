@@ -82,7 +82,7 @@ export default function ForgotPassword() {
       setSentEmail(cleanEmail)
       setGeneratedLink(link)
       setIsSent(true)
-      toast.success("Password reset link generated!", { icon: "📧" })
+      toast.success("Password reset link generated!")
     } catch (err: any) {
       console.error("Forgot password error:", err)
       toast.error(err.message || "Failed to send reset link.")

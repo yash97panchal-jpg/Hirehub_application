@@ -32,7 +32,6 @@ export default function Onboarding() {
   const handleComplete = () => {
     toast.success("Profile setup complete! Welcome to HireHub.", {
       duration: 4000,
-      icon: "🎉",
     })
     navigate("/dashboard")
   }

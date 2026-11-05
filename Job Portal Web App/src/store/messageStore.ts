@@ -185,7 +185,7 @@ export const useMessageStore = create<MessageState>()(
           senderId: "system",
           senderName: "HireHub Interview Scheduler",
           senderRole: "recruiter",
-          content: `📅 Interview Scheduled for ${interview.jobTitle} on ${interview.date} at ${interview.time}. Meeting link: ${interview.meetLink}`,
+          content: `Interview Scheduled for ${interview.jobTitle} on ${interview.date} at ${interview.time}. Meeting link: ${interview.meetLink}`,
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
           isRead: false,
           interviewInvite: interview,

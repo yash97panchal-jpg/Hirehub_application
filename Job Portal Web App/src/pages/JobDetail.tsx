@@ -105,7 +105,7 @@ export default function JobDetail() {
     if (nowSaved) {
       toast.success(`Saved "${job.title}" to your bookmarks!`)
     } else {
-      toast(`Removed "${job.title}" from saved jobs`, { icon: "🔖" })
+      toast(`Removed "${job.title}" from saved jobs`)
     }
   }
 
@@ -523,7 +523,7 @@ export default function JobDetail() {
                       className="w-full font-bold justify-center"
                       onClick={() => {
                         if (!isAuthenticated || !user) {
-                          toast("Please log in or create an account to apply.", { icon: "🔒" })
+                          toast("Please log in or create an account to apply.")
                           navigate("/login")
                           return
                         }
@@ -571,8 +571,9 @@ export default function JobDetail() {
               </Button>
 
               <div className="mt-4 pt-4 border-t border-[var(--border)] text-center space-y-1">
-                <p className="text-xs text-[var(--muted-foreground)]">
-                  ⚡ Recruiter responds in ~2-3 business days
+                <p className="text-xs text-[var(--muted-foreground)] flex items-center justify-center gap-1.5">
+                  <Clock size={12} className="text-[var(--primary)]" />
+                  <span>Recruiter responds in ~2-3 business days</span>
                 </p>
                 <p className="text-[11px] text-[var(--muted-foreground)]">
                   Apply Mode:{" "}

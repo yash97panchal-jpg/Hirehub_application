@@ -59,7 +59,7 @@ export default function Pricing() {
       description: "Accelerate hiring with AI matching, talent database access and boosted visibility.",
       features: [
         "Post up to 15 active jobs",
-        "⚡ 3 Featured 'Urgent Hiring' Badges",
+        "3 Featured 'Urgent Hiring' Badges",
         "Full Talent Database search & direct messaging",
         "Automated ATS Resume scoring & screening questions",
         "Kanban applicant pipeline & bulk CSV exports",

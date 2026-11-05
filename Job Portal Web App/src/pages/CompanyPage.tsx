@@ -141,7 +141,7 @@ export default function CompanyPage() {
       if (next) {
         toast.success(`You are now following ${company.name}`)
       } else {
-        toast("Unfollowed " + company.name, { icon: "👋" })
+        toast("Unfollowed " + company.name)
       }
       return next
     })

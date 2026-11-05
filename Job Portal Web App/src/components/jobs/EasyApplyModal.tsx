@@ -11,6 +11,7 @@ import {
   Briefcase,
   HelpCircle,
   Loader2,
+  Zap,
 } from "lucide-react"
 import Button from "../ui/Button"
 import Input from "../ui/Input"
@@ -142,8 +143,8 @@ export default function EasyApplyModal({
         <div className="p-5 border-b border-[var(--border)] flex items-center justify-between bg-[var(--muted)]/40">
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-full bg-[var(--primary)]/15 text-[var(--primary)] text-xs font-bold uppercase tracking-wider">
-                ⚡ Easy Apply
+              <span className="px-2 py-0.5 rounded-full bg-[var(--primary)]/15 text-[var(--primary)] text-xs font-bold uppercase tracking-wider inline-flex items-center">
+                <Zap size={11} className="mr-1 fill-current" /> Easy Apply
               </span>
               <span className="text-xs text-[var(--muted-foreground)]">Step {step} of 4</span>
             </div>

@@ -212,7 +212,7 @@ export default function ResumeBuilder() {
       setExperience([])
       setEducation([])
       setSkillsList([])
-      toast("Resume cleared. Fill in your details or click 'Load Sample'.", { icon: "📝" })
+      toast("Resume cleared. Fill in your details or click 'Load Sample'.")
     }
   }
 
@@ -240,7 +240,7 @@ export default function ResumeBuilder() {
 
   const removeExperience = (id: string) => {
     setExperience(experience.filter((e) => e.id !== id))
-    toast("Experience removed", { icon: "🗑️" })
+    toast("Experience removed")
   }
 
   // Education handlers
@@ -263,7 +263,7 @@ export default function ResumeBuilder() {
 
   const removeEducation = (id: string) => {
     setEducation(education.filter((e) => e.id !== id))
-    toast("Education removed", { icon: "🗑️" })
+    toast("Education removed")
   }
 
   // Skills handlers

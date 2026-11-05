@@ -11,6 +11,8 @@ import {
   Map as MapIcon,
   Layers,
   Sparkles,
+  Building2,
+  Globe,
 } from "lucide-react"
 import JobCard from "../components/ui/JobCard"
 import JobMap from "../components/jobs/JobMap"
@@ -74,6 +76,8 @@ export default function Jobs() {
   const [viewMode, setViewMode] = useState<ViewMode>("split")
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null)
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null)
+  const [filterScope, setFilterScope] = useState<"both" | "company" | "country">("both")
   const jobCardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
 
   // Synchronize scroll: when a pin on the map is clicked, scroll the job list on the right straight to that position
@@ -207,15 +211,34 @@ export default function Jobs() {
     storeJobs,
   ])
 
-  // Filter jobs by selected company from the map
+  // Filter jobs by selected company and related country from the map
   const splitViewJobs = useMemo(() => {
-    if (!selectedCompany) return filtered
-    return filtered.filter(
-      (j) =>
-        j.company?.name?.toLowerCase() === selectedCompany.toLowerCase() ||
-        j.company?.id === selectedCompany,
-    )
-  }, [filtered, selectedCompany])
+    if (!selectedCompany && !selectedCountry) return filtered
+
+    return filtered
+      .filter((j) => {
+        const matchCompany =
+          !selectedCompany ||
+          j.company?.name?.toLowerCase() === selectedCompany.toLowerCase() ||
+          j.company?.id === selectedCompany
+
+        const matchCountry =
+          !selectedCountry ||
+          (j.location && j.location.toLowerCase().includes(selectedCountry.toLowerCase()))
+
+        if (filterScope === "company") return matchCompany
+        if (filterScope === "country") return matchCountry
+        return matchCompany || matchCountry
+      })
+      .sort((a, b) => {
+        if (!selectedCompany) return 0
+        const aIsCompany = a.company?.name?.toLowerCase() === selectedCompany.toLowerCase()
+        const bIsCompany = b.company?.name?.toLowerCase() === selectedCompany.toLowerCase()
+        if (aIsCompany && !bIsCompany) return -1
+        if (!aIsCompany && bIsCompany) return 1
+        return 0
+      })
+  }, [filtered, selectedCompany, selectedCountry, filterScope])
 
   const clearAll = () => {
     setKeyword("")
@@ -226,6 +249,8 @@ export default function Jobs() {
     setSalaryMin(0)
     setDatePosted("")
     setSelectedCompany(null)
+    setSelectedCountry(null)
+    setFilterScope("both")
   }
 
   const activeFilterCount =
@@ -353,7 +378,12 @@ export default function Jobs() {
             roleKeyword={debouncedKeyword || category}
             mapHeightClass="h-[580px] lg:h-[660px]"
             selectedCompany={selectedCompany}
-            onSelectCompany={(compName) => setSelectedCompany(compName)}
+            onSelectCompany={(compName, country) => {
+              setSelectedCompany(compName)
+              setSelectedCountry(country || null)
+              setFilterScope("both")
+              setViewMode("split")
+            }}
           />
         </div>
       ) : viewMode === "split" ? (
@@ -362,48 +392,114 @@ export default function Jobs() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* LEFT Column: Scrollable List of Job Openings */}
             <div className="lg:col-span-5 space-y-4 order-2 lg:order-1">
-              <div className="flex items-center justify-between pb-2 border-b border-[var(--border)]">
-                <div className="flex items-center gap-2 flex-wrap min-w-0">
-                  <h3 className="font-poppins font-bold text-sm text-[var(--foreground)] truncate">
-                    {selectedCompany ? `${selectedCompany} Openings` : "Open Positions"} ({splitViewJobs.length})
-                  </h3>
-                  {selectedCompany && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                      <span className="truncate max-w-[120px]">{selectedCompany}</span>
+              <div className="flex flex-col gap-2 pb-2.5 border-b border-[var(--border)]">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 flex-wrap min-w-0">
+                    <h3 className="font-poppins font-bold text-sm text-[var(--foreground)] truncate">
+                      {selectedCompany
+                        ? `${selectedCompany} & Related Openings`
+                        : selectedCountry
+                          ? `${selectedCountry} Openings`
+                          : "Open Positions"}{" "}
+                      ({splitViewJobs.length})
+                    </h3>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    {(selectedCompany || selectedCountry) && (
                       <button
                         type="button"
                         onClick={() => {
                           setSelectedCompany(null)
+                          setSelectedCountry(null)
                           setSelectedJob(null)
+                          setFilterScope("both")
                         }}
-                        className="hover:text-red-500 ml-0.5 font-bold cursor-pointer"
-                        title="Show all company openings"
+                        className="text-xs font-semibold text-[var(--primary)] hover:underline cursor-pointer"
                       >
-                        <X size={12} />
+                        Show All Worldwide
                       </button>
-                    </span>
-                  )}
+                    )}
+                    {location && (
+                      <span className="text-xs text-[var(--primary)] font-semibold truncate max-w-[120px] flex items-center gap-1">
+                        <MapPin size={12} /> {location}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
-                  {selectedCompany && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedCompany(null)
-                        setSelectedJob(null)
-                      }}
-                      className="text-xs font-semibold text-[var(--primary)] hover:underline cursor-pointer"
-                    >
-                      Show All
-                    </button>
-                  )}
-                  {location && (
-                    <span className="text-xs text-[var(--primary)] font-semibold truncate max-w-[100px]">
-                      📍 {location}
-                    </span>
-                  )}
-                </div>
+                {/* Company & Country Filter Badges with Quick Scope Toggles */}
+                {(selectedCompany || selectedCountry) && (
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    {selectedCompany && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                        <Building2 size={11} />
+                        <span className="truncate max-w-[110px]">{selectedCompany}</span>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedCompany(null)}
+                          className="hover:text-red-500 ml-0.5 font-bold cursor-pointer"
+                          title="Remove company filter"
+                        >
+                          <X size={12} />
+                        </button>
+                      </span>
+                    )}
+
+                    {selectedCountry && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30">
+                        <Globe size={11} />
+                        <span className="truncate max-w-[100px]">{selectedCountry}</span>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedCountry(null)}
+                          className="hover:text-red-500 ml-0.5 font-bold cursor-pointer"
+                          title="Remove country filter"
+                        >
+                          <X size={12} />
+                        </button>
+                      </span>
+                    )}
+
+                    {selectedCompany && selectedCountry && (
+                      <div className="flex items-center gap-1 ml-auto text-[11px]">
+                        <button
+                          type="button"
+                          onClick={() => setFilterScope("both")}
+                          className={`px-2 py-0.5 rounded-md font-semibold transition-colors ${
+                            filterScope === "both"
+                              ? "bg-[var(--primary)] text-white"
+                              : "bg-[var(--muted)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                          }`}
+                        >
+                          All Related
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFilterScope("company")}
+                          className={`px-2 py-0.5 rounded-md font-semibold transition-colors ${
+                            filterScope === "company"
+                              ? "bg-[var(--primary)] text-white"
+                              : "bg-[var(--muted)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                          }`}
+                        >
+                          {selectedCompany} Only
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFilterScope("country")}
+                          className={`px-2 py-0.5 rounded-md font-semibold transition-colors ${
+                            filterScope === "country"
+                              ? "bg-[var(--primary)] text-white"
+                              : "bg-[var(--muted)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                          }`}
+                        >
+                          {selectedCountry} Only
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {splitViewJobs.length > 0 ? (
@@ -470,7 +566,11 @@ export default function Jobs() {
                 roleKeyword={debouncedKeyword || category}
                 mapHeightClass="h-[480px] lg:h-[600px]"
                 selectedCompany={selectedCompany}
-                onSelectCompany={(compName) => setSelectedCompany(compName)}
+                onSelectCompany={(compName, country) => {
+                  setSelectedCompany(compName)
+                  setSelectedCountry(country || null)
+                  setFilterScope("both")
+                }}
               />
             </div>
           </div>
@@ -680,8 +780,8 @@ export default function Jobs() {
                 location) && (
                 <div className="flex flex-wrap gap-2 mb-4">
                   {location && (
-                    <Badge variant="primary" className="cursor-pointer">
-                      📍 {location}{" "}
+                    <Badge variant="primary" className="cursor-pointer inline-flex items-center gap-1">
+                      <MapPin size={11} /> {location}
                       <X
                         size={10}
                         className="ml-1"

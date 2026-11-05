@@ -49,7 +49,7 @@ export default function CareerHelpBot() {
     {
       id: "m-welcome",
       sender: "bot",
-      text: "👋 Hi! I'm your HireHub AI Assistant. I can help you find jobs, guide your application process, explain Easy Apply vs External Apply, or analyze your resume for role matches!",
+      text: "Welcome to HireHub Assistant. I can help you find jobs, guide your application process, explain Easy Apply vs External Apply, or analyze your resume for role matches.",
       time: "Just now",
       suggestions: [
         "How do I apply for jobs?",

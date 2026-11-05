@@ -90,7 +90,7 @@ export default function Register() {
     setVerifyError("")
     setResendTimer(30)
     setStep("verify")
-    toast.success(`Verification code sent to ${data.email}!`, { icon: "📧" })
+    toast.success(`Verification code sent to ${data.email}!`)
   }
 
   // Handle individual digit input
@@ -139,7 +139,7 @@ export default function Register() {
     setVerificationCode(newCode)
     setResendTimer(30)
     setVerifyError("")
-    toast.success(`New verification code sent!`, { icon: "📨" })
+    toast.success(`New verification code sent!`)
   }
 
   const handleAutoFill = () => {

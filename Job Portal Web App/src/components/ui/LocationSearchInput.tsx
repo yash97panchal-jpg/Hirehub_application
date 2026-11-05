@@ -175,7 +175,7 @@ export default function LocationSearchInput({
                         }`}
                       >
                         <div className="flex items-center gap-2 truncate">
-                          <span className="text-sm">🌐</span>
+                          <Globe size={14} className={isSelected ? "text-white" : "text-emerald-500 shrink-0"} />
                           <span className="font-bold truncate">{c.label}</span>
                         </div>
                         <span
@@ -218,7 +218,7 @@ export default function LocationSearchInput({
                         }`}
                       >
                         <div className="flex items-center gap-2 truncate">
-                          <span className="text-sm">🏛️</span>
+                          <Building size={14} className={isSelected ? "text-white" : "text-sky-500 shrink-0"} />
                           <span className="font-semibold truncate">{s.label}</span>
                         </div>
                         <span
@@ -261,7 +261,7 @@ export default function LocationSearchInput({
                         }`}
                       >
                         <div className="flex items-center gap-2 truncate">
-                          <span className="text-sm">📍</span>
+                          <MapPin size={14} className={isSelected ? "text-white" : "text-violet-500 shrink-0"} />
                           <span className="truncate">{cityItem.label}</span>
                         </div>
                         <span

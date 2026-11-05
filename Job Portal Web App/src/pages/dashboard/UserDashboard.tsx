@@ -12,12 +12,11 @@ import {
   Eye,
   Star,
   ArrowRight,
-  User,
+  User as UserIcon,
   BarChart3,
   Zap,
   ChevronRight,
   Settings as SettingsIcon,
-  LogOut,
   MapPin,
   Calendar,
   Sparkles,
@@ -29,6 +28,9 @@ import {
   MessageSquare,
   AlertCircle,
   Building2,
+  Award,
+  Compass,
+  ArrowUpRight,
 } from "lucide-react"
 import toast from "react-hot-toast"
 import { useAuthStore } from "../../store/authStore"
@@ -63,7 +65,7 @@ const statusVariant: Record<string, "success" | "warning" | "primary" | "default
 
 export default function UserDashboard() {
   const navigate = useNavigate()
-  const { user, logout } = useAuthStore()
+  const { user } = useAuthStore()
   const { jobs: storeJobs } = useJobStore()
   const { savedJobIds, toggleSaveJob, isJobSaved } = useSavedJobsStore()
   const { applications: storeApplications } = useApplicationStore()
@@ -161,7 +163,9 @@ export default function UserDashboard() {
 
   // Dynamic application counts
   const countApplied = allApplications.length
-  const countViewed = allApplications.filter((a) => a.status === "Viewed" || a.status === "Shortlisted" || a.status === "Interview").length
+  const countViewed = allApplications.filter(
+    (a) => a.status === "Viewed" || a.status === "Shortlisted" || a.status === "Interview",
+  ).length
   const countShortlisted = allApplications.filter((a) => a.status === "Shortlisted").length
   const countInterviews = allApplications.filter((a) => a.status === "Interview").length
 
@@ -171,40 +175,48 @@ export default function UserDashboard() {
       label: "Applications Sent",
       count: countApplied || 12,
       subtext: "+3 this week",
+      trend: "Active Pipeline",
       icon: Briefcase,
-      color: "#F59E0B",
-      bg: "bg-amber-500/10 dark:bg-amber-500/20 text-amber-500",
-      border: "border-amber-500/30",
+      color: "from-amber-500 to-amber-600",
+      accent: "text-amber-500",
+      bg: "bg-amber-500/10 text-amber-500 dark:bg-amber-500/20",
+      borderColor: "border-amber-500/30",
     },
     {
       id: "Viewed" as const,
-      label: "Profile Views",
+      label: "Recruiter Views",
       count: countViewed || 8,
       subtext: "72% conversion",
+      trend: "+14% vs avg",
       icon: Eye,
-      color: "#3B82F6",
-      bg: "bg-blue-500/10 dark:bg-blue-500/20 text-blue-500",
-      border: "border-blue-500/30",
+      color: "from-blue-500 to-blue-600",
+      accent: "text-blue-500",
+      bg: "bg-blue-500/10 text-blue-500 dark:bg-blue-500/20",
+      borderColor: "border-blue-500/30",
     },
     {
       id: "Shortlisted" as const,
       label: "Shortlisted Roles",
       count: countShortlisted || 3,
       subtext: "Top 5% candidate",
+      trend: "High Interest",
       icon: Star,
-      color: "#10B981",
-      bg: "bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-500",
-      border: "border-emerald-500/30",
+      color: "from-emerald-500 to-emerald-600",
+      accent: "text-emerald-500",
+      bg: "bg-emerald-500/10 text-emerald-500 dark:bg-emerald-500/20",
+      borderColor: "border-emerald-500/30",
     },
     {
       id: "Interview" as const,
-      label: "Interviews Scheduled",
+      label: "Interviews Booked",
       count: countInterviews || 1,
       subtext: "Next: Tomorrow 2 PM",
+      trend: "Confirmed",
       icon: Calendar,
-      color: "#8B5CF6",
-      bg: "bg-purple-500/10 dark:bg-purple-500/20 text-purple-500",
-      border: "border-purple-500/30",
+      color: "from-purple-500 to-purple-600",
+      accent: "text-purple-500",
+      bg: "bg-purple-500/10 text-purple-500 dark:bg-purple-500/20",
+      borderColor: "border-purple-500/30",
     },
   ]
 
@@ -240,36 +252,37 @@ export default function UserDashboard() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[var(--background)] pt-20 pb-20 w-full max-w-full overflow-x-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+    <div className="min-h-screen bg-[var(--background)] pt-20 pb-24 w-full max-w-full overflow-x-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         {/* ============================================================= */}
-        {/* 1. HERO & CANDIDATE GREETING HEADER                           */}
+        {/* 1. EXECUTIVE COMMAND HEADER                                   */}
         {/* ============================================================= */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-6 sm:p-8 rounded-3xl bg-[var(--card)] border border-[var(--border)] shadow-[var(--shadow-elevated)] relative overflow-hidden"
+          className="relative rounded-3xl p-6 sm:p-8 overflow-hidden bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 text-white border border-slate-800 shadow-2xl"
         >
-          {/* Subtle Ambient Background Glow */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--primary)]/10 rounded-full blur-3xl pointer-events-none" />
+          {/* Subtle background ambient mesh */}
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <span className="text-xs uppercase font-bold tracking-wider text-[var(--primary)] flex items-center gap-1.5">
-                  <Sparkles size={14} /> Career Command Center
+            <div className="space-y-3">
+              {/* Top Meta Bar */}
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase bg-amber-400/15 text-amber-300 border border-amber-400/30">
+                  <Sparkles size={13} className="text-amber-400" /> Executive Candidate Portal
                 </span>
-                <span className="text-slate-300 dark:text-slate-700">•</span>
 
                 {/* Candidate Availability Status Picker */}
-                <div className="inline-flex items-center bg-[var(--muted)] p-0.5 rounded-full text-xs font-semibold">
+                <div className="inline-flex items-center bg-black/40 backdrop-blur-md p-1 rounded-full text-xs font-semibold border border-white/10">
                   <button
                     type="button"
                     onClick={() => setCandidateStatus("active")}
-                    className={`px-2.5 py-0.5 rounded-full transition-all flex items-center gap-1.5 ${
+                    className={`px-3 py-1 rounded-full transition-all flex items-center gap-1.5 ${
                       candidateStatus === "active"
-                        ? "bg-emerald-500 text-white shadow-xs font-bold"
-                        : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                        ? "bg-emerald-500 text-white shadow-sm font-bold"
+                        : "text-slate-300 hover:text-white"
                     }`}
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
@@ -279,10 +292,10 @@ export default function UserDashboard() {
                   <button
                     type="button"
                     onClick={() => setCandidateStatus("interviewing")}
-                    className={`px-2.5 py-0.5 rounded-full transition-all flex items-center gap-1.5 ${
+                    className={`px-3 py-1 rounded-full transition-all flex items-center gap-1.5 ${
                       candidateStatus === "interviewing"
-                        ? "bg-purple-600 text-white shadow-xs font-bold"
-                        : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                        ? "bg-purple-600 text-white shadow-sm font-bold"
+                        : "text-slate-300 hover:text-white"
                     }`}
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-white" />
@@ -292,10 +305,10 @@ export default function UserDashboard() {
                   <button
                     type="button"
                     onClick={() => setCandidateStatus("open")}
-                    className={`px-2.5 py-0.5 rounded-full transition-all flex items-center gap-1.5 ${
+                    className={`px-3 py-1 rounded-full transition-all flex items-center gap-1.5 ${
                       candidateStatus === "open"
-                        ? "bg-amber-500 text-white shadow-xs font-bold"
-                        : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                        ? "bg-amber-500 text-slate-950 shadow-sm font-bold"
+                        : "text-slate-300 hover:text-white"
                     }`}
                   >
                     <span>Open to Offers</span>
@@ -303,117 +316,79 @@ export default function UserDashboard() {
                 </div>
               </div>
 
-              <h1 className="font-poppins text-2xl sm:text-3xl lg:text-4xl font-black text-[var(--foreground)] tracking-tight">
-                {greeting}, {user?.name ? user.name.split(" ")[0] : "Candidate"} 👋
-              </h1>
-              <p className="text-xs sm:text-sm text-[var(--muted-foreground)] max-w-2xl leading-relaxed">
-                Track your active recruiter pipelines, benchmark resume ATS matching, and discover global opportunities tailored to your technical skills.
-              </p>
+              {/* Title & Greeting */}
+              <div className="space-y-1">
+                <h1 className="font-poppins text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight flex items-center gap-2">
+                  <span>{greeting}, {user?.name ? user.name.split(" ")[0] : "Candidate"}</span>
+                  <span className="inline-flex items-center p-1 rounded-full bg-emerald-500/20 text-emerald-400" title="Verified Profile">
+                    <ShieldCheck size={20} />
+                  </span>
+                </h1>
+                <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+                  Real-time pipeline overview, AI resume skill matching, and executive interview scheduling.
+                </p>
+              </div>
+
+              {/* Key Indicators */}
+              <div className="flex items-center gap-4 text-xs text-slate-300 pt-1 flex-wrap">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                  <span>Profile Strength: <strong className="text-white">{user?.profileCompletion || 80}%</strong></span>
+                </span>
+                <span className="text-slate-600">•</span>
+                <span className="flex items-center gap-1.5">
+                  <Award size={13} className="text-amber-400" />
+                  <span>ATS Benchmark: <strong className="text-white">88/100 (High Readiness)</strong></span>
+                </span>
+                <span className="text-slate-600">•</span>
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle size={13} className="text-blue-400" />
+                  <span>Recruiter Response: <strong className="text-white">94%</strong></span>
+                </span>
+              </div>
             </div>
 
             {/* Quick Action Navigation Buttons */}
-            <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+            <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto shrink-0">
               <Button
                 variant="primary"
                 size="md"
                 onClick={() => navigate("/jobs")}
-                className="font-bold flex-1 sm:flex-initial shadow-md"
+                className="font-bold flex-1 sm:flex-initial shadow-lg bg-amber-500 hover:bg-amber-400 text-slate-950"
               >
-                <Search size={15} className="mr-1.5" /> Find Jobs
+                <Search size={15} className="mr-1.5" /> Explore Open Roles
               </Button>
 
               <Button
                 variant="outline"
                 size="md"
                 onClick={() => navigate("/ats-checker")}
-                className="font-semibold flex-1 sm:flex-initial"
+                className="font-semibold flex-1 sm:flex-initial border-slate-700 bg-slate-800/60 hover:bg-slate-700 text-white"
               >
-                <TrendingUp size={15} className="mr-1.5 text-[var(--primary)]" /> Scan ATS
+                <TrendingUp size={15} className="mr-1.5 text-amber-400" /> Scan Resume ATS
               </Button>
 
               <Button
-                variant="ghost"
+                variant="outline"
                 size="md"
-                onClick={() => {
-                  logout()
-                  toast.success("Logged out successfully.")
-                  navigate("/login")
-                }}
-                className="text-red-500 hover:bg-red-500/10 font-semibold"
-                title="Log Out of your account"
+                onClick={() => navigate("/settings")}
+                className="font-semibold flex-1 sm:flex-initial border-slate-700 bg-slate-800/60 hover:bg-slate-700 text-white"
+                title="Account Settings"
               >
-                <LogOut size={16} />
+                <SettingsIcon size={15} className="mr-1.5" /> Settings
               </Button>
             </div>
           </div>
         </motion.div>
 
         {/* ============================================================= */}
-        {/* 2. PROFILE STRENGTH & RECRUITER READINESS BANNER             */}
-        {/* ============================================================= */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.08 }}
-          className="rounded-3xl p-5 sm:p-6 text-white relative overflow-hidden shadow-lg border border-amber-400/20"
-          style={{
-            background:
-              "linear-gradient(135deg, #1C0A28 0%, #2E103F 45%, #B45309 100%)",
-          }}
-        >
-          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div className="space-y-2 max-w-xl">
-              <div className="flex items-center gap-2">
-                <ShieldCheck size={18} className="text-amber-400" />
-                <span className="font-bold text-sm text-amber-200 uppercase tracking-wider">
-                  Profile Strength: {user?.profileCompletion || 80}% Complete
-                </span>
-              </div>
-              <h3 className="font-poppins text-lg sm:text-xl font-bold text-white">
-                Profiles with 85%+ completion receive 3.4× more recruiter interviews
-              </h3>
-
-              {/* Checklist Badges */}
-              <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
-                <span className="px-2.5 py-1 rounded-lg bg-white/10 backdrop-blur-md flex items-center gap-1.5 text-white/90">
-                  <Check size={13} className="text-emerald-400" /> Verified Credentials
-                </span>
-                <span className="px-2.5 py-1 rounded-lg bg-white/10 backdrop-blur-md flex items-center gap-1.5 text-white/90">
-                  <Check size={13} className="text-emerald-400" /> Resume Attached
-                </span>
-                <span className="px-2.5 py-1 rounded-lg bg-white/10 backdrop-blur-md flex items-center gap-1.5 text-white/90">
-                  <Check size={13} className="text-emerald-400" /> Technical Skills
-                </span>
-                <span className="px-2.5 py-1 rounded-lg bg-amber-400/20 text-amber-300 font-semibold flex items-center gap-1.5">
-                  <Sparkles size={13} /> Add Portfolio (+15%)
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 self-stretch sm:self-auto justify-end">
-              <div className="hidden sm:block">
-                <ProfileStrengthRing
-                  progress={user?.profileCompletion || 80}
-                  color="#F59E0B"
-                />
-              </div>
-              <Link
-                to="/profile"
-                className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs sm:text-sm shadow-md transition-all whitespace-nowrap text-center flex-1 sm:flex-initial"
-              >
-                Complete Profile →
-              </Link>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* ============================================================= */}
-        {/* 3. INTERACTIVE STATS CARDS (Clickable Filters)                 */}
+        {/* 2. EXECUTIVE KPI CARDS (Interactive application metrics)       */}
         {/* ============================================================= */}
         <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-poppins text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
-              Application Pipeline Overview
+          <div className="flex items-center justify-between mb-3 px-1">
+            <h2 className="font-poppins text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)] flex items-center gap-1.5">
+              <BarChart3 size={14} className="text-[var(--primary)]" />
+              <span>Application Pipeline Analytics</span>
             </h2>
             {metricFilter !== "all" && (
               <button
@@ -426,7 +401,7 @@ export default function UserDashboard() {
             )}
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {stats.map((stat, i) => {
               const isSelected = metricFilter === stat.id
               const Icon = stat.icon
@@ -435,36 +410,36 @@ export default function UserDashboard() {
                   key={stat.label}
                   initial={{ opacity: 0, y: 14 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 + i * 0.05 }}
+                  transition={{ delay: 0.05 + i * 0.05 }}
                   onClick={() => setMetricFilter(isSelected ? "all" : (stat.id as any))}
-                  className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-[var(--card)] border cursor-pointer transition-all shadow-[var(--shadow-card)] hover:shadow-lg ${
+                  className={`p-5 rounded-3xl bg-[var(--card)] border cursor-pointer transition-all duration-200 relative overflow-hidden group shadow-sm hover:shadow-md ${
                     isSelected
                       ? `ring-2 ring-amber-500 border-amber-500 shadow-amber-500/10`
-                      : `border-[var(--border)] hover:border-slate-300 dark:hover:border-white/20`
+                      : `border-[var(--border)] hover:border-slate-300 dark:hover:border-slate-700`
                   }`}
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <div
-                      className={`w-10 h-10 rounded-2xl ${stat.bg} flex items-center justify-center`}
-                    >
+                    <div className={`w-11 h-11 rounded-2xl ${stat.bg} flex items-center justify-center transition-transform group-hover:scale-110`}>
                       <Icon size={20} />
                     </div>
-                    {isSelected && (
-                      <span className="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full bg-amber-500 text-white">
-                        Active
-                      </span>
-                    )}
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--muted)] text-[var(--muted-foreground)]">
+                      {stat.trend}
+                    </span>
                   </div>
 
-                  <p className="font-poppins text-2xl sm:text-3xl font-black text-[var(--foreground)] tracking-tight">
+                  <p className="font-poppins text-3xl font-black text-[var(--foreground)] tracking-tight">
                     {stat.count}
                   </p>
-                  <p className="text-xs sm:text-sm font-semibold text-[var(--foreground)] mt-0.5">
+                  <p className="text-xs sm:text-sm font-bold text-[var(--foreground)] mt-1">
                     {stat.label}
                   </p>
-                  <p className="text-[11px] text-[var(--muted-foreground)] mt-1 font-medium">
+                  <p className="text-[11px] text-[var(--muted-foreground)] mt-0.5 font-medium">
                     {stat.subtext}
                   </p>
+
+                  {isSelected && (
+                    <div className="absolute top-0 right-0 left-0 h-1 bg-amber-500" />
+                  )}
                 </motion.div>
               )
             })}
@@ -472,20 +447,20 @@ export default function UserDashboard() {
         </div>
 
         {/* ============================================================= */}
-        {/* RESUME SKILL-BASED OPENING POSITIONS (Directly Below Board)   */}
+        {/* 3. RESUME SKILL-MATCHED OPENINGS (Directly Below KPI Cards)    */}
         {/* ============================================================= */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="p-6 sm:p-7 rounded-3xl bg-[var(--card)] border border-[var(--border)] shadow-[var(--shadow-card)] space-y-5"
+          className="p-6 sm:p-7 rounded-3xl bg-[var(--card)] border border-[var(--border)] shadow-[var(--shadow-card)] space-y-6"
         >
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[var(--border)]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[var(--border)]">
             <div>
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-2.5 flex-wrap">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                 <h2 className="font-poppins font-black text-lg sm:text-xl text-[var(--foreground)] tracking-tight">
-                  Resume Skill-Matched Openings
+                  Resume Skill-Matched Positions
                 </h2>
                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-xs font-bold border border-emerald-500/20">
                   {skillMatchedJobs.length} Positions Available
@@ -519,10 +494,10 @@ export default function UserDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {skillMatchedJobs.slice(0, 6).map((job) => {
               const isApplied = allApplications.some(
-                (a) => a.job?.id === job.id || a.job?.title?.toLowerCase() === job.title.toLowerCase()
+                (a) => a.job?.id === job.id || a.job?.title?.toLowerCase() === job.title.toLowerCase(),
               )
               const existingApp = allApplications.find(
-                (a) => a.job?.id === job.id || a.job?.title?.toLowerCase() === job.title.toLowerCase()
+                (a) => a.job?.id === job.id || a.job?.title?.toLowerCase() === job.title.toLowerCase(),
               )
               const isSaved = isJobSaved(job.id)
 
@@ -575,7 +550,7 @@ export default function UserDashboard() {
                       </button>
                     </div>
 
-                    {/* Job Title */}
+                    {/* Job Title & Details */}
                     <div>
                       <Link
                         to={`/jobs/${job.id}`}
@@ -584,8 +559,9 @@ export default function UserDashboard() {
                         {job.title}
                       </Link>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-extrabold text-[11px]">
-                          ⚡ {job.matchPercent}% Match
+                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-extrabold text-[11px] inline-flex items-center">
+                          <Zap size={11} className="mr-1 fill-emerald-500 text-emerald-500" />
+                          {job.matchPercent}% Match
                         </span>
                         <span className="text-xs font-semibold text-[var(--foreground)]">
                           {job.salaryMin ? `$${(job.salaryMin / 1000).toFixed(0)}k+` : "Competitive"}
@@ -593,7 +569,7 @@ export default function UserDashboard() {
                       </div>
                     </div>
 
-                    {/* Matching Skill Chips from Resume */}
+                    {/* Matching Skill Chips */}
                     <div className="flex flex-wrap gap-1">
                       {job.matchedSkills.slice(0, 3).map((skill: string) => (
                         <span
@@ -606,7 +582,7 @@ export default function UserDashboard() {
                     </div>
                   </div>
 
-                  {/* Action Buttons: Apply Now & Open Company Profile */}
+                  {/* Actions: Apply Now & Company Profile */}
                   <div className="pt-3 border-t border-[var(--border)] flex items-center gap-2">
                     {isApplied ? (
                       <div className="flex-1 py-1.5 px-3 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-500/30">
@@ -637,10 +613,13 @@ export default function UserDashboard() {
             })}
           </div>
         </motion.div>
+
         {/* ============================================================= */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* 4. MAIN WORKSPACE: PIPELINE + EXECUTIVE TOOLKIT                */}
+        {/* ============================================================= */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* LEFT 8 COLS: Segmented Content & Application Cards */}
-          <div className="lg:col-span-8 space-y-5">
+          <div className="lg:col-span-8 space-y-6">
             {/* Segmented Control Tabs */}
             <div className="p-1 rounded-2xl bg-[var(--card)] border border-[var(--border)] flex items-center gap-1 overflow-x-auto shadow-xs no-scrollbar">
               <button
@@ -750,13 +729,13 @@ export default function UserDashboard() {
                 </div>
 
                 {displayedApplications.length === 0 ? (
-                  <div className="bg-[var(--card)] rounded-3xl border border-[var(--border)] p-10 text-center shadow-[var(--shadow-card)]">
-                    <FileText size={40} className="mx-auto text-[var(--muted-foreground)] mb-3 opacity-40" />
+                  <div className="bg-[var(--card)] rounded-3xl border border-[var(--border)] p-12 text-center shadow-[var(--shadow-card)]">
+                    <FileText size={44} className="mx-auto text-[var(--muted-foreground)] mb-3 opacity-30" />
                     <h4 className="font-poppins font-bold text-base text-[var(--foreground)]">
-                      No applications match this filter
+                      No applications found for this filter
                     </h4>
                     <p className="text-xs text-[var(--muted-foreground)] max-w-sm mx-auto mt-1 mb-5">
-                      Explore positions matching your skillset and submit easy applications.
+                      Explore positions matching your skillset and submit fast applications.
                     </p>
                     <Button
                       variant="primary"
@@ -768,23 +747,24 @@ export default function UserDashboard() {
                       }}
                       className="font-bold"
                     >
-                      Browse Open Positions <ArrowRight size={14} />
+                      Browse Open Roles <ArrowRight size={14} />
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-3.5">
+                  <div className="space-y-4">
                     {displayedApplications.map((app) => {
                       const stages = ["Applied", "Viewed", "Shortlisted", "Interview"]
-                      const currentStageIdx = stages.indexOf(app.status) >= 0 ? stages.indexOf(app.status) : 0
+                      const currentStageIdx =
+                        stages.indexOf(app.status) >= 0 ? stages.indexOf(app.status) : 0
 
                       return (
                         <div
                           key={app.id}
-                          className="bg-[var(--card)] rounded-3xl border border-[var(--border)] p-5 shadow-[var(--shadow-card)] hover:border-amber-500/50 transition-all space-y-4"
+                          className="bg-[var(--card)] rounded-3xl border border-[var(--border)] p-6 shadow-[var(--shadow-card)] hover:border-amber-500/50 transition-all space-y-4"
                         >
                           {/* Card Top: Company info & Status */}
                           <div className="flex items-start justify-between gap-4">
-                            <div className="flex items-center gap-3.5 min-w-0">
+                            <div className="flex items-center gap-4 min-w-0">
                               <div className="w-12 h-12 rounded-2xl overflow-hidden bg-white dark:bg-slate-900 shrink-0 ring-1 ring-[var(--border)] p-1 flex items-center justify-center font-bold text-[var(--primary)] shadow-xs">
                                 {app.job?.company?.name ? (
                                   <img
@@ -796,7 +776,9 @@ export default function UserDashboard() {
                                     alt={app.job?.company?.name}
                                     className="w-full h-full object-contain"
                                     onError={(e) => {
-                                      e.currentTarget.src = getCompanyRealLogo(app.job?.company?.name || "Company")
+                                      e.currentTarget.src = getCompanyRealLogo(
+                                        app.job?.company?.name || "Company",
+                                      )
                                     }}
                                   />
                                 ) : (
@@ -812,7 +794,7 @@ export default function UserDashboard() {
                                   {app.job?.title || "Applied Role"}
                                 </Link>
                                 <p className="text-xs text-[var(--muted-foreground)] flex items-center gap-2 mt-0.5">
-                                  <span className="font-medium text-[var(--foreground)]">
+                                  <span className="font-semibold text-[var(--foreground)]">
                                     {app.job?.company?.name || "Verified Employer"}
                                   </span>
                                   <span>•</span>
@@ -831,16 +813,19 @@ export default function UserDashboard() {
                                 {app.appliedAt
                                   ? `${Math.max(
                                       0,
-                                      Math.floor((Date.now() - new Date(app.appliedAt).getTime()) / 86400000),
+                                      Math.floor(
+                                        (Date.now() - new Date(app.appliedAt).getTime()) /
+                                          86400000,
+                                      ),
                                     )}d ago`
                                   : "Recently"}
                               </span>
                             </div>
                           </div>
 
-                          {/* Interactive 4-Stage Application Timeline Stepper */}
-                          <div className="p-3 rounded-2xl bg-[var(--background)] border border-[var(--border)]/70">
-                            <div className="grid grid-cols-4 gap-1 relative">
+                          {/* 4-Stage Timeline Stepper */}
+                          <div className="p-3.5 rounded-2xl bg-[var(--background)] border border-[var(--border)]/70">
+                            <div className="grid grid-cols-4 gap-2 relative">
                               {stages.map((stage, sIdx) => {
                                 const isPassed = sIdx <= currentStageIdx
                                 const isCurrent = sIdx === currentStageIdx
@@ -882,13 +867,13 @@ export default function UserDashboard() {
                             <div className="flex items-center gap-2">
                               <Link
                                 to="/messages"
-                                className="px-3 py-1.5 rounded-xl border border-[var(--border)] hover:bg-[var(--muted)] font-semibold text-[var(--foreground)] flex items-center gap-1 transition-colors"
+                                className="px-3.5 py-1.5 rounded-xl border border-[var(--border)] hover:bg-[var(--muted)] font-semibold text-[var(--foreground)] flex items-center gap-1.5 transition-colors"
                               >
                                 <MessageSquare size={13} /> Message
                               </Link>
                               <Link
                                 to={`/jobs/${app.job?.id}`}
-                                className="px-3 py-1.5 rounded-xl bg-[var(--primary)] hover:bg-[var(--primary-hover)] font-bold text-white flex items-center gap-1 transition-colors shadow-xs"
+                                className="px-3.5 py-1.5 rounded-xl bg-[var(--primary)] hover:bg-[var(--primary-hover)] font-bold text-white flex items-center gap-1.5 transition-colors shadow-xs"
                               >
                                 Details <ExternalLink size={12} />
                               </Link>
@@ -1011,8 +996,8 @@ export default function UserDashboard() {
                 </div>
 
                 {savedJobsList.length === 0 ? (
-                  <div className="bg-[var(--card)] rounded-3xl border border-[var(--border)] p-10 text-center shadow-[var(--shadow-card)]">
-                    <Bookmark size={40} className="mx-auto text-[var(--muted-foreground)] mb-3 opacity-40" />
+                  <div className="bg-[var(--card)] rounded-3xl border border-[var(--border)] p-12 text-center shadow-[var(--shadow-card)]">
+                    <Bookmark size={44} className="mx-auto text-[var(--muted-foreground)] mb-3 opacity-30" />
                     <h4 className="font-poppins font-bold text-base text-[var(--foreground)]">
                       No saved jobs yet
                     </h4>
@@ -1074,29 +1059,29 @@ export default function UserDashboard() {
           </div>
 
           {/* RIGHT 4 COLS: Widgets & Career Toolkit */}
-          <div className="lg:col-span-4 space-y-5">
+          <div className="lg:col-span-4 space-y-6">
             {/* Widget 1: ATS Resume Score Benchmark */}
-            <div className="bg-[var(--card)] rounded-3xl border border-[var(--border)] p-5 shadow-[var(--shadow-card)] space-y-4">
+            <div className="bg-[var(--card)] rounded-3xl border border-[var(--border)] p-6 shadow-[var(--shadow-card)] space-y-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
-                    <TrendingUp size={16} />
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold">
+                    <TrendingUp size={18} />
                   </div>
                   <div>
                     <h3 className="font-poppins font-bold text-sm text-[var(--foreground)]">
                       ATS Resume Score
                     </h3>
                     <p className="text-[11px] text-[var(--muted-foreground)]">
-                      Algorithm Readiness
+                      Algorithm Readiness Index
                     </p>
                   </div>
                 </div>
-                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-lg">
+                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
                   88 / 100
                 </span>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2 pt-1">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-[var(--muted-foreground)]">Keyword Matching</span>
                   <span className="font-bold text-[var(--foreground)]">92%</span>
@@ -1107,10 +1092,10 @@ export default function UserDashboard() {
               </div>
 
               <div className="flex flex-wrap gap-1.5 pt-1">
-                {["React", "TypeScript", "Node.js", "Cloud Architecture"].map((skill) => (
+                {candidateSkills.slice(0, 4).map((skill) => (
                   <span
                     key={skill}
-                    className="text-[11px] px-2 py-0.5 rounded-lg bg-[var(--muted)] text-[var(--foreground)] font-medium"
+                    className="text-[11px] px-2.5 py-1 rounded-lg bg-[var(--muted)] text-[var(--foreground)] font-semibold"
                   >
                     ✓ {skill}
                   </span>
@@ -1119,22 +1104,22 @@ export default function UserDashboard() {
 
               <Link
                 to="/ats-checker"
-                className="w-full py-2 px-3 rounded-xl bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+                className="w-full py-2.5 px-3 rounded-xl bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-xs"
               >
                 Run In-Depth ATS Scan <ArrowRight size={13} />
               </Link>
             </div>
 
-            {/* Widget 2: Upcoming Interviews & Events */}
-            <div className="bg-[var(--card)] rounded-3xl border border-[var(--border)] p-5 shadow-[var(--shadow-card)] space-y-3.5">
+            {/* Widget 2: Upcoming Schedule & Interview Hub */}
+            <div className="bg-[var(--card)] rounded-3xl border border-[var(--border)] p-6 shadow-[var(--shadow-card)] space-y-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center">
-                    <Calendar size={16} />
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center font-bold">
+                    <Calendar size={18} />
                   </div>
                   <div>
                     <h3 className="font-poppins font-bold text-sm text-[var(--foreground)]">
-                      Upcoming Schedule
+                      Upcoming Interviews
                     </h3>
                     <p className="text-[11px] text-[var(--muted-foreground)]">
                       Confirmed video screens
@@ -1143,34 +1128,36 @@ export default function UserDashboard() {
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-purple-500/10 border border-purple-500/20 space-y-2">
+              <div className="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-purple-700 dark:text-purple-300">
-                    System Design Technical Round
+                    System Architecture Screen
                   </span>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-purple-600 text-white">
                     Tomorrow
                   </span>
                 </div>
                 <p className="text-xs text-[var(--foreground)] font-medium">
-                  Google Infrastructure Core Team
+                  Core Engineering Team
                 </p>
                 <div className="flex items-center justify-between pt-1 text-[11px] text-[var(--muted-foreground)]">
-                  <span>⏰ 2:00 PM – 3:00 PM EST</span>
+                  <span className="inline-flex items-center gap-1">
+                    <Clock size={11} /> 2:00 PM – 3:00 PM EST
+                  </span>
                   <span className="text-blue-500 font-semibold cursor-pointer hover:underline">
-                    Join Video Call
+                    Join Call
                   </span>
                 </div>
               </div>
             </div>
 
             {/* Widget 3: Quick Career Tools Navigation */}
-            <div className="bg-[var(--card)] rounded-3xl border border-[var(--border)] p-5 shadow-[var(--shadow-card)] space-y-3">
+            <div className="bg-[var(--card)] rounded-3xl border border-[var(--border)] p-6 shadow-[var(--shadow-card)] space-y-4">
               <h3 className="font-poppins font-bold text-sm text-[var(--foreground)]">
                 Career Acceleration Tools
               </h3>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2.5">
                 {[
                   { label: "Resume Builder", to: "/resume-builder", icon: FileText, color: "text-emerald-500" },
                   { label: "Interactive Map", to: "/jobs?view=map", icon: MapPin, color: "text-blue-500" },
@@ -1182,7 +1169,7 @@ export default function UserDashboard() {
                     <Link
                       key={tool.label}
                       to={tool.to}
-                      className="p-3 rounded-2xl bg-[var(--background)] hover:bg-[var(--muted)] border border-[var(--border)] transition-all flex flex-col items-center text-center group"
+                      className="p-3.5 rounded-2xl bg-[var(--background)] hover:bg-[var(--muted)] border border-[var(--border)] transition-all flex flex-col items-center text-center group"
                     >
                       <Icon size={20} className={`${tool.color} mb-1.5 transition-transform group-hover:scale-110`} />
                       <span className="text-xs font-bold text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">
@@ -1200,7 +1187,7 @@ export default function UserDashboard() {
               if (notifs.length === 0) return null
 
               return (
-                <div className="bg-[var(--card)] rounded-3xl border border-[var(--border)] p-5 shadow-[var(--shadow-card)] space-y-3">
+                <div className="bg-[var(--card)] rounded-3xl border border-[var(--border)] p-6 shadow-[var(--shadow-card)] space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="font-poppins font-bold text-sm text-[var(--foreground)]">
                       Recent Activity
