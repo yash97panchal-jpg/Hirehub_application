@@ -188,10 +188,7 @@ export const authService = {
 
     // Local Mock Fallback
     const isRecruiter = email.toLowerCase().includes("recruiter")
-    const isAdmin =
-      email.toLowerCase() === "yrmp97p@gmail.com" ||
-      email.toLowerCase() === "yash97panchal@gmail.com" ||
-      email.toLowerCase().includes("admin")
+    const isAdmin = email.toLowerCase().includes("admin")
 
     const mockUser: User = {
       id: "usr-" + Date.now(),

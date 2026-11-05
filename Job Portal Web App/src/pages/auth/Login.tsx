@@ -12,7 +12,6 @@ import {
   ShieldCheck,
   Lock,
   Mail,
-  Sparkles,
 } from "lucide-react"
 import { ParticleTextEffect } from "../../components/ui/particle-text-effect"
 import Button from "../../components/ui/Button"
@@ -101,24 +100,6 @@ export default function Login() {
     } finally {
       setIsGoogleLoading(false)
     }
-  }
-
-  // Quick fill helper for testing/evaluating roles
-  const fillCredentials = (roleType: "candidate" | "recruiter" | "admin") => {
-    if (roleType === "candidate") {
-      setActiveRole("candidate")
-      setEmail("candidate@hirehub.com")
-      setPassword("candidate123")
-    } else if (roleType === "recruiter") {
-      setActiveRole("recruiter")
-      setEmail("recruiter@stripe.com")
-      setPassword("recruiter123")
-    } else {
-      setActiveRole("candidate")
-      setEmail("admin@hirehub.com")
-      setPassword("admin123456")
-    }
-    setFormError("")
   }
 
   return (
@@ -331,37 +312,6 @@ export default function Login() {
               <ArrowRight size={15} />
             </Button>
           </form>
-
-          {/* Quick Demo Role Picker for Testing */}
-          <div className="mt-5 p-3 rounded-2xl bg-[var(--muted)]/50 border border-[var(--border)]">
-            <div className="flex items-center gap-1.5 text-[11px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider mb-2">
-              <Sparkles size={12} className="text-[var(--primary)]" />
-              Quick Fill for Evaluation
-            </div>
-            <div className="grid grid-cols-3 gap-1.5">
-              <button
-                type="button"
-                onClick={() => fillCredentials("candidate")}
-                className="py-1 px-2 rounded-lg bg-[var(--card)] hover:bg-[var(--card)]/80 text-[11px] font-semibold border border-[var(--border)] text-[var(--foreground)] transition-colors"
-              >
-                👤 Seeker Demo
-              </button>
-              <button
-                type="button"
-                onClick={() => fillCredentials("recruiter")}
-                className="py-1 px-2 rounded-lg bg-[var(--card)] hover:bg-[var(--card)]/80 text-[11px] font-semibold border border-[var(--border)] text-[var(--foreground)] transition-colors"
-              >
-                💼 Recruiter Demo
-              </button>
-              <button
-                type="button"
-                onClick={() => fillCredentials("admin")}
-                className="py-1 px-2 rounded-lg bg-[var(--card)] hover:bg-[var(--card)]/80 text-[11px] font-semibold border border-[var(--border)] text-[var(--foreground)] transition-colors"
-              >
-                🛡️ Admin Demo
-              </button>
-            </div>
-          </div>
 
           <p className="text-center text-xs text-[var(--muted-foreground)] mt-4">
             Don't have an account?{" "}

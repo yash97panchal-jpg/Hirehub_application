@@ -40,7 +40,7 @@ Provide these exact pre-configured accounts in the review notes for both Google 
 ### Administrator Review Account
 - **Role:** Global System Administrator
 - **Email:** `admin@hirehub.com`
-- **Password:** `Admin@HireHub2026!`
+- **Password:** `[Configured securely via Supabase Auth dashboard / Secure Environment]`
 - **Notes:** Full privileges to view company verification moderation queues, reported job flags, and platform analytics.
 
 ---
