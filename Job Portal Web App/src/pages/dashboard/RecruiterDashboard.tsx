@@ -29,6 +29,7 @@ import {
 } from "recharts"
 import { mockStats } from "../../data/mockData"
 import { useJobStore } from "../../store/jobStore"
+import { useApplicationStore } from "../../store/applicationStore"
 import Badge from "../../components/ui/Badge"
 import Button from "../../components/ui/Button"
 import { useAuthStore } from "../../store/authStore"
@@ -95,9 +96,14 @@ export default function RecruiterDashboard() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
   const { jobs: storeJobs } = useJobStore()
+  const { applications } = useApplicationStore()
   const [activeTab, setActiveTab] =
     useState<"overview" | "jobs" | "applicants">("overview")
   const activeJobs = storeJobs.slice(0, 4)
+
+  const realApplied = applications.length
+  const realShortlisted = applications.filter((a) => a.status === "Shortlisted").length
+  const realInterviews = applications.filter((a) => a.status === "Interview").length
 
   return (
     <div className="min-h-screen bg-[var(--background)] pt-20">
@@ -162,27 +168,27 @@ export default function RecruiterDashboard() {
             },
             {
               label: "Total Applicants",
-              value: storeJobs.length > 0 ? 142 : 0,
+              value: realApplied,
               icon: Users,
               color: "#22C55E",
               bg: "bg-green-100 dark:bg-green-900/30",
-              change: storeJobs.length > 0 ? "+23 today" : "0 new",
+              change: realApplied > 0 ? `${realApplied} active candidates` : "0 candidates",
             },
             {
               label: "Shortlisted",
-              value: storeJobs.length > 0 ? 43 : 0,
+              value: realShortlisted,
               icon: Star,
               color: "#F59E0B",
               bg: "bg-yellow-100 dark:bg-yellow-900/30",
-              change: storeJobs.length > 0 ? "+8 this week" : "0 new",
+              change: realShortlisted > 0 ? `${realShortlisted} shortlisted` : "0 shortlisted",
             },
             {
               label: "Interviews",
-              value: 18,
+              value: realInterviews,
               icon: CheckCircle,
               color: "#8B5CF6",
               bg: "bg-purple-100 dark:bg-purple-900/30",
-              change: "3 scheduled",
+              change: realInterviews > 0 ? `${realInterviews} scheduled` : "0 scheduled",
             },
           ].map((stat, i) => (
             <motion.div

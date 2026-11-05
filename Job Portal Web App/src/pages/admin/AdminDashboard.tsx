@@ -47,12 +47,12 @@ import type { Company, JobReport } from "../../types"
 import toast from "react-hot-toast"
 
 const growthData = [
-  { month: "Apr", users: 62000, jobs: 8200 },
-  { month: "May", users: 68000, jobs: 9100 },
-  { month: "Jun", jobs: 10400, users: 72000 },
-  { month: "Jul", users: 76000, jobs: 11200 },
-  { month: "Aug", users: 80000, jobs: 11800 },
-  { month: "Sep", users: 85000, jobs: 12400 },
+  { month: "Apr", users: 12, jobs: 28 },
+  { month: "May", users: 18, jobs: 34 },
+  { month: "Jun", users: 24, jobs: 42 },
+  { month: "Jul", users: 31, jobs: 48 },
+  { month: "Aug", users: 38, jobs: 54 },
+  { month: "Sep", users: 45, jobs: 62 },
 ]
 
 const categoryData = mockStats?.jobsByCategory ? mockStats.jobsByCategory.slice(0, 5) : []
@@ -199,9 +199,9 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {[
                 {
-                  label: "Total Registered Users",
-                  value: "85,420",
-                  change: "+3,200 this month",
+                  label: "Active User Accounts",
+                  value: "45",
+                  change: "+7 this month",
                   icon: Users,
                   color: "var(--primary)",
                   bg: "bg-[var(--primary)]/10",

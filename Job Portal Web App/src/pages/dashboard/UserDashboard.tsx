@@ -173,9 +173,9 @@ export default function UserDashboard() {
     {
       id: "all" as const,
       label: "Applications Sent",
-      count: countApplied || 12,
-      subtext: "+3 this week",
-      trend: "Active Pipeline",
+      count: countApplied,
+      subtext: countApplied > 0 ? `${countApplied} in tracking` : "No applications yet",
+      trend: countApplied > 0 ? "Active Pipeline" : "Ready to Apply",
       icon: Briefcase,
       color: "from-amber-500 to-amber-600",
       accent: "text-amber-500",
@@ -185,9 +185,9 @@ export default function UserDashboard() {
     {
       id: "Viewed" as const,
       label: "Recruiter Views",
-      count: countViewed || 8,
-      subtext: "72% conversion",
-      trend: "+14% vs avg",
+      count: countViewed,
+      subtext: countViewed > 0 ? `${countViewed} reviewed` : "Awaiting review",
+      trend: countViewed > 0 ? "In Review" : "Pending",
       icon: Eye,
       color: "from-blue-500 to-blue-600",
       accent: "text-blue-500",
@@ -197,9 +197,9 @@ export default function UserDashboard() {
     {
       id: "Shortlisted" as const,
       label: "Shortlisted Roles",
-      count: countShortlisted || 3,
-      subtext: "Top 5% candidate",
-      trend: "High Interest",
+      count: countShortlisted,
+      subtext: countShortlisted > 0 ? `${countShortlisted} advanced` : "None shortlisted yet",
+      trend: countShortlisted > 0 ? "High Interest" : "In Evaluation",
       icon: Star,
       color: "from-emerald-500 to-emerald-600",
       accent: "text-emerald-500",
@@ -209,9 +209,9 @@ export default function UserDashboard() {
     {
       id: "Interview" as const,
       label: "Interviews Booked",
-      count: countInterviews || 1,
-      subtext: "Next: Tomorrow 2 PM",
-      trend: "Confirmed",
+      count: countInterviews,
+      subtext: countInterviews > 0 ? `${countInterviews} scheduled` : "No upcoming calls",
+      trend: countInterviews > 0 ? "Confirmed" : "Awaiting Call",
       icon: Calendar,
       color: "from-purple-500 to-purple-600",
       accent: "text-purple-500",
@@ -343,7 +343,7 @@ export default function UserDashboard() {
                 <span className="text-slate-600">•</span>
                 <span className="flex items-center gap-1.5">
                   <CheckCircle size={13} className="text-blue-400" />
-                  <span>Recruiter Response: <strong className="text-white">94%</strong></span>
+                  <span>Platform Status: <strong className="text-white">Active & Verified</strong></span>
                 </span>
               </div>
             </div>
@@ -1128,27 +1128,37 @@ export default function UserDashboard() {
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-purple-700 dark:text-purple-300">
-                    System Architecture Screen
-                  </span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-purple-600 text-white">
-                    Tomorrow
-                  </span>
+              {countInterviews > 0 ? (
+                <div className="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-purple-700 dark:text-purple-300">
+                      Technical Screen
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-purple-600 text-white">
+                      Scheduled
+                    </span>
+                  </div>
+                  <p className="text-xs text-[var(--foreground)] font-medium">
+                    Hiring Team Video Call
+                  </p>
+                  <div className="flex items-center justify-between pt-1 text-[11px] text-[var(--muted-foreground)]">
+                    <span className="inline-flex items-center gap-1">
+                      <Clock size={11} /> Next Available Slot
+                    </span>
+                    <span className="text-blue-500 font-semibold cursor-pointer hover:underline">
+                      Join Call
+                    </span>
+                  </div>
                 </div>
-                <p className="text-xs text-[var(--foreground)] font-medium">
-                  Core Engineering Team
-                </p>
-                <div className="flex items-center justify-between pt-1 text-[11px] text-[var(--muted-foreground)]">
-                  <span className="inline-flex items-center gap-1">
-                    <Clock size={11} /> 2:00 PM – 3:00 PM EST
-                  </span>
-                  <span className="text-blue-500 font-semibold cursor-pointer hover:underline">
-                    Join Call
-                  </span>
+              ) : (
+                <div className="p-4 rounded-2xl bg-[var(--background)] border border-[var(--border)] text-center space-y-1">
+                  <Calendar size={20} className="mx-auto text-[var(--muted-foreground)] opacity-40 mb-1" />
+                  <p className="text-xs font-bold text-[var(--foreground)]">No Scheduled Calls</p>
+                  <p className="text-[11px] text-[var(--muted-foreground)]">
+                    Invitations from hiring managers will appear here.
+                  </p>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Widget 3: Quick Career Tools Navigation */}

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useMemo } from "react"
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import {
@@ -34,24 +34,57 @@ import Button from "../ui/Button"
 import { useAuthStore } from "../../store/authStore"
 import { useSavedJobsStore } from "../../store/savedJobsStore"
 import { useMessageStore } from "../../store/messageStore"
+import { useJobStore } from "../../store/jobStore"
 import { mockNotifications } from "../../data/mockData"
 import { cn } from "../../utils/cn"
 import symbolLogo from "../../imports/symbol_only.jpeg"
 
-const jobCategories = [
-  { label: "Engineering", icon: Code, count: "4.2k jobs" },
-  { label: "Design", icon: Palette, count: "1.8k jobs" },
-  { label: "Marketing", icon: TrendingUp, count: "1.4k jobs" },
-  { label: "Finance", icon: DollarSign, count: "720 jobs" },
-  { label: "Remote", icon: Globe, count: "3.1k jobs" },
-  { label: "Internships", icon: Star, count: "890 jobs" },
-]
-
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuthStore()
   const { savedJobIds } = useSavedJobsStore()
+  const { jobs } = useJobStore()
   const navigate = useNavigate()
   const location = useLocation()
+
+  // Real dynamic categories calculated from actual jobs in store
+  const jobCategories = useMemo(() => {
+    const engCount = jobs.filter((j) => {
+      const text = `${j.category || ""} ${j.title || ""} ${(j.skills || []).join(" ")}`.toLowerCase()
+      return text.includes("engineer") || text.includes("developer") || text.includes("software")
+    }).length
+
+    const designCount = jobs.filter((j) => {
+      const text = `${j.category || ""} ${j.title || ""} ${(j.skills || []).join(" ")}`.toLowerCase()
+      return text.includes("design") || text.includes("ui") || text.includes("ux") || text.includes("product design")
+    }).length
+
+    const marketingCount = jobs.filter((j) => {
+      const text = `${j.category || ""} ${j.title || ""} ${(j.skills || []).join(" ")}`.toLowerCase()
+      return text.includes("marketing") || text.includes("growth") || text.includes("sales")
+    }).length
+
+    const financeCount = jobs.filter((j) => {
+      const text = `${j.category || ""} ${j.title || ""}`.toLowerCase()
+      return text.includes("finance") || text.includes("account") || text.includes("analyst")
+    }).length
+
+    const remoteCount = jobs.filter(
+      (j) => j.isRemote || j.remoteType === "Remote" || (j.location || "").toLowerCase().includes("remote"),
+    ).length
+
+    const internCount = jobs.filter(
+      (j) => j.type === "Internship" || (j.title || "").toLowerCase().includes("intern"),
+    ).length
+
+    return [
+      { label: "Engineering", icon: Code, count: `${engCount} ${engCount === 1 ? "position" : "positions"}` },
+      { label: "Design", icon: Palette, count: `${designCount} ${designCount === 1 ? "position" : "positions"}` },
+      { label: "Marketing", icon: TrendingUp, count: `${marketingCount} ${marketingCount === 1 ? "position" : "positions"}` },
+      { label: "Finance", icon: DollarSign, count: `${financeCount} ${financeCount === 1 ? "position" : "positions"}` },
+      { label: "Remote", icon: Globe, count: `${remoteCount} ${remoteCount === 1 ? "position" : "positions"}` },
+      { label: "Internships", icon: Star, count: `${internCount} ${internCount === 1 ? "position" : "positions"}` },
+    ]
+  }, [jobs])
   const [mobileOpen, setMobileOpen] = useState(false)
   const [jobsOpen, setJobsOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
@@ -251,7 +284,7 @@ export default function Navbar() {
                       </div>
                       <div className="px-4 py-3 bg-[var(--muted)] flex items-center justify-between">
                         <span className="text-sm text-[var(--muted-foreground)]">
-                          12,400+ jobs available
+                          {jobs.length} jobs available
                         </span>
                         <Link
                           to="/jobs"
@@ -285,12 +318,6 @@ export default function Navbar() {
                   Talent Search
                 </Link>
               )}
-              <Link
-                to="/pricing"
-                className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
-              >
-                Pricing
-              </Link>
               <Link
                 to="/ats-checker"
                 className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
@@ -588,7 +615,6 @@ export default function Navbar() {
                     { label: "Companies", to: "/companies", icon: Building2 },
                     { label: "Live Messages", to: "/messages", icon: MessageSquare },
                     { label: "Skill Tests", to: "/skills", icon: Award },
-                    { label: "Pricing", to: "/pricing", icon: DollarSign },
                     ...(user?.role === "recruiter"
                       ? [{ label: "Talent Search", to: "/recruiter/talent-search", icon: Users }]
                       : []),

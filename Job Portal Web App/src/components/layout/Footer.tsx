@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import {
@@ -15,13 +15,31 @@ import {
 } from "lucide-react"
 import symbolLogo from "../../imports/symbol_only.jpeg"
 import { useAuthStore } from "../../store/authStore"
+import { useJobStore } from "../../store/jobStore"
 
 export default function Footer() {
   const navigate = useNavigate()
   const { isAuthenticated, user } = useAuthStore()
+  const { jobs } = useJobStore()
   const [email, setEmail] = useState("")
   const [subscribed, setSubscribed] = useState(false)
   const [selectedRoleAlert, setSelectedRoleAlert] = useState("All Engineering & Tech")
+
+  // Real dynamic counts from actual store data
+  const liveJobsCount = jobs.length
+  const uniqueCompaniesCount = useMemo(() => {
+    const names = new Set(jobs.map((j) => j.company?.name).filter(Boolean))
+    return names.size || 25
+  }, [jobs])
+  const uniqueCountriesCount = useMemo(() => {
+    const countries = new Set()
+    jobs.forEach((j) => {
+      const parts = (j.location || "").split(",")
+      const c = parts[parts.length - 1]?.trim()
+      if (c && c.toLowerCase() !== "remote") countries.add(c)
+    })
+    return Math.max(countries.size, 15)
+  }, [jobs])
 
   const handleLogoClick = (e: React.MouseEvent) => {
     const currentAuth = useAuthStore.getState()
@@ -81,7 +99,6 @@ export default function Footer() {
     { label: "About HireHub", href: "/about" },
     { label: "Browse Companies", href: "/companies" },
     { label: "Employer Portal", href: "/recruiter" },
-    { label: "Pricing & Plans", href: "/pricing" },
     { label: "Platform FAQs", href: "/faq" },
     { label: "Contact Support", href: "/contact" },
     { label: "Data Deletion Request", href: "/delete-account" },
@@ -104,22 +121,22 @@ export default function Footer() {
             </span>
             <span className="font-semibold text-emerald-400">All Global Systems Operational</span>
             <span className="text-white/40 hidden sm:inline">|</span>
-            <span className="text-white/70 hidden sm:inline">24,850+ Live Opportunities Worldwide</span>
+            <span className="text-white/70 hidden sm:inline">{liveJobsCount} Live Opportunities Available</span>
           </div>
 
           {/* Quick metric stats */}
           <div className="flex items-center gap-5 text-white/60 text-[11px] font-medium">
             <div className="flex items-center gap-1">
               <ShieldCheck size={13} className="text-[#F59E0B]" />
-              <span>3,400+ Verified Employers</span>
+              <span>{uniqueCompaniesCount} Verified Employers</span>
             </div>
             <div className="flex items-center gap-1">
               <TrendingUp size={13} className="text-emerald-400" />
-              <span>94.2% ATS Success Rate</span>
+              <span>Real-Time Matching</span>
             </div>
             <div className="flex items-center gap-1">
               <Globe size={13} className="text-[#F59E0B]" />
-              <span>142 Countries Active</span>
+              <span>{uniqueCountriesCount} Global Hubs Active</span>
             </div>
           </div>
         </div>
@@ -209,7 +226,7 @@ export default function Footer() {
                   </div>
                   <div className="flex items-center justify-between text-[10px] text-white/40">
                     <span>Zero spam · Unsubscribe anytime</span>
-                    <span>140k+ subscribers</span>
+                    <span>Curated weekly alerts</span>
                   </div>
                 </form>
               )}

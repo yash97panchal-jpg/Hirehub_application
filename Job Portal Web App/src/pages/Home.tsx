@@ -235,13 +235,13 @@ export default function Home() {
                 For Employers
               </h2>
               <p className="text-sm text-[var(--muted-foreground)] leading-relaxed mb-6">
-                Find and hire pre-vetted candidates across 140+ countries. Post openings, manage
+                Find and hire pre-vetted candidates across global tech hubs. Post openings, manage
                 applicants, and build your technical pipeline with intelligent sorting.
               </p>
               <ul className="space-y-2.5 text-xs text-[var(--foreground)] mb-6">
                 <li className="flex items-center gap-2">
                   <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
-                  <span>Reach 85,000+ active skilled professionals</span>
+                  <span>Reach verified active tech professionals</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />

@@ -241,7 +241,7 @@ function AppRoutes() {
             <Route path="/delete-account" element={<DeleteAccountRequest />} />
             <Route path="/data-deletion" element={<DeleteAccountRequest />} />
             <Route path="/blog" element={<Blog />} />
-            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/pricing" element={<Navigate to="/jobs" replace />} />
 
             {/* Authenticated Career Tools & Dashboards */}
             <Route
