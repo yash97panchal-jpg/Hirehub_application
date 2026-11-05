@@ -146,12 +146,23 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 shrink-0">
-            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm border border-[var(--border)] shrink-0 overflow-hidden">
+          <Link
+            to={
+              isAuthenticated && user
+                ? user.role === "admin"
+                  ? "/admin"
+                  : user.role === "recruiter"
+                    ? "/recruiter"
+                    : "/dashboard"
+                : "/"
+            }
+            className="flex items-center gap-2 shrink-0"
+          >
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm border border-[var(--border)] shrink-0 overflow-hidden p-1">
               <img
                 src={symbolLogo}
                 alt="HireHub Logo"
-                className="w-10 h-10 object-contain"
+                className="w-full h-full object-contain"
               />
             </div>
             <span className="font-poppins font-bold text-xl text-[var(--foreground)]">

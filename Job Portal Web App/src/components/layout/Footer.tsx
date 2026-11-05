@@ -115,11 +115,13 @@ export default function Footer() {
           {/* Left Column: Brand, Value Proposition & Dynamic Newsletter */}
           <div className="lg:col-span-4 space-y-5">
             <Link to="/" className="inline-flex items-center gap-2.5 group">
-              <img
-                src={symbolLogo}
-                alt="HireHub Logo"
-                className="w-10 h-10 rounded-xl object-cover ring-2 ring-[#F59E0B]/40 group-hover:ring-[#F59E0B] transition-all"
-              />
+              <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center p-1 ring-2 ring-[#F59E0B]/40 group-hover:ring-[#F59E0B] transition-all overflow-hidden shrink-0">
+                <img
+                  src={symbolLogo}
+                  alt="HireHub Logo"
+                  className="w-full h-full object-contain"
+                />
+              </div>
               <div>
                 <span className="font-poppins text-2xl font-black tracking-tight text-white flex items-center gap-1">
                   Hire<span className="text-[#F59E0B]">Hub</span>

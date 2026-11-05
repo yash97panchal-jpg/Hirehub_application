@@ -186,6 +186,12 @@ export function matchLocationQuery(query: string, locationStr: string, addressSt
   // Direct substring check
   if (combined.includes(q)) return true
 
+  // Composite multi-tier query check (e.g. "Bengaluru, Karnataka, India" or "California, United States")
+  const parts = q.split(/[,]/).map((p) => p.trim()).filter((p) => p.length >= 2)
+  if (parts.length > 1) {
+    if (parts.some((part) => combined.includes(part))) return true
+  }
+
   // Country Aliases & Groupings
   if (q === "india" || q === "in") {
     return combined.includes("india") || combined.includes("bengaluru") || combined.includes("bangalore") ||

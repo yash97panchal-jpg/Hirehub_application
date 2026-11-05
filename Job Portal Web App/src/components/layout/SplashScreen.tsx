@@ -103,13 +103,15 @@ export default function SplashScreen({
                   damping: 18,
                   delay: 0.05,
                 }}
-                className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full p-1 bg-white/10 backdrop-blur-xl border border-white/30 shadow-[0_0_50px_rgba(245,158,11,0.35)] flex items-center justify-center overflow-hidden"
+                className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full p-1.5 bg-white/10 backdrop-blur-xl border border-white/30 shadow-[0_0_50px_rgba(245,158,11,0.35)] flex items-center justify-center overflow-hidden"
               >
-                <img
-                  src={symbolLogo}
-                  alt="HireHub Symbol"
-                  className="w-full h-full object-contain rounded-full bg-white shadow-inner"
-                />
+                <div className="w-full h-full rounded-full bg-white flex items-center justify-center p-2.5 shadow-inner overflow-hidden">
+                  <img
+                    src={symbolLogo}
+                    alt="HireHub Symbol"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
               </motion.div>
             </div>
 

@@ -54,7 +54,9 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--background)] p-4">
           <div className="text-center max-w-md bg-[var(--card)] p-8 rounded-3xl border border-[var(--border)] shadow-[var(--shadow-card)]">
-            <img src={symbolLogo} alt="HireHub Symbol" className="w-16 h-16 mx-auto mb-6 object-contain rounded-full border border-[var(--border)]" />
+            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-white p-2 border border-[var(--border)] shadow-sm flex items-center justify-center overflow-hidden">
+              <img src={symbolLogo} alt="HireHub Symbol" className="w-full h-full object-contain" />
+            </div>
             {icon}
             <h1 className="font-poppins text-2xl font-bold text-[var(--foreground)] mb-2">
               {title}

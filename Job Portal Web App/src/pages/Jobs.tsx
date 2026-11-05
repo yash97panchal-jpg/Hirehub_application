@@ -16,6 +16,8 @@ import JobCard from "../components/ui/JobCard"
 import JobMap from "../components/jobs/JobMap"
 import Badge from "../components/ui/Badge"
 import Button from "../components/ui/Button"
+import RoleSearchInput from "../components/ui/RoleSearchInput"
+import LocationSearchInput from "../components/ui/LocationSearchInput"
 import { useJobStore } from "../store/jobStore"
 import type { Job, JobType, ExperienceLevel } from "../types"
 import { matchLocationQuery } from "../data/locationCatalog"
@@ -291,35 +293,26 @@ export default function Jobs() {
             </div>
           </div>
 
-          {/* Search Inputs: Role Search & Location Search */}
+          {/* Search Inputs: Role Search & Location Search with Autocomplete */}
           <div className="flex flex-col sm:flex-row gap-3">
-            {/* 1. Search Role */}
-            <div className="relative flex-1">
-              <Search
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-white/70"
-                size={18}
-              />
-              <input
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-                placeholder="Search role (e.g. Frontend Developer, Data Scientist, DevOps, Designer)…"
-                className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/70 text-sm focus:outline-none focus:ring-2 focus:ring-white/30"
-              />
-            </div>
+            {/* 1. Search Role with Role/Skill Suggestions */}
+            <RoleSearchInput
+              value={keyword}
+              onChange={setKeyword}
+              variant="dark"
+              placeholder="Search role, skills (e.g. Python Developer, React, PyTorch)…"
+              inputClassName="py-3 pl-11"
+            />
 
-            {/* 2. Search Location */}
-            <div className="relative sm:w-80">
-              <MapPin
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-white/70"
-                size={18}
-              />
-              <input
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="Search location or city (e.g. San Francisco, Austin, NY, London, India)…"
-                className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/70 text-sm focus:outline-none focus:ring-2 focus:ring-white/30"
-              />
-            </div>
+            {/* 2. Search Location with 3-Tier Hierarchy (Country -> State -> City) */}
+            <LocationSearchInput
+              value={location}
+              onChange={setLocation}
+              variant="dark"
+              className="sm:w-96"
+              placeholder="Search country, state, or city (e.g. India, California, San Francisco)…"
+              inputClassName="py-3 pl-11"
+            />
 
             {(keyword || location) && (
               <button

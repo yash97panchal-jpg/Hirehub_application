@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from "react"
-import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom"
+import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate } from "react-router-dom"
 import { Toaster } from "react-hot-toast"
 import Navbar from "./components/layout/Navbar"
 import Footer from "./components/layout/Footer"
@@ -8,6 +8,7 @@ import { ErrorBoundary } from "./components/layout/ErrorBoundary"
 import SplashScreen from "./components/layout/SplashScreen"
 import { setupAppProtection } from "./utils/securityAndControls"
 import { useThemeStore } from "./store/themeStore"
+import { useAuthStore } from "./store/authStore"
 import symbolLogo from "./imports/symbol_only.jpeg"
 
 const Home = lazy(() => import("./pages/Home"))
@@ -97,27 +98,37 @@ function Layout({ children }: { children: React.ReactNode }) {
   )
 }
 
-export default function App() {
-  const { theme } = useThemeStore()
+function AppRoutes() {
   const [showSplash, setShowSplash] = useState(true)
+  const location = useLocation()
+  const navigate = useNavigate()
+  const { isAuthenticated, user } = useAuthStore()
 
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark")
-  }, [theme])
-
-  useEffect(() => {
-    const cleanupProtection = setupAppProtection()
-    return () => cleanupProtection()
-  }, [])
+  const handleSplashFinish = () => {
+    setShowSplash(false)
+    // When user opens the app (at root "/" or ""), direct to sign in / login page or user dashboard
+    if (location.pathname === "/" || location.pathname === "") {
+      if (isAuthenticated && user) {
+        const target =
+          user.role === "admin"
+            ? "/admin"
+            : user.role === "recruiter"
+              ? "/recruiter"
+              : "/dashboard"
+        navigate(target, { replace: true })
+      } else {
+        navigate("/login", { replace: true })
+      }
+    }
+  }
 
   return (
-    <ErrorBoundary>
-      {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
-      <BrowserRouter>
-        <ScrollToTop />
-        <Toaster
-          position="top-right"
-          toastOptions={{
+    <>
+      {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
+      <ScrollToTop />
+      <Toaster
+        position="top-right"
+        toastOptions={{
           style: {
             background: "var(--card)",
             color: "var(--foreground)",
@@ -135,6 +146,7 @@ export default function App() {
           <Routes>
             {/* Public Discovery Pages (Standard Web Portal Entry) */}
             <Route path="/" element={<Home />} />
+            <Route path="/home" element={<Home />} />
             <Route path="/jobs" element={<Jobs />} />
             <Route path="/jobs/:id" element={<JobDetail />} />
             <Route path="/companies" element={<Companies />} />
@@ -423,7 +435,9 @@ export default function App() {
               element={
                 <div className="min-h-screen flex items-center justify-center bg-[var(--background)] p-4">
                   <div className="text-center max-w-md bg-[var(--card)] p-8 rounded-3xl border border-[var(--border)] shadow-[var(--shadow-card)]">
-                    <img src={symbolLogo} alt="HireHub Symbol" className="w-16 h-16 mx-auto mb-6 object-contain rounded-full border border-[var(--border)]" />
+                    <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-white p-2 border border-[var(--border)] shadow-sm flex items-center justify-center overflow-hidden">
+                      <img src={symbolLogo} alt="HireHub Symbol" className="w-full h-full object-contain" />
+                    </div>
                     <div className="font-poppins text-8xl font-black text-[var(--muted)] mb-4">
                       404
                     </div>
@@ -446,7 +460,27 @@ export default function App() {
           </Routes>
         </Suspense>
       </Layout>
-    </BrowserRouter>
+    </>
+  )
+}
+
+export default function App() {
+  const { theme } = useThemeStore()
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", theme === "dark")
+  }, [theme])
+
+  useEffect(() => {
+    const cleanupProtection = setupAppProtection()
+    return () => cleanupProtection()
+  }, [])
+
+  return (
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
     </ErrorBoundary>
   )
 }

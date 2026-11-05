@@ -54,11 +54,11 @@ export default function ForgotPassword() {
           }}
         />
         <div className="relative z-10 text-center max-w-md">
-          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-white shadow-lg border border-[var(--border)] mb-6 shrink-0 overflow-hidden mx-auto">
+          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-white shadow-lg border border-[var(--border)] mb-6 shrink-0 overflow-hidden mx-auto p-2">
             <img
               src={symbolLogo}
               alt="HireHub Logo"
-              className="w-16 h-16 object-contain"
+              className="w-full h-full object-contain"
             />
           </div>
           <h2 className="font-poppins text-4xl font-black text-white mb-4">

@@ -15,6 +15,8 @@ import {
   Users,
 } from "lucide-react"
 import Button from "../components/ui/Button"
+import RoleSearchInput from "../components/ui/RoleSearchInput"
+import LocationSearchInput from "../components/ui/LocationSearchInput"
 import { useAuthStore } from "../store/authStore"
 
 export default function Home() {
@@ -88,27 +90,33 @@ export default function Home() {
             onSubmit={handleSearch}
             className="bg-[var(--card)] p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl border border-[var(--border)] shadow-[var(--shadow-elevated)] flex flex-col md:flex-row items-center gap-2.5 max-w-3xl mx-auto"
           >
-            {/* Keyword Input */}
-            <div className="flex items-center gap-3 w-full px-4 py-2.5 bg-[var(--background)] rounded-xl border border-[var(--border)]/70 flex-1">
-              <Search size={18} className="text-[var(--primary)] shrink-0" />
-              <input
-                type="text"
+            {/* Keyword / Role & Skill Autocomplete Input */}
+            <div className="w-full bg-[var(--background)] rounded-xl border border-[var(--border)]/70 flex-1 px-1">
+              <RoleSearchInput
                 value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-                placeholder="Job title, skills, or company"
-                className="w-full bg-transparent text-sm text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none"
+                onChange={setKeyword}
+                placeholder="Job title, role, or skills (e.g. Python Developer)…"
+                onSubmit={() => {
+                  const params = new URLSearchParams()
+                  if (keyword.trim()) params.set("keyword", keyword.trim())
+                  if (location.trim()) params.set("location", location.trim())
+                  navigate(`/jobs?${params.toString()}`)
+                }}
               />
             </div>
 
-            {/* Location Input */}
-            <div className="flex items-center gap-3 w-full px-4 py-2.5 bg-[var(--background)] rounded-xl border border-[var(--border)]/70 flex-1">
-              <MapPin size={18} className="text-[var(--muted-foreground)] shrink-0" />
-              <input
-                type="text"
+            {/* 3-Tier Location Autocomplete Input */}
+            <div className="w-full bg-[var(--background)] rounded-xl border border-[var(--border)]/70 flex-1 px-1">
+              <LocationSearchInput
                 value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="City, country, or 'Remote'"
-                className="w-full bg-transparent text-sm text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none"
+                onChange={setLocation}
+                placeholder="Country, State, or City (e.g. India, California)…"
+                onSubmit={() => {
+                  const params = new URLSearchParams()
+                  if (keyword.trim()) params.set("keyword", keyword.trim())
+                  if (location.trim()) params.set("location", location.trim())
+                  navigate(`/jobs?${params.toString()}`)
+                }}
               />
             </div>
 
