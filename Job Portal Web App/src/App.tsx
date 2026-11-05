@@ -243,20 +243,17 @@ function AppRoutes() {
             <Route path="/blog" element={<Blog />} />
             <Route path="/pricing" element={<Navigate to="/jobs" replace />} />
 
+            {/* Public Career & Compensation Insights */}
+            <Route path="/salaries" element={<SalaryInsights />} />
+            <Route path="/salary-insights" element={<SalaryInsights />} />
+            <Route path="/salary" element={<Navigate to="/salaries" replace />} />
+
             {/* Authenticated Career Tools & Dashboards */}
             <Route
               path="/ats-checker"
               element={
                 <ProtectedRoute>
                   <ATSChecker />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/salary-insights"
-              element={
-                <ProtectedRoute>
-                  <SalaryInsights />
                 </ProtectedRoute>
               }
             />

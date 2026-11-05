@@ -203,7 +203,7 @@ export default function Companies() {
                         <MapPin size={11} /> {company.location ? company.location.split(",")[0] : "Remote"}
                       </span>
                       <span className="flex items-center gap-1 text-xs text-[var(--muted-foreground)]">
-                        <Briefcase size={11} /> {company.jobCount ?? 3} jobs
+                        Founded {company.founded || 2016}
                       </span>
                       <span className="flex items-center gap-1 text-xs text-[var(--muted-foreground)]">
                         <Users size={11} /> {company.size || "50-200"}

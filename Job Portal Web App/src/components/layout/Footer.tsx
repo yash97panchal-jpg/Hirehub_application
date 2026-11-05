@@ -91,7 +91,7 @@ export default function Footer() {
     { label: "Role-Based ATS Checker", href: "/ats-checker", isNew: true },
     { label: "AI Resume Builder", href: "/resume-builder" },
     { label: "Interactive Job Map", href: "/jobs" },
-    { label: "Global Salary Insights", href: "/salary-insights" },
+    { label: "Global Salary Insights", href: "/salaries" },
     { label: "Application Tracker", href: "/dashboard/applications" },
   ]
 

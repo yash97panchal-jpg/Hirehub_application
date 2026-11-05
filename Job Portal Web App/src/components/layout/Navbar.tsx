@@ -331,8 +331,12 @@ export default function Navbar() {
                 Resume Builder
               </Link>
               <Link
-                to="/salary-insights"
-                className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
+                to="/salaries"
+                className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  location.pathname === "/salaries" || location.pathname === "/salary-insights"
+                    ? "text-[var(--primary)] font-semibold bg-[var(--muted)]"
+                    : "text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)]"
+                }`}
               >
                 Salaries
               </Link>
@@ -622,7 +626,7 @@ export default function Navbar() {
                     { label: "Resume Builder", to: "/resume-builder", icon: FileText },
                     {
                       label: "Salary Insights",
-                      to: "/salary-insights",
+                      to: "/salaries",
                       icon: DollarSign,
                     },
                     { label: "Career Tips", to: "/blog", icon: BookOpen },

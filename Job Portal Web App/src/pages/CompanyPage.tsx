@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from "react"
-import { useParams, useNavigate, Link } from "react-router-dom"
+import React, { useState, useEffect } from "react"
+import { useParams, useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
 import {
   Building,
@@ -8,27 +8,27 @@ import {
   Users,
   ArrowLeft,
   Star,
-  CheckCircle,
-  Briefcase,
   ExternalLink,
-  ChevronRight,
   BadgeCheck,
   Map as MapIcon,
   Compass,
+  Calendar,
+  ShieldCheck,
+  Sparkles,
+  Award,
 } from "lucide-react"
 import Button from "../components/ui/Button"
 import Badge from "../components/ui/Badge"
-import { companyService, jobService } from "../lib/supabase"
-import { mockCompanies, mockJobs } from "../data/mockData"
+import { companyService } from "../lib/supabase"
+import { mockCompanies } from "../data/mockData"
 import { getCompanyRealLogo } from "../data/companyLogos"
-import type { Company, Job } from "../types"
+import type { Company } from "../types"
 import toast from "react-hot-toast"
 
 export default function CompanyPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [company, setCompany] = useState<Company | null>(null)
-  const [companyJobs, setCompanyJobs] = useState<Job[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isFollowing, setIsFollowing] = useState(false)
   const [showMap, setShowMap] = useState(true)
@@ -44,31 +44,6 @@ export default function CompanyPage() {
             ...found,
             logo: getCompanyRealLogo(found.name, found.website, found.logo),
           })
-          // Fetch open jobs for this company
-          const allJobs = await jobService.getJobs()
-          const matched = allJobs.filter(
-            (j) =>
-              j.company?.id === found.id ||
-              j.company?.slug === found.slug ||
-              j.company?.name.toLowerCase() === found.name.toLowerCase() ||
-              (j as any).companyId === found.id
-          )
-          setCompanyJobs(
-            (matched.length > 0
-              ? matched
-              : mockJobs.filter(
-                  (j) =>
-                    j.company?.id === found.id ||
-                    j.company?.name.toLowerCase() === found.name.toLowerCase()
-                )
-            ).map((j) => ({
-              ...j,
-              company: {
-                ...j.company,
-                logo: getCompanyRealLogo(j.company.name, j.company.website, j.company.logo),
-              },
-            }))
-          )
         } else {
           // Fallback to mock search
           const fallback = mockCompanies.find(
@@ -83,22 +58,6 @@ export default function CompanyPage() {
               ...fallback,
               logo: getCompanyRealLogo(fallback.name, fallback.website, fallback.logo),
             })
-            setCompanyJobs(
-              mockJobs
-                .filter(
-                  (j) =>
-                    j.company.id === fallback.id ||
-                    j.company.name.toLowerCase() === fallback.name.toLowerCase() ||
-                    (j as any).companyId === fallback.id
-                )
-                .map((j) => ({
-                  ...j,
-                  company: {
-                    ...j.company,
-                    logo: getCompanyRealLogo(j.company.name, j.company.website, j.company.logo),
-                  },
-                }))
-            )
           }
         }
       } catch (err) {
@@ -147,7 +106,9 @@ export default function CompanyPage() {
     })
   }
 
-  const mapQuery = encodeURIComponent(`${company.name}, ${company.location || "San Francisco, CA"}`)
+  const mapQuery = encodeURIComponent(
+    company.address || `${company.name}, ${company.location || "San Francisco, CA"}`
+  )
 
   return (
     <div className="min-h-screen bg-[var(--background)] pb-20">
@@ -166,9 +127,9 @@ export default function CompanyPage() {
           <Button
             variant="outline"
             className="bg-black/40 backdrop-blur-md border-white/20 text-white hover:bg-black/60 shadow-lg"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/companies")}
           >
-            <ArrowLeft size={16} className="mr-2" /> Back
+            <ArrowLeft size={16} className="mr-2" /> Back to Companies
           </Button>
         </div>
       </div>
@@ -194,7 +155,10 @@ export default function CompanyPage() {
                     {company.name}
                   </h1>
                   {company.isVerified ? (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20" title="Admin Verified Company">
+                    <span
+                      className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20"
+                      title="Admin Verified Company"
+                    >
                       <BadgeCheck size={14} className="text-blue-500" /> Verified Employer
                     </span>
                   ) : (
@@ -225,44 +189,76 @@ export default function CompanyPage() {
               </div>
             </div>
 
-            <Button
-              variant={isFollowing ? "outline" : "primary"}
-              size="lg"
-              onClick={handleFollowToggle}
-              className="w-full sm:w-auto font-semibold shrink-0"
-            >
-              {isFollowing ? "✓ Following" : "+ Follow Company"}
-            </Button>
-          </div>
-
-          {/* Quick Meta Stats */}
-          <div className="flex flex-wrap gap-6 mt-8 py-5 border-y border-[var(--border)] text-sm">
-            <div className="flex items-center gap-2 text-[var(--foreground)] font-medium">
-              <MapPin size={18} className="text-[var(--primary)] shrink-0" />
-              <span>{company.location || "Global Remote"}</span>
-            </div>
-            <div className="flex items-center gap-2 text-[var(--foreground)] font-medium">
-              <Users size={18} className="text-[var(--primary)] shrink-0" />
-              <span>{company.size || "50-200"} team members</span>
-            </div>
-            <div className="flex items-center gap-2 text-[var(--foreground)] font-medium">
-              <Briefcase size={18} className="text-[var(--primary)] shrink-0" />
-              <span>{companyJobs.length} Active Positions</span>
-            </div>
-            {company.website && (
-              <div className="flex items-center gap-2">
-                <Globe size={18} className="text-[var(--primary)] shrink-0" />
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              {company.website && (
                 <a
                   href={company.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[var(--primary)] font-semibold hover:underline flex items-center gap-1"
+                  className="w-full sm:w-auto"
                 >
-                  {company.website.replace(/^https?:\/\//, "")}
-                  <ExternalLink size={12} />
+                  <Button variant="outline" size="lg" className="w-full font-semibold">
+                    Visit Website <ExternalLink size={14} className="ml-1.5" />
+                  </Button>
                 </a>
+              )}
+              <Button
+                variant={isFollowing ? "outline" : "primary"}
+                size="lg"
+                onClick={handleFollowToggle}
+                className="w-full sm:w-auto font-semibold shrink-0"
+              >
+                {isFollowing ? "✓ Following" : "+ Follow"}
+              </Button>
+            </div>
+          </div>
+
+          {/* Quick Meta Stats */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 py-5 border-y border-[var(--border)] text-sm">
+            <div className="flex items-center gap-2.5 text-[var(--foreground)] font-medium">
+              <MapPin size={18} className="text-[var(--primary)] shrink-0" />
+              <div>
+                <p className="text-[10px] text-[var(--muted-foreground)] uppercase font-semibold">
+                  Headquarters
+                </p>
+                <p className="text-xs sm:text-sm font-bold truncate">
+                  {company.location || "Global Remote"}
+                </p>
               </div>
-            )}
+            </div>
+            <div className="flex items-center gap-2.5 text-[var(--foreground)] font-medium">
+              <Users size={18} className="text-[var(--primary)] shrink-0" />
+              <div>
+                <p className="text-[10px] text-[var(--muted-foreground)] uppercase font-semibold">
+                  Company Size
+                </p>
+                <p className="text-xs sm:text-sm font-bold">
+                  {company.size || "50-200"} team
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5 text-[var(--foreground)] font-medium">
+              <Calendar size={18} className="text-[var(--primary)] shrink-0" />
+              <div>
+                <p className="text-[10px] text-[var(--muted-foreground)] uppercase font-semibold">
+                  Founded
+                </p>
+                <p className="text-xs sm:text-sm font-bold">
+                  {company.founded || "Established"}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5 text-[var(--foreground)] font-medium">
+              <ShieldCheck size={18} className="text-[var(--primary)] shrink-0" />
+              <div>
+                <p className="text-[10px] text-[var(--muted-foreground)] uppercase font-semibold">
+                  Entity Status
+                </p>
+                <p className="text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                  Verified Org
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* About Section */}
@@ -273,8 +269,45 @@ export default function CompanyPage() {
             <p className="text-[var(--muted-foreground)] leading-relaxed whitespace-pre-wrap text-sm sm:text-base">
               {company.about ||
                 company.description ||
-                `${company.name} is a high-growth technology leader building scalable products and fostering world-class engineering and creative talent.`}
+                `${company.name} is a high-growth technology leader building scalable products and fostering world-class engineering, design, and collaborative talent.`}
             </p>
+          </div>
+
+          {/* Corporate Highlights & Culture */}
+          <div className="mt-8 grid sm:grid-cols-3 gap-4">
+            <div className="p-4 rounded-2xl bg-[var(--muted)]/50 border border-[var(--border)]">
+              <div className="w-8 h-8 rounded-lg bg-[var(--primary)]/10 text-[var(--primary)] flex items-center justify-center mb-2.5 font-bold">
+                <Globe size={16} />
+              </div>
+              <h4 className="font-bold text-sm text-[var(--foreground)] mb-1">
+                Global Operations
+              </h4>
+              <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                Distributed teams operating across international time zones with modern remote infrastructure.
+              </p>
+            </div>
+            <div className="p-4 rounded-2xl bg-[var(--muted)]/50 border border-[var(--border)]">
+              <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center mb-2.5 font-bold">
+                <Sparkles size={16} />
+              </div>
+              <h4 className="font-bold text-sm text-[var(--foreground)] mb-1">
+                Innovative Culture
+              </h4>
+              <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                Prioritizing autonomy, developer velocity, collaborative design, and continuous learning.
+              </p>
+            </div>
+            <div className="p-4 rounded-2xl bg-[var(--muted)]/50 border border-[var(--border)]">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-2.5 font-bold">
+                <Award size={16} />
+              </div>
+              <h4 className="font-bold text-sm text-[var(--foreground)] mb-1">
+                Verified Reputation
+              </h4>
+              <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                Top employer rating based on authentic team reviews and competitive benefits.
+              </p>
+            </div>
           </div>
 
           {/* GIS Location Map View */}
@@ -286,7 +319,7 @@ export default function CompanyPage() {
                   Office Location & Workplace Map
                 </h3>
                 <p className="text-xs text-[var(--muted-foreground)]">
-                  {company.location || "Worldwide Remote / Hybrid Headquarters"}
+                  {company.address || company.location || "Worldwide Remote / Hybrid Headquarters"}
                 </p>
               </div>
               <button
@@ -299,7 +332,7 @@ export default function CompanyPage() {
             </div>
 
             {showMap && (
-              <div className="rounded-2xl overflow-hidden border border-[var(--border)] h-56 sm:h-72 w-full bg-[var(--muted)]/40 relative shadow-inner">
+              <div className="rounded-2xl overflow-hidden border border-[var(--border)] h-64 sm:h-80 w-full bg-[var(--muted)]/40 relative shadow-inner">
                 <iframe
                   title={`${company.name} Map Location`}
                   width="100%"
@@ -309,93 +342,8 @@ export default function CompanyPage() {
                   marginHeight={0}
                   marginWidth={0}
                   src={`https://maps.google.com/maps?q=${mapQuery}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
-                  className="w-full h-full grayscale-[25%] contrast-[1.05]"
+                  className="w-full h-full grayscale-[20%] contrast-[1.05]"
                 />
-              </div>
-            )}
-          </div>
-
-          {/* Open Positions Section */}
-          <div className="mt-12 border-t border-[var(--border)] pt-8">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="font-poppins text-2xl font-bold text-[var(--foreground)]">
-                  Open Opportunities ({companyJobs.length})
-                </h2>
-                <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
-                  Choose between Easy Apply in-app and Direct ATS website applications.
-                </p>
-              </div>
-              <Link
-                to={`/jobs?keyword=${encodeURIComponent(company.name)}`}
-                className="text-xs font-bold text-[var(--primary)] hover:underline flex items-center gap-1"
-              >
-                Explore on Search <ChevronRight size={13} />
-              </Link>
-            </div>
-
-            {companyJobs.length > 0 ? (
-              <div className="space-y-3">
-                {companyJobs.map((job) => (
-                  <Link
-                    key={job.id}
-                    to={`/jobs/${job.id}`}
-                    className="p-4 sm:p-5 rounded-2xl bg-[var(--card)] border border-[var(--border)] hover:border-[var(--primary)] transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group hover:shadow-sm"
-                  >
-                    <div>
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <h3 className="font-poppins font-bold text-base text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">
-                          {job.title}
-                        </h3>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          job.applyMode === "both"
-                            ? "bg-purple-500/10 text-purple-600"
-                            : job.applyMode === "external"
-                              ? "bg-blue-500/10 text-blue-600"
-                              : "bg-emerald-500/10 text-emerald-600"
-                        }`}>
-                          {job.applyMode === "both"
-                            ? "Easy & External"
-                            : job.applyMode === "external"
-                              ? "Apply on Website"
-                              : "Easy Apply"}
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-3 text-xs text-[var(--muted-foreground)]">
-                        <span className="flex items-center gap-1">
-                          <MapPin size={12} /> {job.location}
-                        </span>
-                        <span>•</span>
-                        <span>{job.type}</span>
-                        <span>•</span>
-                        <span className="font-semibold text-[var(--foreground)]">
-                          {job.salaryMin && job.salaryMax
-                            ? `$${(job.salaryMin / 1000).toFixed(0)}k - $${(job.salaryMax / 1000).toFixed(0)}k`
-                            : "Competitive Salary"}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 self-end sm:self-center">
-                      <Button variant="outline" size="sm" className="group-hover:bg-[var(--primary)] group-hover:text-white transition-colors">
-                        Apply Now <ChevronRight size={14} />
-                      </Button>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-10 border border-[var(--border)] rounded-2xl bg-[var(--muted)]/20">
-                <Building
-                  size={40}
-                  className="mx-auto text-[var(--muted-foreground)] opacity-40 mb-3"
-                />
-                <h3 className="text-base font-semibold text-[var(--foreground)]">
-                  No published openings currently
-                </h3>
-                <p className="text-xs text-[var(--muted-foreground)] mt-1">
-                  Follow {company.name} to receive real-time notifications as new positions open.
-                </p>
               </div>
             )}
           </div>
