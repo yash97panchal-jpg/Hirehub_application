@@ -1201,6 +1201,34 @@ export default function Settings() {
                     </div>
                   </div>
 
+                  {/* Session & Sign Out */}
+                  <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-6 shadow-xs">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div>
+                        <h3 className="font-semibold text-base text-[var(--foreground)] flex items-center gap-2">
+                          <LogOut size={18} className="text-red-500" />
+                          Session & Sign Out
+                        </h3>
+                        <p className="text-xs text-[var(--muted-foreground)] mt-0.5 max-w-md">
+                          Sign out of your active HireHub account on this device. You will need to log back in to access your dashboard.
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          logout()
+                          toast.success("Logged out successfully.")
+                          navigate("/")
+                        }}
+                        className="text-red-500 border-red-500/30 hover:bg-red-500/10 font-bold"
+                      >
+                        <LogOut size={15} className="mr-1.5" />
+                        Log Out of Account
+                      </Button>
+                    </div>
+                  </div>
+
                   {/* Danger Zone */}
                   <div className="bg-red-500/5 dark:bg-red-950/20 rounded-2xl border border-red-500/20 p-6 shadow-xs">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

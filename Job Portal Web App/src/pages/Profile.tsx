@@ -11,7 +11,7 @@ import {
   Briefcase,
   FileText,
   CheckCircle2,
-  LogOut,
+  Settings as SettingsIcon,
   Upload,
   Sparkles,
   Check,
@@ -231,14 +231,10 @@ export default function Profile() {
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
-              onClick={() => {
-                logout()
-                toast.success("Logged out successfully.")
-                navigate("/")
-              }}
-              className="text-red-500 border-red-500/30 hover:bg-red-500/10 font-bold"
+              onClick={() => navigate("/settings")}
+              className="font-bold text-xs"
             >
-              <LogOut size={16} className="mr-1.5" /> Log Out
+              <SettingsIcon size={14} className="mr-1.5" /> Settings
             </Button>
             <Button variant="primary" onClick={handleSave}>
               <Save size={16} className="mr-2" /> Save Changes

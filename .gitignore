@@ -31,3 +31,6 @@ __pycache__/
 *.pyd
 db.sqlite3
 accounts.zip
+
+.vercel
+.env*
