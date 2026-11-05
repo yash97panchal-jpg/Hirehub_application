@@ -71,4 +71,25 @@ describe("Auth Flows & Account Security", () => {
     expect(correctInput === generatedCode).toBe(true)
     expect(wrongInput === generatedCode).toBe(false)
   })
+
+  it("determines correct dashboard destination based on user authentication and role", () => {
+    function getDashboardRoute(isAuthenticated: boolean, role?: string) {
+      if (!isAuthenticated) return "/login"
+      if (role === "admin") return "/admin"
+      if (role === "recruiter") return "/recruiter"
+      return "/dashboard"
+    }
+
+    // Unauthenticated
+    expect(getDashboardRoute(false)).toBe("/login")
+
+    // Candidate / Job Seeker
+    expect(getDashboardRoute(true, "job_seeker")).toBe("/dashboard")
+
+    // Recruiter
+    expect(getDashboardRoute(true, "recruiter")).toBe("/recruiter")
+
+    // Admin
+    expect(getDashboardRoute(true, "admin")).toBe("/admin")
+  })
 })

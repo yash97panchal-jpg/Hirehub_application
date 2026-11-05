@@ -175,10 +175,18 @@ export default function Login() {
 
           {/* Back navigation */}
           <Link
-            to="/"
+            to={
+              isAuthenticated && user
+                ? user.role === "admin"
+                  ? "/admin"
+                  : user.role === "recruiter"
+                    ? "/recruiter"
+                    : "/dashboard"
+                : "/"
+            }
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors mb-3"
           >
-            <ArrowLeft size={14} /> Back to Home
+            <ArrowLeft size={14} /> {isAuthenticated ? "Back to Dashboard" : "Back to Home"}
           </Link>
 
           {/* Role Switcher: Candidate vs Recruiter */}

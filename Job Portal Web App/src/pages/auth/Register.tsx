@@ -16,6 +16,7 @@ import {
   RotateCcw,
   ShieldCheck,
   CheckCircle2,
+  LogOut,
 } from "lucide-react"
 import Button from "../../components/ui/Button"
 import Input from "../../components/ui/Input"
@@ -43,7 +44,7 @@ type FormData = z.infer<typeof schema>
 
 export default function Register() {
   const navigate = useNavigate()
-  const { login } = useAuthStore()
+  const { login, user, isAuthenticated, logout } = useAuthStore()
   const [role, setRole] = useState<UserRole>("job_seeker")
   const [showPw, setShowPw] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -276,12 +277,57 @@ export default function Register() {
           {step === "form" ? (
             /* STEP 1: ACCOUNT DETAILS FORM */
             <>
+              {/* Active Session Indicator */}
+              {isAuthenticated && user && (
+                <div className="mb-4 p-3 rounded-2xl bg-[var(--primary)]/15 border border-[var(--primary)]/30 text-xs">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-bold text-[var(--foreground)] truncate max-w-[200px]">
+                      Active Session: {user?.name || user?.email || "User"} ({user.role})
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        logout()
+                        toast.success("Logged out successfully.")
+                      }}
+                      className="inline-flex items-center gap-1 text-red-500 hover:underline font-semibold shrink-0"
+                    >
+                      <LogOut size={12} /> Log Out
+                    </button>
+                  </div>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    className="w-full"
+                    onClick={() =>
+                      navigate(
+                        user.role === "admin"
+                          ? "/admin"
+                          : user.role === "recruiter"
+                            ? "/recruiter"
+                            : "/dashboard",
+                      )
+                    }
+                  >
+                    Go to Dashboard <ArrowRight size={14} />
+                  </Button>
+                </div>
+              )}
+
               {/* Back navigation */}
               <Link
-                to="/"
+                to={
+                  isAuthenticated && user
+                    ? user.role === "admin"
+                      ? "/admin"
+                      : user.role === "recruiter"
+                        ? "/recruiter"
+                        : "/dashboard"
+                    : "/"
+                }
                 className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors mb-3"
               >
-                <ArrowLeft size={14} /> Back to Home
+                <ArrowLeft size={14} /> {isAuthenticated ? "Back to Dashboard" : "Back to Home"}
               </Link>
 
               {/* Role selector */}

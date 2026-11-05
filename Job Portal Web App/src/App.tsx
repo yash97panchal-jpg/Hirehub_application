@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from "react"
-import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate } from "react-router-dom"
+import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, Navigate } from "react-router-dom"
 import { Toaster } from "react-hot-toast"
 import Navbar from "./components/layout/Navbar"
 import Footer from "./components/layout/Footer"
@@ -98,6 +98,22 @@ function Layout({ children }: { children: React.ReactNode }) {
   )
 }
 
+function HomeRoute() {
+  const { isAuthenticated, user } = useAuthStore()
+
+  if (isAuthenticated && user) {
+    const target =
+      user.role === "admin"
+        ? "/admin"
+        : user.role === "recruiter"
+          ? "/recruiter"
+          : "/dashboard"
+    return <Navigate to={target} replace />
+  }
+
+  return <Home />
+}
+
 function AppRoutes() {
   const [showSplash, setShowSplash] = useState(true)
   const location = useLocation()
@@ -106,13 +122,14 @@ function AppRoutes() {
 
   const handleSplashFinish = () => {
     setShowSplash(false)
-    // When user opens the app (at root "/" or ""), direct to log in page or user dashboard
+    // Read the freshest auth state directly from the store
+    const currentAuth = useAuthStore.getState()
     if (location.pathname === "/" || location.pathname === "") {
-      if (isAuthenticated && user) {
+      if (currentAuth.isAuthenticated && currentAuth.user) {
         const target =
-          user.role === "admin"
+          currentAuth.user.role === "admin"
             ? "/admin"
-            : user.role === "recruiter"
+            : currentAuth.user.role === "recruiter"
               ? "/recruiter"
               : "/dashboard"
         navigate(target, { replace: true })
@@ -144,9 +161,9 @@ function AppRoutes() {
       <Layout>
         <Suspense fallback={<PageLoader />}>
           <Routes>
-            {/* Public Discovery Pages (Standard Web Portal Entry) */}
-            <Route path="/" element={<Home />} />
-            <Route path="/home" element={<Home />} />
+            {/* Public Discovery Pages (Auto-redirects authenticated users to their dashboard) */}
+            <Route path="/" element={<HomeRoute />} />
+            <Route path="/home" element={<HomeRoute />} />
             <Route path="/jobs" element={<Jobs />} />
             <Route path="/jobs/:id" element={<JobDetail />} />
             <Route path="/companies" element={<Companies />} />
@@ -448,10 +465,18 @@ function AppRoutes() {
                       The page you're looking for doesn't exist.
                     </p>
                     <Link
-                      to="/"
+                      to={
+                        isAuthenticated && user
+                          ? user.role === "admin"
+                            ? "/admin"
+                            : user.role === "recruiter"
+                              ? "/recruiter"
+                              : "/dashboard"
+                          : "/"
+                      }
                       className="px-6 py-3 rounded-xl bg-[var(--primary)] text-white font-semibold hover:bg-[var(--primary-hover)] transition-colors block w-full"
                     >
-                      Go Home
+                      {isAuthenticated ? "Go to Dashboard" : "Go Home"}
                     </Link>
                   </div>
                 </div>

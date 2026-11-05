@@ -191,8 +191,19 @@ export default function JobDetail() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-[var(--muted-foreground)] mb-6">
-          <Link to="/" className="hover:text-[var(--primary)]">
-            Home
+          <Link
+            to={
+              isAuthenticated && user
+                ? user.role === "admin"
+                  ? "/admin"
+                  : user.role === "recruiter"
+                    ? "/recruiter"
+                    : "/dashboard"
+                : "/"
+            }
+            className="hover:text-[var(--primary)]"
+          >
+            {isAuthenticated ? "Dashboard" : "Home"}
           </Link>
           <ChevronRight size={14} />
           <Link to="/jobs" className="hover:text-[var(--primary)]">

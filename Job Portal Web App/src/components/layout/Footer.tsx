@@ -14,9 +14,11 @@ import {
   ChevronRight,
 } from "lucide-react"
 import symbolLogo from "../../imports/symbol_only.jpeg"
+import { useAuthStore } from "../../store/authStore"
 
 export default function Footer() {
   const navigate = useNavigate()
+  const { isAuthenticated, user } = useAuthStore()
   const [email, setEmail] = useState("")
   const [subscribed, setSubscribed] = useState(false)
   const [selectedRoleAlert, setSelectedRoleAlert] = useState("All Engineering & Tech")
@@ -114,7 +116,18 @@ export default function Footer() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 pb-12 border-b border-white/10">
           {/* Left Column: Brand, Value Proposition & Dynamic Newsletter */}
           <div className="lg:col-span-4 space-y-5">
-            <Link to="/" className="inline-flex items-center gap-2.5 group">
+            <Link
+              to={
+                isAuthenticated && user
+                  ? user.role === "admin"
+                    ? "/admin"
+                    : user.role === "recruiter"
+                      ? "/recruiter"
+                      : "/dashboard"
+                  : "/"
+              }
+              className="inline-flex items-center gap-2.5 group"
+            >
               <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center p-1 ring-2 ring-[#F59E0B]/40 group-hover:ring-[#F59E0B] transition-all overflow-hidden shrink-0">
                 <img
                   src={symbolLogo}

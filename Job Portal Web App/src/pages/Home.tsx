@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import {
@@ -24,6 +24,23 @@ export default function Home() {
   const { isAuthenticated, user } = useAuthStore()
   const [keyword, setKeyword] = useState("")
   const [location, setLocation] = useState("")
+
+  // Auto-redirect authenticated users immediately to their respective dashboard
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const target =
+        user.role === "admin"
+          ? "/admin"
+          : user.role === "recruiter"
+            ? "/recruiter"
+            : "/dashboard"
+      navigate(target, { replace: true })
+    }
+  }, [isAuthenticated, user, navigate])
+
+  if (isAuthenticated && user) {
+    return null
+  }
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
