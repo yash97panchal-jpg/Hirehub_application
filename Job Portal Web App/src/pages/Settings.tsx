@@ -241,14 +241,14 @@ export default function Settings() {
     { id: "account", label: "Account & Profile", icon: User },
     { id: "preferences", label: "Job Preferences", icon: Briefcase },
     { id: "notifications", label: "Notifications", icon: Bell },
-    { id: "security", label: "Security & Sign In", icon: Shield },
+    { id: "security", label: "Security & Log In", icon: Shield },
     { id: "privacy", label: "Privacy & Data", icon: Lock },
   ]
 
   const employmentTypes = ["Full-time", "Part-time", "Remote", "Contract", "Internship", "Hybrid"]
 
   return (
-    <div className="min-h-screen bg-[var(--background)] pt-20 pb-20">
+    <div className="min-h-screen bg-[var(--background)] pt-20 pb-20 w-full max-w-full overflow-x-hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         {/* Navigation Breadcrumb / Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
@@ -960,13 +960,13 @@ export default function Settings() {
                     </div>
                   </div>
 
-                  {/* Active Sign In Sessions */}
+                  {/* Active Log In Sessions */}
                   <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-6 shadow-xs">
                     <h3 className="font-semibold text-base text-[var(--foreground)] mb-1">
-                      Active Sign In Sessions
+                      Active Log In Sessions
                     </h3>
                     <p className="text-xs text-[var(--muted-foreground)] mb-4">
-                      Devices currently authorized and signed into your account.
+                      Devices currently authorized and logged into your account.
                     </p>
 
                     <div className="space-y-3">

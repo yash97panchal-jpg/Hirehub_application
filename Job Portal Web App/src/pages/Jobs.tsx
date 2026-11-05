@@ -224,7 +224,7 @@ export default function Jobs() {
     (category ? 1 : 0)
 
   return (
-    <div className="min-h-screen bg-[var(--background)] pt-20">
+    <div className="min-h-screen bg-[var(--background)] pt-20 w-full max-w-full overflow-x-hidden">
       {/* Search Header Bar */}
       <div
         style={{

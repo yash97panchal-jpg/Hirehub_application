@@ -862,7 +862,7 @@ export default function JobMap({
               transition={{ duration: 0.2 }}
               onMouseDown={(e) => e.stopPropagation()}
               onClick={(e) => e.stopPropagation()}
-              className="absolute top-16 left-3 z-[1050] w-80 sm:w-88 bg-white dark:bg-[#20102b] rounded-2xl shadow-2xl border border-black/10 dark:border-white/10 overflow-hidden text-slate-800 dark:text-slate-100"
+              className="absolute top-16 left-3 z-[1050] w-80 sm:w-88 max-w-[calc(100vw-2rem)] bg-white dark:bg-[#20102b] rounded-2xl shadow-2xl border border-black/10 dark:border-white/10 overflow-hidden text-slate-800 dark:text-slate-100"
             >
               {/* Place Banner Image */}
               <div className="relative h-28 w-full bg-slate-800 overflow-hidden">

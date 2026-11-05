@@ -125,12 +125,12 @@ export default function Profile() {
       <div className="min-h-screen pt-24 px-4 flex items-center justify-center">
         <div className="max-w-md w-full bg-[var(--card)] p-8 rounded-3xl border border-[var(--border)] text-center shadow-lg">
           <User size={48} className="mx-auto text-[var(--muted-foreground)] mb-3 opacity-60" />
-          <h2 className="text-xl font-bold text-[var(--foreground)]">Sign In Required</h2>
+          <h2 className="text-xl font-bold text-[var(--foreground)]">Log In Required</h2>
           <p className="text-sm text-[var(--muted-foreground)] mt-2 mb-6">
-            Please sign in to view and manage your profile details, resume, and preferences.
+            Please log in to view and manage your profile details, resume, and preferences.
           </p>
           <Button variant="primary" className="w-full font-bold" onClick={() => navigate("/login")}>
-            Sign In
+            Log In
           </Button>
         </div>
       </div>
@@ -138,7 +138,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)] pt-24 pb-20">
+    <div className="min-h-screen bg-[var(--background)] pt-24 pb-20 w-full max-w-full overflow-x-hidden">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between mb-8">
           <Button variant="ghost" onClick={() => navigate(-1)}>

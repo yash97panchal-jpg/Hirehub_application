@@ -43,7 +43,7 @@ export default function Home() {
   ]
 
   return (
-    <div className="min-h-screen bg-[var(--background)] flex flex-col justify-between pt-16">
+    <div className="min-h-screen bg-[var(--background)] flex flex-col justify-between pt-16 w-full max-w-full overflow-x-hidden">
       {/* 1. HERO SECTION: Clean & Focused Search (Like Indeed / LinkedIn) */}
       <section className="relative py-16 sm:py-24 px-4 sm:px-6 overflow-hidden">
         {/* Subtle Ambient Glows */}
@@ -198,7 +198,7 @@ export default function Home() {
                   variant="outline"
                   onClick={() => navigate("/login")}
                 >
-                  Sign in
+                  Log In
                 </Button>
               )}
             </div>
@@ -246,7 +246,7 @@ export default function Home() {
                   variant="outline"
                   onClick={() => navigate("/login")}
                 >
-                  Recruiter Sign in
+                  Recruiter Log In
                 </Button>
               )}
             </div>
@@ -321,7 +321,7 @@ export default function Home() {
             {!isAuthenticated ? (
               <>
                 <Button variant="outline" size="md" onClick={() => navigate("/login")}>
-                  Sign in
+                  Log In
                 </Button>
                 <Button variant="primary" size="md" onClick={() => navigate("/register")} className="font-bold">
                   Create Account <ArrowRight size={14} />

@@ -187,7 +187,7 @@ export default function JobDetail() {
   const lng = job.coordinates?.lng || -122.4194
 
   return (
-    <div className="min-h-screen bg-[var(--background)] pt-20">
+    <div className="min-h-screen bg-[var(--background)] pt-20 w-full max-w-full overflow-x-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-[var(--muted-foreground)] mb-6">
@@ -512,7 +512,7 @@ export default function JobDetail() {
                       className="w-full font-bold justify-center"
                       onClick={() => {
                         if (!isAuthenticated || !user) {
-                          toast("Please sign in or create an account to apply.", { icon: "🔒" })
+                          toast("Please log in or create an account to apply.", { icon: "🔒" })
                           navigate("/login")
                           return
                         }

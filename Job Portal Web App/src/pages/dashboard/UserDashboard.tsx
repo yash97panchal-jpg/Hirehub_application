@@ -104,7 +104,7 @@ export default function UserDashboard() {
   }, [storeApplications, storeJobs])
 
   return (
-    <div className="min-h-screen bg-[var(--background)] pt-20">
+    <div className="min-h-screen bg-[var(--background)] pt-20 w-full max-w-full overflow-x-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Header */}
         <motion.div
@@ -126,12 +126,12 @@ export default function UserDashboard() {
               size="md"
               onClick={() => {
                 logout()
-                toast.success("Signed out successfully.")
+                toast.success("Logged out successfully.")
                 window.location.href = "/"
               }}
               className="text-red-500 border-red-500/30 hover:bg-red-500/10 font-bold"
             >
-              <LogOut size={15} /> Sign out
+              <LogOut size={15} /> Log Out
             </Button>
             <Button
               variant="primary"

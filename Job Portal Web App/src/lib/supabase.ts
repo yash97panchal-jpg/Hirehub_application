@@ -203,12 +203,16 @@ export const authService = {
     return { user: mockUser, session: { access_token: "mock-token-" + Date.now() } }
   },
 
-  async signInWithGoogle() {
+  async signInWithGoogle(account?: { email: string; name?: string }) {
     if (isSupabaseConfigured && supabase) {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/dashboard`,
+          queryParams: {
+            prompt: "select_account",
+            ...(account?.email ? { login_hint: account.email } : {}),
+          },
         },
       })
       if (error) throw error
@@ -216,17 +220,53 @@ export const authService = {
     }
 
     // Local Mock Fallback
+    const name = account?.name || (account?.email ? account.email.split("@")[0] : "Google User")
+    const email = account?.email || "google.user@example.com"
     const mockUser: User = {
       id: "usr-google-" + Date.now(),
-      name: "Google User",
-      email: "google.user@example.com",
+      name,
+      email,
       role: "job_seeker",
       skills: ["Full Stack", "Cloud"],
       profileCompletion: 90,
       isVerified: true,
       createdAt: new Date().toISOString(),
     }
-    return { user: mockUser, session: { access_token: "mock-token-google" } }
+    return { user: mockUser, session: { access_token: "mock-token-google-" + Date.now() } }
+  },
+
+  async resetPasswordForEmail(email: string): Promise<{ success: boolean; token?: string; email?: string }> {
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/forgot-password`,
+      })
+      if (error) throw error
+      return { success: true, email }
+    }
+
+    // Local Mock Fallback: Generate token & store in localStorage
+    const token = "reset-" + Math.random().toString(36).substring(2, 10) + Date.now().toString(36)
+    const resetData = { email, token, expiresAt: Date.now() + 1000 * 60 * 60 }
+    localStorage.setItem(`hirehub_reset_token_${token}`, JSON.stringify(resetData))
+    localStorage.setItem(`hirehub_reset_${email}`, JSON.stringify(resetData))
+    return { success: true, token, email }
+  },
+
+  async updatePassword(newPassword: string, token?: string, email?: string) {
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase.auth.updateUser({ password: newPassword })
+      if (error) throw error
+      return data
+    }
+
+    // Local Mock Fallback
+    if (token) {
+      localStorage.removeItem(`hirehub_reset_token_${token}`)
+    }
+    if (email) {
+      localStorage.removeItem(`hirehub_reset_${email}`)
+    }
+    return { success: true }
   },
 
   async signOut() {

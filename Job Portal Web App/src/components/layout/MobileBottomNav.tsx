@@ -70,7 +70,7 @@ export default function MobileBottomNav() {
       badge: totalUnread > 0 ? totalUnread : null,
     },
     {
-      label: isAuthenticated ? (isAdmin ? "Admin" : isRecruiter ? "Manage" : "Profile") : "Sign In",
+      label: isAuthenticated ? (isAdmin ? "Admin" : isRecruiter ? "Manage" : "Profile") : "Log In",
       to: isAuthenticated
         ? (isAdmin ? "/admin" : isRecruiter ? "/recruiter" : "/profile")
         : "/login",

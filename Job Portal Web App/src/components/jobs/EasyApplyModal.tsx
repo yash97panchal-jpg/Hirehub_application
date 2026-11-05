@@ -78,7 +78,7 @@ export default function EasyApplyModal({
 
   const handleSubmit = async () => {
     if (!user) {
-      toast.error("Please sign in to complete your application.")
+      toast.error("Please log in to complete your application.")
       return
     }
 

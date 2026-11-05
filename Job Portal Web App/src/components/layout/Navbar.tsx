@@ -170,7 +170,7 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Desktop Nav - Options list only shows AFTER log in / sign up and NEVER on auth pages */}
+          {/* Desktop Nav - Options list only shows AFTER log in / create account and NEVER on auth pages */}
           {isAuthenticated && user && !isAuthPage && (
             <nav className="hidden lg:flex items-center gap-1">
               {/* Jobs Mega Menu */}
@@ -199,7 +199,7 @@ export default function Navbar() {
                       initial="hidden"
                       animate="visible"
                       exit="exit"
-                      className="absolute left-0 top-full mt-2 w-[480px] rounded-2xl bg-[var(--card)] border border-[var(--border)] shadow-[var(--shadow-elevated)] overflow-hidden"
+                      className="absolute left-0 top-full mt-2 w-[480px] max-w-[calc(100vw-2rem)] rounded-2xl bg-[var(--card)] border border-[var(--border)] shadow-[var(--shadow-elevated)] overflow-hidden"
                     >
                       <div className="p-4">
                         <p className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-widest mb-3">
@@ -505,14 +505,14 @@ export default function Navbar() {
                   size="sm"
                   onClick={() => navigate("/login")}
                 >
-                  Sign in
+                  Log In
                 </Button>
                 <Button
                   variant="primary"
                   size="sm"
                   onClick={() => navigate("/register")}
                 >
-                  Get Started
+                  Create Account
                 </Button>
               </div>
             ) : null}
@@ -531,7 +531,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu - Only shown on non-auth pages; option list only appears AFTER login/signup */}
+      {/* Mobile Menu - Only shown on non-auth pages; option list only appears AFTER log in / create account */}
       <AnimatePresence>
         {!isAuthPage && mobileOpen && (
           <motion.div
@@ -614,20 +614,20 @@ export default function Navbar() {
                       className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
                     >
                       <LogOut size={17} />
-                      Sign out
+                      Log Out
                     </button>
                   </div>
                 </>
               ) : (
                 <div className="flex flex-col gap-2 pt-1">
                   <Button variant="outline" onClick={() => navigate("/login")}>
-                    Sign in
+                    Log In
                   </Button>
                   <Button
                     variant="primary"
                     onClick={() => navigate("/register")}
                   >
-                    Get Started
+                    Create Account
                   </Button>
                 </div>
               )}

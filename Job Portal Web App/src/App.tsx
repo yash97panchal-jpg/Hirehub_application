@@ -85,9 +85,9 @@ function Layout({ children }: { children: React.ReactNode }) {
   ].includes(location.pathname)
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--background)] text-[var(--foreground)]">
+    <div className="min-h-screen flex flex-col bg-[var(--background)] text-[var(--foreground)] w-full max-w-full overflow-x-hidden">
       <Navbar />
-      <main className="flex-1 flex flex-col pb-20 md:pb-0">{children}</main>
+      <main className="flex-1 flex flex-col pb-20 md:pb-0 w-full max-w-full overflow-x-hidden">{children}</main>
       {!isAuth && <Footer />}
       <MobileBottomNav />
       <CookieConsent />
@@ -106,7 +106,7 @@ function AppRoutes() {
 
   const handleSplashFinish = () => {
     setShowSplash(false)
-    // When user opens the app (at root "/" or ""), direct to sign in / login page or user dashboard
+    // When user opens the app (at root "/" or ""), direct to log in page or user dashboard
     if (location.pathname === "/" || location.pathname === "") {
       if (isAuthenticated && user) {
         const target =

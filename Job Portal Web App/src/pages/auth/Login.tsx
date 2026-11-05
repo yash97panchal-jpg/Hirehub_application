@@ -9,15 +9,13 @@ import {
   ArrowRight,
   ArrowLeft,
   LogOut,
-  ShieldCheck,
-  Lock,
-  Mail,
 } from "lucide-react"
 import { ParticleTextEffect } from "../../components/ui/particle-text-effect"
 import Button from "../../components/ui/Button"
 import Input from "../../components/ui/Input"
+import GoogleAccountModal from "../../components/auth/GoogleAccountModal"
 import { useAuthStore } from "../../store/authStore"
-import { authService, isSupabaseConfigured } from "../../lib/supabase"
+import { authService } from "../../lib/supabase"
 import { cn } from "../../utils/cn"
 import toast from "react-hot-toast"
 
@@ -31,11 +29,12 @@ export default function Login() {
   const [showPw, setShowPw] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  const [showGoogleModal, setShowGoogleModal] = useState(false)
   const [formError, setFormError] = useState("")
 
   // Auto-redirect if already authenticated
   useEffect(() => {
-    document.title = "Sign In — HireHub"
+    document.title = "Log In — HireHub"
     if (isAuthenticated && user) {
       const target =
         user.role === "admin"
@@ -47,7 +46,7 @@ export default function Login() {
     }
   }, [isAuthenticated, user, navigate])
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleLogIn = async (e: React.FormEvent) => {
     e.preventDefault()
     setFormError("")
 
@@ -77,33 +76,41 @@ export default function Login() {
         navigate(target)
       }
     } catch (err: any) {
-      console.error("Sign in error:", err)
-      setFormError(err.message || "Failed to sign in. Please verify your credentials.")
+      console.error("Log in error:", err)
+      setFormError(err.message || "Failed to log in. Please verify your credentials.")
       toast.error(err.message || "Invalid email or password.")
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleAccountSelect = async (account: { email: string; name: string }) => {
     setIsGoogleLoading(true)
     try {
-      const res = await authService.signInWithGoogle()
+      const res = await authService.signInWithGoogle(account)
       if (res && "user" in res && res.user) {
         login(res.user as any, (res as any).session?.access_token || "google-token")
-        toast.success("Welcome back with Google!")
+        toast.success(`Logged in as ${account.email}!`)
         navigate(res.user.role === "recruiter" ? "/recruiter" : "/dashboard")
       }
     } catch (err: any) {
-      console.error("Google sign in error:", err)
-      toast.error(err.message || "Failed to initiate Google sign in.")
+      console.error("Google log in error:", err)
+      toast.error(err.message || "Failed to initiate Google log in.")
     } finally {
       setIsGoogleLoading(false)
     }
   }
 
   return (
-    <div className="pt-16 min-h-screen lg:h-[calc(100vh-4rem)] flex flex-col lg:flex-row bg-[var(--background)] overflow-x-hidden no-scrollbar">
+    <div className="pt-16 min-h-screen lg:h-[calc(100vh-4rem)] flex flex-col lg:flex-row bg-[var(--background)] w-full max-w-full overflow-x-hidden no-scrollbar">
+      {/* Google Account Selection Modal */}
+      <GoogleAccountModal
+        isOpen={showGoogleModal}
+        onClose={() => setShowGoogleModal(false)}
+        mode="login"
+        onSelectAccount={handleGoogleAccountSelect}
+      />
+
       {/* LEFT PANEL: Interactive Particle Animation */}
       <div className="flex flex-col justify-end w-full lg:w-1/2 h-[240px] sm:h-[280px] md:h-[320px] lg:h-full relative overflow-hidden bg-[#12051B] border-b lg:border-b-0 lg:border-r border-[var(--border)] shrink-0">
         <ParticleTextEffect
@@ -116,13 +123,13 @@ export default function Login() {
             Your Gateway to Tomorrow's Career
           </h2>
           <p className="text-white/70 text-xs sm:text-sm leading-relaxed line-clamp-2 lg:line-clamp-none">
-            Supabase verified authentication, multi-company applications, and intelligent ATS matching.
+            Verified authentication, multi-company applications, and intelligent ATS matching.
           </p>
         </div>
       </div>
 
       {/* RIGHT PANEL: Form */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-12 py-4 lg:py-6 bg-[var(--background)] lg:h-full overflow-y-auto no-scrollbar">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-12 py-4 lg:py-6 bg-[var(--background)] lg:h-full overflow-y-auto no-scrollbar w-full max-w-full">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -133,18 +140,18 @@ export default function Login() {
           {isAuthenticated && user && (
             <div className="mb-4 p-3 rounded-2xl bg-[var(--primary)]/15 border border-[var(--primary)]/30 text-xs">
               <div className="flex items-center justify-between mb-2">
-                <span className="font-bold text-[var(--foreground)]">
+                <span className="font-bold text-[var(--foreground)] truncate max-w-[200px]">
                   Active Session: {user?.name || user?.email || "User"} ({user.role})
                 </span>
                 <button
                   type="button"
                   onClick={() => {
                     logout()
-                    toast.success("Signed out successfully.")
+                    toast.success("Logged out successfully.")
                   }}
-                  className="inline-flex items-center gap-1 text-red-500 hover:underline font-semibold"
+                  className="inline-flex items-center gap-1 text-red-500 hover:underline font-semibold shrink-0"
                 >
-                  <LogOut size={12} /> Sign out
+                  <LogOut size={12} /> Log Out
                 </button>
               </div>
               <Button
@@ -214,21 +221,21 @@ export default function Login() {
           {/* Form Title */}
           <div className="mb-4">
             <h1 className="font-poppins text-xl sm:text-2xl font-black text-[var(--foreground)] tracking-tight mb-1">
-              {activeRole === "recruiter" ? "Recruiter Sign In" : "Candidate Sign In"}
+              {activeRole === "recruiter" ? "Recruiter Log In" : "Candidate Log In"}
             </h1>
             <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-              Sign in with your verified email and password. Server-side role enforcement via Supabase Auth & RLS.
+              Log in with your verified email and password. Server-side role enforcement via Supabase Auth & RLS.
             </p>
           </div>
 
-          {/* Google Sign In Button */}
+          {/* Google Log In Button - Prompts for Google Account selection */}
           <button
             type="button"
             disabled={isGoogleLoading}
-            onClick={handleGoogleSignIn}
+            onClick={() => setShowGoogleModal(true)}
             className="w-full py-2.5 px-4 mb-4 rounded-xl border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--muted)] text-xs sm:text-sm font-semibold text-[var(--foreground)] flex items-center justify-center gap-2.5 transition-colors shadow-sm disabled:opacity-50"
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
               <path
                 fill="#4285F4"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -246,18 +253,18 @@ export default function Login() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
               />
             </svg>
-            {isGoogleLoading ? "Connecting to Google..." : "Continue with Google"}
+            {isGoogleLoading ? "Connecting to Google..." : "Log in with Google"}
           </button>
 
           <div className="relative flex items-center justify-center mb-4">
             <div className="border-t border-[var(--border)] w-full" />
             <span className="bg-[var(--background)] px-3 text-[11px] font-semibold text-[var(--muted-foreground)] uppercase tracking-wider absolute">
-              Or sign in with email
+              Or log in with email
             </span>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSignIn} className="space-y-3.5">
+          <form onSubmit={handleLogIn} className="space-y-3.5">
             <Input
               label={activeRole === "recruiter" ? "Work Email Address" : "Email Address"}
               type="email"
@@ -308,7 +315,7 @@ export default function Login() {
               isLoading={isLoading}
               className="w-full mt-2 font-bold"
             >
-              {activeRole === "recruiter" ? "Sign in to Recruiter Portal" : "Sign in to HireHub"}{" "}
+              {activeRole === "recruiter" ? "Log in to Recruiter Portal" : "Log in to HireHub"}{" "}
               <ArrowRight size={15} />
             </Button>
           </form>
@@ -316,7 +323,7 @@ export default function Login() {
           <p className="text-center text-xs text-[var(--muted-foreground)] mt-4">
             Don't have an account?{" "}
             <Link to="/register" className="font-bold text-[var(--primary)] hover:underline">
-              Create an account
+              Create Account
             </Link>
           </p>
         </motion.div>
