@@ -69,11 +69,27 @@ export default function Companies() {
     loadCompanies()
   }, [])
 
+  const industryCounts = useMemo(() => {
+    const counts: Record<string, number> = { All: companiesList.length }
+    industries.forEach((ind) => {
+      if (ind === "All") return
+      counts[ind] = companiesList.filter((c) =>
+        (c.industry || "").toLowerCase().includes(ind.toLowerCase())
+      ).length
+    })
+    return counts
+  }, [companiesList])
+
   const filtered = useMemo(() => {
     return companiesList.filter((c) => {
-      if (search && !c.name.toLowerCase().includes(search.toLowerCase()) && !c.industry?.toLowerCase().includes(search.toLowerCase()))
+      if (
+        search &&
+        !c.name.toLowerCase().includes(search.toLowerCase()) &&
+        !c.industry?.toLowerCase().includes(search.toLowerCase()) &&
+        !c.location?.toLowerCase().includes(search.toLowerCase())
+      )
         return false
-      if (industry !== "All" && c.industry !== industry) return false
+      if (industry !== "All" && !c.industry?.toLowerCase().includes(industry.toLowerCase())) return false
       return true
     })
   }, [companiesList, search, industry])
@@ -89,11 +105,15 @@ export default function Companies() {
         className="py-12"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
-          <h1 className="font-poppins text-4xl font-bold text-white mb-3">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-md text-white text-xs font-semibold mb-3 border border-white/20 shadow-xs">
+            <Building size={14} className="text-white/80" />
+            <span>Total Companies Available: {companiesList.length}</span>
+          </div>
+          <h1 className="font-poppins text-3xl sm:text-4xl font-bold text-white mb-3">
             Explore Top Companies
           </h1>
-          <p className="text-white/80 mb-8 max-w-xl mx-auto text-sm">
-            Discover verified employer profiles, culture insights, and open opportunities across leading teams worldwide.
+          <p className="text-white/80 mb-8 max-w-xl mx-auto text-xs sm:text-sm">
+            Discover verified employer profiles, workplace locations, and culture insights across {companiesList.length} global teams.
           </p>
           <div className="relative max-w-lg mx-auto">
             <Search
@@ -103,32 +123,53 @@ export default function Companies() {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search companies by name or industry…"
+              placeholder="Search by company name, industry, or location…"
               className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/70 text-sm focus:outline-none focus:ring-2 focus:ring-white/30 backdrop-blur-md"
             />
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
-        {/* Filters */}
-        <div className="flex flex-wrap items-center gap-2 mb-8">
-          <span className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)] mr-1">
-            Industry:
-          </span>
-          {industries.map((ind) => (
-            <button
-              key={ind}
-              onClick={() => setIndustry(ind)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
-                industry === ind
-                  ? "bg-[var(--primary)] text-white border-[var(--primary)] shadow-sm"
-                  : "bg-[var(--card)] text-[var(--foreground)] border-[var(--border)] hover:border-[var(--primary)]"
-              }`}
-            >
-              {ind}
-            </button>
-          ))}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        {/* Total Companies Counter & Filter Bar */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-5 border-b border-[var(--border)]">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[var(--primary)]/10 text-[var(--primary)] flex items-center justify-center shrink-0">
+              <Building size={20} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2.5">
+                <h2 className="font-poppins font-bold text-base sm:text-lg text-[var(--foreground)]">
+                  Total Companies Available:
+                </h2>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-[var(--primary)] text-white shadow-xs">
+                  {companiesList.length}
+                </span>
+              </div>
+              <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
+                {filtered.length === companiesList.length
+                  ? `Showing all ${companiesList.length} verified employers in directory`
+                  : `Showing ${filtered.length} of ${companiesList.length} total companies available`}
+              </p>
+            </div>
+          </div>
+
+          {/* Industry Filters */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {industries.map((ind) => (
+              <button
+                key={ind}
+                onClick={() => setIndustry(ind)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
+                  industry === ind
+                    ? "bg-[var(--primary)] text-white border-[var(--primary)] shadow-xs"
+                    : "bg-[var(--card)] text-[var(--foreground)] border-[var(--border)] hover:border-[var(--primary)]"
+                }`}
+              >
+                {ind} {industryCounts[ind] !== undefined && `(${industryCounts[ind]})`}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Grid */}

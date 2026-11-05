@@ -29,6 +29,7 @@ export default function CompanyPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [company, setCompany] = useState<Company | null>(null)
+  const [totalCompaniesCount, setTotalCompaniesCount] = useState<number>(mockCompanies.length)
   const [isLoading, setIsLoading] = useState(true)
   const [isFollowing, setIsFollowing] = useState(false)
   const [showMap, setShowMap] = useState(true)
@@ -38,6 +39,10 @@ export default function CompanyPage() {
       if (!id) return
       setIsLoading(true)
       try {
+        const allComps = await companyService.getCompanies()
+        if (allComps && allComps.length > 0) {
+          setTotalCompaniesCount(allComps.length)
+        }
         const found = await companyService.getCompanyBySlug(id)
         if (found) {
           setCompany({
@@ -123,13 +128,13 @@ export default function CompanyPage() {
         ) : (
           <div className="w-full h-full bg-gradient-to-r from-[var(--accent)] to-[#1E0B29] opacity-90" />
         )}
-        <div className="absolute top-24 left-4 sm:left-8 z-10">
+        <div className="absolute top-24 left-4 sm:left-8 z-10 flex items-center gap-3">
           <Button
             variant="outline"
-            className="bg-black/40 backdrop-blur-md border-white/20 text-white hover:bg-black/60 shadow-lg"
+            className="bg-black/40 backdrop-blur-md border-white/20 text-white hover:bg-black/60 shadow-lg text-xs sm:text-sm font-semibold"
             onClick={() => navigate("/companies")}
           >
-            <ArrowLeft size={16} className="mr-2" /> Back to Companies
+            <ArrowLeft size={16} className="mr-2" /> All Companies ({totalCompaniesCount} Available)
           </Button>
         </div>
       </div>
@@ -166,6 +171,9 @@ export default function CompanyPage() {
                       Pending Verification
                     </span>
                   )}
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[var(--primary)]/10 text-[var(--primary)] border border-[var(--primary)]/20">
+                    <Building size={12} /> 1 of {totalCompaniesCount} Companies Available
+                  </span>
                 </div>
                 <div className="flex items-center gap-3 mt-1.5 flex-wrap">
                   <Badge variant="default" size="sm">
@@ -214,7 +222,7 @@ export default function CompanyPage() {
           </div>
 
           {/* Quick Meta Stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 py-5 border-y border-[var(--border)] text-sm">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mt-8 py-5 border-y border-[var(--border)] text-sm">
             <div className="flex items-center gap-2.5 text-[var(--foreground)] font-medium">
               <MapPin size={18} className="text-[var(--primary)] shrink-0" />
               <div>
@@ -258,6 +266,18 @@ export default function CompanyPage() {
                   Verified Org
                 </p>
               </div>
+            </div>
+            <div className="flex items-center gap-2.5 text-[var(--foreground)] font-medium">
+              <Building size={18} className="text-[var(--primary)] shrink-0" />
+              <div>
+                <p className="text-[10px] text-[var(--muted-foreground)] uppercase font-semibold">
+                  Total Available
+                </p>
+                <p className="text-xs sm:text-sm font-bold text-[var(--primary)]">
+                  {totalCompaniesCount} Companies
+                </p>
+              </div>
+            </div>
             </div>
           </div>
 
@@ -347,8 +367,31 @@ export default function CompanyPage() {
               </div>
             )}
           </div>
+
+          {/* Total Companies Available on HireHub */}
+          <div className="mt-8 pt-8 border-t border-[var(--border)]">
+            <div className="p-6 rounded-2xl bg-[var(--muted)]/40 border border-[var(--border)] flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+              <div>
+                <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
+                  <Building size={16} className="text-[var(--primary)]" />
+                  <h4 className="font-poppins font-bold text-base text-[var(--foreground)]">
+                    Total Companies Available: {totalCompaniesCount}
+                  </h4>
+                </div>
+                <p className="text-xs text-[var(--muted-foreground)] max-w-xl">
+                  HireHub features {totalCompaniesCount} verified employer organizations, engineering laboratories, and technology innovators worldwide.
+                </p>
+              </div>
+              <Button
+                variant="primary"
+                onClick={() => navigate("/companies")}
+                className="shrink-0 text-xs font-semibold px-5 py-2.5 shadow-sm"
+              >
+                Browse All {totalCompaniesCount} Companies
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
   )
 }
