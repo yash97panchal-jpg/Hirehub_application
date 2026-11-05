@@ -15,6 +15,18 @@ export const OFFICIAL_COMPANY_LOGOS: Record<string, string> = {
   salesforce: "https://www.google.com/s2/favicons?domain=salesforce.com&sz=128",
   uber: "https://www.google.com/s2/favicons?domain=uber.com&sz=128",
   datadog: "https://www.google.com/s2/favicons?domain=datadoghq.com&sz=128",
+  openai: "https://www.google.com/s2/favicons?domain=openai.com&sz=128",
+  tesla: "https://www.google.com/s2/favicons?domain=tesla.com&sz=128",
+  airbnb: "https://www.google.com/s2/favicons?domain=airbnb.com&sz=128",
+  adobe: "https://www.google.com/s2/favicons?domain=adobe.com&sz=128",
+  infosys: "https://www.google.com/s2/favicons?domain=infosys.com&sz=128",
+  cred: "https://www.google.com/s2/favicons?domain=cred.club&sz=128",
+  github: "https://www.google.com/s2/favicons?domain=github.com&sz=128",
+  coinbase: "https://www.google.com/s2/favicons?domain=coinbase.com&sz=128",
+  palantir: "https://www.google.com/s2/favicons?domain=palantir.com&sz=128",
+  oracle: "https://www.google.com/s2/favicons?domain=oracle.com&sz=128",
+  cisco: "https://www.google.com/s2/favicons?domain=cisco.com&sz=128",
+  paytm: "https://www.google.com/s2/favicons?domain=paytm.com&sz=128",
 
   // India Tech Corridor
   flipkart: "https://www.google.com/s2/favicons?domain=flipkart.com&sz=128",

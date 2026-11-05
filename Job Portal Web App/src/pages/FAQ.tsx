@@ -23,7 +23,7 @@ const faqs = [
   {
     question: "How much does it cost to post a job?",
     answer:
-      "We offer tailored pricing plans for recruiters ranging from pay-per-post to enterprise monthly subscriptions. Visit our Pricing page for detailed information.",
+      "Job postings are currently complimentary for verified employers and hiring partners. Recruiters can publish live listings and review verified candidate applications directly through their Recruiter Dashboard.",
   },
   {
     question: "How do I edit my resume once it's created?",

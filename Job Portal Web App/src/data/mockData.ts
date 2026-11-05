@@ -1762,30 +1762,38 @@ export const mockNotifications: Notification[] = [
 ]
 
 export const mockStats = {
-  totalJobs: 52,
-  totalCompanies: 28,
+  get totalJobs() {
+    return mockJobs.length
+  },
+  get totalCompanies() {
+    return mockCompanies.length
+  },
   totalUsers: 45,
   totalPlacements: 18,
-  jobsByCategory: [
-    { category: "Engineering", count: 24 },
-    { category: "Design", count: 8 },
-    { category: "Marketing", count: 5 },
-    { category: "Sales", count: 4 },
-    { category: "Product", count: 5 },
-    { category: "Data Science", count: 3 },
-    { category: "Finance", count: 3 },
-  ],
+  get jobsByCategory() {
+    const cats: Record<string, number> = {}
+    for (const j of mockJobs) {
+      const c = j.category || "Engineering"
+      cats[c] = (cats[c] || 0) + 1
+    }
+    return Object.entries(cats).map(([category, count]) => ({ category, count }))
+  },
 }
 
 export const categories = [
-  { name: "Engineering", icon: "Code", count: 24 },
-  { name: "Design", icon: "Palette", count: 8 },
-  { name: "Marketing", icon: "TrendingUp", count: 5 },
-  { name: "Sales", icon: "Briefcase", count: 4 },
-  { name: "Product", icon: "Box", count: 5 },
-  { name: "Data Science", icon: "BarChart3", count: 3 },
-  { name: "Finance", icon: "DollarSign", count: 3 },
-  { name: "HR", icon: "Users", count: 2 },
-  { name: "Operations", icon: "Settings", count: 2 },
-  { name: "Legal", icon: "Scale", count: 1 },
-]
+  { name: "Engineering", icon: "Code" },
+  { name: "Design", icon: "Palette" },
+  { name: "Marketing", icon: "TrendingUp" },
+  { name: "Sales", icon: "Briefcase" },
+  { name: "Product", icon: "Box" },
+  { name: "Data Science", icon: "BarChart3" },
+  { name: "Finance", icon: "DollarSign" },
+  { name: "HR", icon: "Users" },
+  { name: "Operations", icon: "Settings" },
+  { name: "Legal", icon: "Scale" },
+].map((item) => ({
+  ...item,
+  get count() {
+    return mockJobs.filter((j) => (j.category || "").toLowerCase() === item.name.toLowerCase()).length
+  },
+}))
