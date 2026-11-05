@@ -23,6 +23,20 @@ export default function Footer() {
   const [subscribed, setSubscribed] = useState(false)
   const [selectedRoleAlert, setSelectedRoleAlert] = useState("All Engineering & Tech")
 
+  const handleLogoClick = (e: React.MouseEvent) => {
+    const currentAuth = useAuthStore.getState()
+    if (currentAuth.isAuthenticated && currentAuth.user) {
+      e.preventDefault()
+      const target =
+        currentAuth.user.role === "admin"
+          ? "/admin"
+          : currentAuth.user.role === "recruiter"
+            ? "/recruiter"
+            : "/dashboard"
+      navigate(target)
+    }
+  }
+
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault()
     if (!email || !email.includes("@")) return
@@ -126,7 +140,8 @@ export default function Footer() {
                       : "/dashboard"
                   : "/"
               }
-              className="inline-flex items-center gap-2.5 group"
+              className="inline-flex items-center gap-2.5 group cursor-pointer"
+              onClick={handleLogoClick}
             >
               <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center p-1 ring-2 ring-[#F59E0B]/40 group-hover:ring-[#F59E0B] transition-all overflow-hidden shrink-0">
                 <img

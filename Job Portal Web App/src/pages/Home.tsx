@@ -25,20 +25,24 @@ export default function Home() {
   const [keyword, setKeyword] = useState("")
   const [location, setLocation] = useState("")
 
+  const authState = useAuthStore.getState()
+  const isAuth = (isAuthenticated && !!user) || (authState.isAuthenticated && !!authState.user)
+  const currentUser = user || authState.user
+
   // Auto-redirect authenticated users immediately to their respective dashboard
   useEffect(() => {
-    if (isAuthenticated && user) {
+    if (isAuth && currentUser) {
       const target =
-        user.role === "admin"
+        currentUser.role === "admin"
           ? "/admin"
-          : user.role === "recruiter"
+          : currentUser.role === "recruiter"
             ? "/recruiter"
             : "/dashboard"
       navigate(target, { replace: true })
     }
-  }, [isAuthenticated, user, navigate])
+  }, [isAuth, currentUser, navigate])
 
-  if (isAuthenticated && user) {
+  if (isAuth && currentUser) {
     return null
   }
 

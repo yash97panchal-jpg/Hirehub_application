@@ -276,12 +276,12 @@ export default function Settings() {
               size="sm"
               onClick={() => {
                 logout()
-                toast.success("Signed out successfully.")
+                toast.success("Logged out successfully.")
                 navigate("/")
               }}
               className="text-red-500 border-red-500/30 hover:bg-red-500/10 font-bold text-xs"
             >
-              <LogOut size={14} className="mr-1" /> Sign out
+              <LogOut size={14} className="mr-1" /> Log Out
             </Button>
 
             <div className="flex items-center gap-2 bg-[var(--card)] border border-[var(--border)] p-1.5 rounded-2xl shadow-xs">

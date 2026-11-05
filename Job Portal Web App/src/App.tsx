@@ -100,12 +100,15 @@ function Layout({ children }: { children: React.ReactNode }) {
 
 function HomeRoute() {
   const { isAuthenticated, user } = useAuthStore()
+  const authState = useAuthStore.getState()
+  const isAuth = (isAuthenticated && !!user) || (authState.isAuthenticated && !!authState.user)
+  const currentUser = user || authState.user
 
-  if (isAuthenticated && user) {
+  if (isAuth && currentUser) {
     const target =
-      user.role === "admin"
+      currentUser.role === "admin"
         ? "/admin"
-        : user.role === "recruiter"
+        : currentUser.role === "recruiter"
           ? "/recruiter"
           : "/dashboard"
     return <Navigate to={target} replace />

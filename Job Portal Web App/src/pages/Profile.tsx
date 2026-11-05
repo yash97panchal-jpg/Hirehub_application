@@ -221,12 +221,12 @@ export default function Profile() {
               variant="outline"
               onClick={() => {
                 logout()
-                toast.success("Signed out successfully.")
+                toast.success("Logged out successfully.")
                 navigate("/")
               }}
               className="text-red-500 border-red-500/30 hover:bg-red-500/10 font-bold"
             >
-              <LogOut size={16} className="mr-1.5" /> Sign out
+              <LogOut size={16} className="mr-1.5" /> Log Out
             </Button>
             <Button variant="primary" onClick={handleSave}>
               <Save size={16} className="mr-2" /> Save Changes

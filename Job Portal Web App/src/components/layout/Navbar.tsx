@@ -123,6 +123,20 @@ export default function Navbar() {
     navigate("/")
   }
 
+  const handleLogoClick = (e: React.MouseEvent) => {
+    const currentAuth = useAuthStore.getState()
+    if (currentAuth.isAuthenticated && currentAuth.user) {
+      e.preventDefault()
+      const target =
+        currentAuth.user.role === "admin"
+          ? "/admin"
+          : currentAuth.user.role === "recruiter"
+            ? "/recruiter"
+            : "/dashboard"
+      navigate(target)
+    }
+  }
+
   const dropdownVariants = {
     hidden: { opacity: 0, y: -8, scale: 0.97 },
     visible: {
@@ -156,7 +170,8 @@ export default function Navbar() {
                     : "/dashboard"
                 : "/"
             }
-            className="flex items-center gap-2 shrink-0"
+            onClick={handleLogoClick}
+            className="flex items-center gap-2 shrink-0 cursor-pointer"
           >
             <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm border border-[var(--border)] shrink-0 overflow-hidden p-1">
               <img
@@ -490,7 +505,7 @@ export default function Navbar() {
                             className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                           >
                             <LogOut size={15} />
-                            Sign out
+                            Log Out
                           </button>
                         </div>
                       </motion.div>
@@ -563,7 +578,7 @@ export default function Navbar() {
                       onClick={handleLogout}
                       className="px-2.5 py-1 rounded-lg bg-red-500/10 text-red-500 text-xs font-bold hover:bg-red-500/20 transition-colors flex items-center gap-1 shrink-0"
                     >
-                      <LogOut size={12} /> Sign out
+                      <LogOut size={12} /> Log Out
                     </button>
                   </div>
 
