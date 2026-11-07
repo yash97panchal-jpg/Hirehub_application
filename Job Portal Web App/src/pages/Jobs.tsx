@@ -11,6 +11,8 @@ import {
   Sparkles,
   Building2,
   Globe,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react"
 import JobCard from "../components/ui/JobCard"
 import Badge from "../components/ui/Badge"
@@ -69,6 +71,11 @@ export default function Jobs() {
   const [salaryMin, setSalaryMin] = useState(
     Number(searchParams.get("salary")) || 0,
   )
+  const [pageSize, setPageSize] = useState(10)
+  const [currentPage, setCurrentPage] = useState(() => {
+    const p = parseInt(searchParams.get("page") || "1", 10)
+    return isNaN(p) || p < 1 ? 1 : p
+  })
 
   // Debounce keyword
   useEffect(() => {
@@ -95,6 +102,7 @@ export default function Jobs() {
     if (datePosted) params.set("date", datePosted)
     if (sortBy !== "relevance") params.set("sort", sortBy)
     if (salaryMin > 0) params.set("salary", salaryMin.toString())
+    if (currentPage > 1) params.set("page", currentPage.toString())
 
     setSearchParams(params, { replace: true })
   }, [
@@ -106,7 +114,23 @@ export default function Jobs() {
     datePosted,
     sortBy,
     salaryMin,
+    currentPage,
     setSearchParams,
+  ])
+
+  // Reset to first page when filtering
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [
+    debouncedKeyword,
+    location,
+    category,
+    companyParam,
+    selectedTypes,
+    selectedExp,
+    datePosted,
+    sortBy,
+    salaryMin,
   ])
 
   const toggleType = (t: JobType) =>
@@ -196,6 +220,53 @@ export default function Jobs() {
     storeJobs,
   ])
 
+  // Pagination Calculations
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(1)
+    }
+  }, [currentPage, totalPages])
+
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = Math.min(startIndex + pageSize, filtered.length)
+  const paginatedJobs = useMemo(() => {
+    return filtered.slice(startIndex, endIndex)
+  }, [filtered, startIndex, endIndex])
+
+  const paginationRange = useMemo(() => {
+    const delta = 1
+    const range: (number | string)[] = []
+
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) range.push(i)
+      return range
+    }
+
+    const left = Math.max(2, currentPage - delta)
+    const right = Math.min(totalPages - 1, currentPage + delta)
+
+    range.push(1)
+    if (left > 2) range.push("...")
+    for (let i = left; i <= right; i++) range.push(i)
+    if (right < totalPages - 1) range.push("...")
+    range.push(totalPages)
+
+    return range
+  }, [currentPage, totalPages])
+
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return
+    setCurrentPage(page)
+    const el = document.getElementById("job-results-container")
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" })
+    } else {
+      window.scrollTo({ top: 320, behavior: "smooth" })
+    }
+  }
+
   const clearAll = () => {
     setKeyword("")
     setLocation("")
@@ -205,6 +276,7 @@ export default function Jobs() {
     setSelectedExp([])
     setSalaryMin(0)
     setDatePosted("")
+    setCurrentPage(1)
   }
 
   const activeFilterCount =
@@ -432,7 +504,10 @@ export default function Jobs() {
             {/* Job List Main Column */}
             <div className="flex-1 min-w-0">
               {/* Toolbar */}
-              <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
+              <div
+                id="job-results-container"
+                className="flex items-center justify-between mb-5 flex-wrap gap-3 scroll-mt-28"
+              >
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setFiltersOpen((v) => !v)}
@@ -447,6 +522,11 @@ export default function Jobs() {
                     )}
                   </button>
                   <p className="text-sm text-[var(--muted-foreground)]">
+                    Showing{" "}
+                    <span className="font-semibold text-[var(--foreground)]">
+                      {filtered.length === 0 ? 0 : startIndex + 1}–{endIndex}
+                    </span>{" "}
+                    of{" "}
                     <span className="font-semibold text-[var(--foreground)]">
                       {filtered.length}
                     </span>{" "}
@@ -533,18 +613,104 @@ export default function Jobs() {
 
               {/* Job Cards */}
               {filtered.length > 0 ? (
-                <div className="grid gap-4">
-                  {filtered.map((job, i) => (
-                    <motion.div
-                      key={job.id}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.05, duration: 0.3 }}
-                    >
-                      <JobCard job={job} />
-                    </motion.div>
-                  ))}
-                </div>
+                <>
+                  <div className="grid gap-4">
+                    {paginatedJobs.map((job, i) => (
+                      <motion.div
+                        key={job.id}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.04, duration: 0.25 }}
+                      >
+                        <JobCard job={job} />
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  {/* Pagination Bar - Below the last job */}
+                  {totalPages > 1 && (
+                    <div className="mt-8 pt-6 border-t border-[var(--border)] flex flex-col sm:flex-row items-center justify-between gap-4">
+                      {/* Page Counter & Per-page selector */}
+                      <div className="flex items-center gap-3 text-xs sm:text-sm text-[var(--muted-foreground)]">
+                        <span>
+                          Page <strong className="text-[var(--foreground)]">{currentPage}</strong> of{" "}
+                          <strong className="text-[var(--foreground)]">{totalPages}</strong>
+                        </span>
+                        <span className="text-[var(--border)]">|</span>
+                        <div className="flex items-center gap-1.5">
+                          <span>Per page:</span>
+                          <select
+                            value={pageSize}
+                            onChange={(e) => {
+                              setPageSize(Number(e.target.value))
+                              setCurrentPage(1)
+                            }}
+                            className="text-xs bg-[var(--card)] border border-[var(--border)] rounded-md px-2 py-1 text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] cursor-pointer"
+                          >
+                            <option value={8}>8</option>
+                            <option value={10}>10</option>
+                            <option value={15}>15</option>
+                            <option value={20}>20</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Page Numbers and Navigation */}
+                      <nav aria-label="Job Results Pagination" className="flex items-center gap-1 sm:gap-1.5">
+                        <button
+                          type="button"
+                          disabled={currentPage === 1}
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          className="px-2.5 sm:px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] text-xs sm:text-sm font-medium hover:bg-[var(--muted)] disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 transition-colors shadow-sm"
+                          aria-label="Previous page"
+                        >
+                          <ChevronLeft size={16} />
+                          <span className="hidden sm:inline">Previous</span>
+                        </button>
+
+                        {paginationRange.map((page, idx) => {
+                          if (typeof page === "string") {
+                            return (
+                              <span
+                                key={`ellipsis-${idx}`}
+                                className="px-2 py-1 text-xs text-[var(--muted-foreground)] select-none"
+                              >
+                                ...
+                              </span>
+                            )
+                          }
+                          const isActive = page === currentPage
+                          return (
+                            <button
+                              key={page}
+                              type="button"
+                              onClick={() => handlePageChange(page)}
+                              className={`min-w-8 sm:min-w-9 h-8 sm:h-9 px-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+                                isActive
+                                  ? "bg-[var(--primary)] text-white shadow-sm shadow-[var(--primary)]/30 font-bold"
+                                  : "border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] hover:bg-[var(--muted)]"
+                              }`}
+                              aria-current={isActive ? "page" : undefined}
+                            >
+                              {page}
+                            </button>
+                          )
+                        })}
+
+                        <button
+                          type="button"
+                          disabled={currentPage === totalPages}
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          className="px-2.5 sm:px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] text-xs sm:text-sm font-medium hover:bg-[var(--muted)] disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 transition-colors shadow-sm"
+                          aria-label="Next page"
+                        >
+                          <span className="hidden sm:inline">Next</span>
+                          <ChevronRight size={16} />
+                        </button>
+                      </nav>
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="flex flex-col items-center justify-center py-24 text-center">
                   <div className="w-20 h-20 rounded-2xl bg-[var(--muted)] flex items-center justify-center mb-4">
