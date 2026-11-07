@@ -21,6 +21,7 @@ import {
   ShieldAlert,
   Navigation,
   ArrowRight,
+  Sparkles,
 } from "lucide-react"
 import Button from "../components/ui/Button"
 import Badge from "../components/ui/Badge"
@@ -37,6 +38,7 @@ import ShareJobModal from "../components/jobs/ShareJobModal"
 import ReportJobModal from "../components/jobs/ReportJobModal"
 import { emailService, type SentEmailRecord } from "../services/emailService"
 import { getCompanyRealLogo } from "../data/companyLogos"
+import { calculateSkillMatch } from "../utils/skillMatcher"
 import { Browser } from "@capacitor/browser"
 import toast from "react-hot-toast"
 
@@ -99,6 +101,7 @@ export default function JobDetail() {
   }
 
   const isSaved = isJobSaved(job.id)
+  const skillMatch = calculateSkillMatch(job.skills, undefined, user)
 
   const handleToggleSave = () => {
     const nowSaved = toggleSaveJob(job.id)
@@ -387,18 +390,53 @@ export default function JobDetail() {
                 </>
               )}
 
-              <h3 className="font-semibold text-[var(--foreground)] mb-3">
-                Skills Required
-              </h3>
-              <div className="flex flex-wrap gap-2 mb-6">
-                {job.skills.map((skill) => (
-                  <span
-                    key={skill}
-                    className="px-3 py-1.5 rounded-lg bg-[var(--muted)] text-sm font-medium text-[var(--foreground)] border border-[var(--border)]"
-                  >
-                    {skill}
+              <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                <h3 className="font-semibold text-[var(--foreground)]">
+                  Skills Required
+                </h3>
+                <span
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border transition-colors shadow-xs ${
+                    skillMatch.matchPercent >= 80
+                      ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                      : skillMatch.matchPercent >= 60
+                      ? "bg-[var(--primary)]/15 text-[var(--primary)] border-[var(--primary)]/30"
+                      : "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                  }`}
+                  title={`Matched ${skillMatch.matchedCount} of ${skillMatch.totalCount} skills from your profile resume: ${skillMatch.matchedSkills.join(", ") || "No direct matches"}`}
+                >
+                  <Sparkles
+                    size={12}
+                    className={
+                      skillMatch.matchPercent >= 80
+                        ? "text-emerald-500 fill-emerald-500"
+                        : "text-[var(--primary)] fill-[var(--primary)]"
+                    }
+                  />
+                  <span>
+                    {skillMatch.matchPercent}% Resume Match ({skillMatch.matchedCount}/{job.skills.length} skills)
                   </span>
-                ))}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2 mb-6">
+                {job.skills.map((skill) => {
+                  const isMatched = skillMatch.matchedSkills.some(
+                    (ms) => ms.toLowerCase() === skill.toLowerCase()
+                  )
+                  return (
+                    <span
+                      key={skill}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+                        isMatched
+                          ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 font-semibold"
+                          : "bg-[var(--muted)] text-[var(--foreground)] border-[var(--border)]"
+                      }`}
+                      title={isMatched ? "Matches your profile / resume skills" : "Job requirement"}
+                    >
+                      {isMatched && <span className="mr-1 text-emerald-500 font-bold">✓</span>}
+                      {skill}
+                    </span>
+                  )
+                })}
               </div>
 
               {job.benefits && job.benefits.length > 0 && (

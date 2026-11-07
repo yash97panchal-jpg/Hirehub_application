@@ -105,4 +105,36 @@ describe("Resume Skill-Based Matching & Application Actions", () => {
     expect(companyProfileUrl).toBe("/companies/comp-google")
     expect(applyUrl).toBe("/jobs/job-py-1")
   })
+
+  it("calculates accurate skill match percentages for JobCard display", async () => {
+    const { calculateSkillMatch } = await import("../src/utils/skillMatcher")
+    
+    // High match (3 of 4 skills match)
+    const resultHigh = calculateSkillMatch(
+      ["Python", "FastAPI", "SQL", "Cloud"],
+      ["Python", "SQL", "Cloud", "Docker"],
+    )
+    expect(resultHigh.matchedCount).toBe(3)
+    expect(resultHigh.totalCount).toBe(4)
+    expect(resultHigh.matchPercent).toBeGreaterThanOrEqual(80)
+    expect(resultHigh.matchedSkills).toContain("Python")
+    expect(resultHigh.matchedSkills).toContain("SQL")
+
+    // Full match (4 of 4 skills match)
+    const resultFull = calculateSkillMatch(
+      ["React", "TypeScript", "Tailwind", "Next.js"],
+      ["React", "TypeScript", "Tailwind", "Next.js"],
+    )
+    expect(resultFull.matchedCount).toBe(4)
+    expect(resultFull.totalCount).toBe(4)
+    expect(resultFull.matchPercent).toBeGreaterThanOrEqual(95)
+
+    // Low match (0 skills match)
+    const resultZero = calculateSkillMatch(
+      ["Ruby", "Rails", "Postgres"],
+      ["Rust", "Solidity"],
+    )
+    expect(resultZero.matchedCount).toBe(0)
+    expect(resultZero.matchPercent).toBeLessThan(30)
+  })
 })

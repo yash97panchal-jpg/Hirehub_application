@@ -12,11 +12,14 @@ import {
   Zap,
   ArrowRight,
   Building2,
+  Sparkles,
 } from "lucide-react"
 import Badge from "./Badge"
 import type { Job } from "../../types"
 import { useSavedJobsStore } from "../../store/savedJobsStore"
+import { useAuthStore } from "../../store/authStore"
 import { getCompanyRealLogo } from "../../data/companyLogos"
+import { calculateSkillMatch } from "../../utils/skillMatcher"
 
 interface JobCardProps {
   job: Job
@@ -73,9 +76,12 @@ const typeColors: Record<string, string> = {
 }
 
 export default function JobCard({ job, compact = false }: JobCardProps) {
+  const { user } = useAuthStore()
   const { isJobSaved, toggleSaveJob } = useSavedJobsStore()
   const isSaved = isJobSaved(job.id)
   const cardRef = useRef<HTMLDivElement>(null)
+
+  const skillMatch = calculateSkillMatch(job.skills, undefined, user)
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const card = cardRef.current
@@ -163,16 +169,40 @@ export default function JobCard({ job, compact = false }: JobCardProps) {
         </button>
       </div>
 
-      {/* Badges */}
-      <div className="flex flex-wrap gap-1.5 mb-3">
-        <Badge variant={typeColors[job.type] as any}>{job.type}</Badge>
-        {job.isFeatured && (
-          <Badge variant="accent">
-            <Zap size={10} className="mr-0.5" />
-            Featured
-          </Badge>
-        )}
-        {job.isUrgent && <Badge variant="error">Urgent</Badge>}
+      {/* Badges & Resume Skill Match */}
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <div className="flex flex-wrap gap-1.5 items-center">
+          <Badge variant={typeColors[job.type] as any}>{job.type}</Badge>
+          {job.isFeatured && (
+            <Badge variant="accent">
+              <Zap size={10} className="mr-0.5" />
+              Featured
+            </Badge>
+          )}
+          {job.isUrgent && <Badge variant="error">Urgent</Badge>}
+        </div>
+
+        {/* Resume Skill Match Percentage Badge */}
+        <div
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border transition-colors shadow-xs ${
+            skillMatch.matchPercent >= 80
+              ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+              : skillMatch.matchPercent >= 60
+              ? "bg-[var(--primary)]/15 text-[var(--primary)] border-[var(--primary)]/30"
+              : "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
+          }`}
+          title={`Resume Match: ${skillMatch.matchedCount} of ${skillMatch.totalCount} skills match your profile resume (${skillMatch.matchedSkills.join(", ") || "No direct skill match"})`}
+        >
+          <Sparkles
+            size={12}
+            className={
+              skillMatch.matchPercent >= 80
+                ? "text-emerald-500 fill-emerald-500"
+                : "text-[var(--primary)] fill-[var(--primary)]"
+            }
+          />
+          <span>{skillMatch.matchPercent}% Skill Match</span>
+        </div>
       </div>
 
       {/* Title */}
@@ -183,18 +213,34 @@ export default function JobCard({ job, compact = false }: JobCardProps) {
       </Link>
 
       {!compact && (
-        <div className="flex flex-wrap gap-1.5 mb-4">
-          {job.skills.slice(0, 3).map((skill) => (
-            <span
-              key={skill}
-              className="text-xs px-2 py-0.5 rounded-md bg-[var(--muted)] text-[var(--muted-foreground)]"
-            >
-              {skill}
-            </span>
-          ))}
-          {job.skills.length > 3 && (
+        <div className="flex flex-wrap items-center gap-1.5 mb-4">
+          {job.skills.slice(0, 4).map((skill) => {
+            const isMatched = skillMatch.matchedSkills.some(
+              (ms) => ms.toLowerCase() === skill.toLowerCase()
+            )
+            return (
+              <span
+                key={skill}
+                className={`text-xs px-2 py-0.5 rounded-md transition-colors ${
+                  isMatched
+                    ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 font-semibold"
+                    : "bg-[var(--muted)] text-[var(--muted-foreground)]"
+                }`}
+                title={isMatched ? "Skill matches your resume / profile" : "Job requirement"}
+              >
+                {isMatched && <span className="mr-1 text-emerald-500 font-bold">✓</span>}
+                {skill}
+              </span>
+            )
+          })}
+          {job.skills.length > 4 && (
             <span className="text-xs px-2 py-0.5 rounded-md bg-[var(--muted)] text-[var(--muted-foreground)]">
-              +{job.skills.length - 3}
+              +{job.skills.length - 4}
+            </span>
+          )}
+          {skillMatch.matchedCount > 0 && (
+            <span className="text-[11px] text-[var(--muted-foreground)] ml-auto font-medium hidden sm:inline">
+              {skillMatch.matchedCount}/{job.skills.length} skills match resume
             </span>
           )}
         </div>
