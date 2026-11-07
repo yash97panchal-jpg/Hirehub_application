@@ -163,9 +163,7 @@ export default function UserDashboard() {
 
   // Dynamic application counts
   const countApplied = allApplications.length
-  const countViewed = allApplications.filter(
-    (a) => a.status === "Viewed" || a.status === "Shortlisted" || a.status === "Interview",
-  ).length
+  const countViewed = allApplications.filter((a) => a.status === "Viewed").length
   const countShortlisted = allApplications.filter((a) => a.status === "Shortlisted").length
   const countInterviews = allApplications.filter((a) => a.status === "Interview").length
 
@@ -241,8 +239,8 @@ export default function UserDashboard() {
 
   // Recommended jobs with high AI match
   const recommendedJobs = useMemo(() => {
-    return storeJobs.slice(0, 4)
-  }, [storeJobs])
+    return skillMatchedJobs.slice(0, 4)
+  }, [skillMatchedJobs])
 
   const greeting = useMemo(() => {
     const hour = new Date().getHours()
@@ -1170,7 +1168,7 @@ export default function UserDashboard() {
               <div className="grid grid-cols-2 gap-2.5">
                 {[
                   { label: "Resume Builder", to: "/resume-builder", icon: FileText, color: "text-emerald-500" },
-                  { label: "Interactive Map", to: "/jobs?view=map", icon: MapPin, color: "text-blue-500" },
+                  { label: "Find Jobs", to: "/jobs", icon: Search, color: "text-blue-500" },
                   { label: "Salary Insights", to: "/salary-insights", icon: BarChart3, color: "text-amber-500" },
                   { label: "Job Alerts", to: "/dashboard/alerts", icon: Bell, color: "text-purple-500" },
                 ].map((tool) => {

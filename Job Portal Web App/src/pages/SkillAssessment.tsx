@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
 import {
   Award,
@@ -16,6 +17,7 @@ import Button from "../components/ui/Button"
 import Badge from "../components/ui/Badge"
 import toast from "react-hot-toast"
 import { triggerConfetti } from "../utils/confetti"
+import { useAuthStore } from "../store/authStore"
 
 interface Question {
   id: number
@@ -100,6 +102,8 @@ const quizData: Record<string, { title: string; timeMinutes: number; questions: 
 }
 
 export default function SkillAssessment() {
+  const navigate = useNavigate()
+  const { user, updateUser } = useAuthStore()
   const [selectedTrack, setSelectedTrack] = useState<string>("react")
   const [isTestActive, setIsTestActive] = useState(false)
   const [currentIdx, setCurrentIdx] = useState(0)
@@ -139,8 +143,19 @@ export default function SkillAssessment() {
   const handleFinish = () => {
     setIsTestActive(false)
     setTestCompleted(true)
-    triggerConfetti()
-    toast.success("Skill Assessment Completed! Generating Verified Badge.")
+    const score = calculateScore()
+    if (score >= 75) {
+      triggerConfetti()
+      toast.success("Skill Assessment Completed! Verified Badge added to your profile.")
+      const trackSkill = activeQuiz.title.includes("React") ? "React 19" : "System Design"
+      const currentSkills = user?.skills || []
+      updateUser({
+        isVerified: true,
+        skills: Array.from(new Set([...currentSkills, trackSkill])),
+      })
+    } else {
+      toast("Assessment completed. Score: " + score + "%")
+    }
   }
 
   const calculateScore = () => {
@@ -366,7 +381,7 @@ export default function SkillAssessment() {
                 variant="primary"
                 size="md"
                 className="flex-1 text-xs"
-                onClick={() => window.location.href = "/jobs"}
+                onClick={() => navigate("/jobs")}
               >
                 Apply to Verified Jobs
               </Button>

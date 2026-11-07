@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest"
 import type { Job } from "../src/types"
 
-describe("Map View & Company-Specific Filtering", () => {
+describe("Company-Specific Job Filtering", () => {
   const mockJobsList: Job[] = [
     {
       id: "j-1",

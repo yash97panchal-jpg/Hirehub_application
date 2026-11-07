@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
 import {
@@ -104,6 +104,43 @@ export default function RecruiterDashboard() {
   const realApplied = applications.length
   const realShortlisted = applications.filter((a) => a.status === "Shortlisted").length
   const realInterviews = applications.filter((a) => a.status === "Interview").length
+
+  const funnelData = useMemo(() => {
+    const applied = applications.length
+    const viewed = applications.filter((a) => a.status === "Viewed" || a.status === "Shortlisted" || a.status === "Interview" || a.status === "Offered").length
+    const shortlisted = applications.filter((a) => a.status === "Shortlisted" || a.status === "Interview" || a.status === "Offered").length
+    const interview = applications.filter((a) => a.status === "Interview" || a.status === "Offered").length
+    const offered = applications.filter((a) => a.status === "Offered").length
+
+    return [
+      { stage: "Applied", count: applied },
+      { stage: "Viewed", count: viewed },
+      { stage: "Shortlisted", count: shortlisted },
+      { stage: "Interview", count: interview },
+      { stage: "Offered", count: offered },
+    ]
+  }, [applications])
+
+  const displayedApplicants = useMemo(() => {
+    if (applications && applications.length > 0) {
+      return applications.slice(0, 5).map((a) => {
+        const initials = (a.applicant?.name || "Candidate")
+          .split(" ")
+          .map((n) => n[0])
+          .join("")
+          .slice(0, 2)
+          .toUpperCase()
+        return {
+          name: a.applicant?.name || "Applicant",
+          role: a.job?.title || "Role Applicant",
+          avatar: initials,
+          score: a.atsScore || 88,
+          status: a.status,
+        }
+      })
+    }
+    return recentApplicants
+  }, [applications])
 
   return (
     <div className="min-h-screen bg-[var(--background)] pt-20">
@@ -428,11 +465,11 @@ export default function RecruiterDashboard() {
                   View all <ChevronRight size={13} />
                 </Link>
               </div>
-              {recentApplicants.map((a, i) => (
+              {displayedApplicants.map((a, i) => (
                 <div
                   key={i}
                   className={`p-4 flex items-center gap-3 ${
-                    i < recentApplicants.length - 1
+                    i < displayedApplicants.length - 1
                       ? "border-b border-[var(--border)]"
                       : ""
                   }`}

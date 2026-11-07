@@ -283,10 +283,17 @@ export default function CareerHelpBot() {
                             <button
                               key={sug}
                               onClick={() => {
-                                if (sug === "Take me to Jobs page") navigate("/jobs")
-                                else if (sug === "Switch to Resume Matcher") setActiveTab("matcher")
-                                else if (sug === "Go to Application Tracker") navigate("/dashboard/applications")
-                                else handleSendMessage(sug)
+                                if (sug === "Take me to Jobs page") {
+                                  navigate("/jobs")
+                                  setIsOpen(false)
+                                } else if (sug === "Switch to Resume Matcher") {
+                                  setActiveTab("matcher")
+                                } else if (sug === "Go to Application Tracker") {
+                                  navigate("/dashboard/applications")
+                                  setIsOpen(false)
+                                } else {
+                                  handleSendMessage(sug)
+                                }
                               }}
                               className="px-2.5 py-1 rounded-xl bg-[var(--muted)] hover:bg-[var(--primary)] hover:text-white border border-[var(--border)] text-[11px] font-medium text-[var(--foreground)] transition-colors text-left"
                             >

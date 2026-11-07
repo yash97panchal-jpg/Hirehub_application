@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useSearchParams } from "react-router-dom"
 import { motion } from "framer-motion"
 import {
@@ -8,14 +8,11 @@ import {
   X,
   Briefcase,
   List,
-  Map as MapIcon,
-  Layers,
   Sparkles,
   Building2,
   Globe,
 } from "lucide-react"
 import JobCard from "../components/ui/JobCard"
-import JobMap from "../components/jobs/JobMap"
 import Badge from "../components/ui/Badge"
 import Button from "../components/ui/Button"
 import RoleSearchInput from "../components/ui/RoleSearchInput"
@@ -48,8 +45,6 @@ const dateOptions = [
   { label: "Last 30 days", value: "30" },
 ]
 
-type ViewMode = "map" | "split" | "list"
-
 export default function Jobs() {
   const { jobs: storeJobs } = useJobStore()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -59,6 +54,7 @@ export default function Jobs() {
   const [debouncedKeyword, setDebouncedKeyword] = useState(keyword)
   const [location, setLocation] = useState(searchParams.get("location") || "")
   const [category, setCategory] = useState(searchParams.get("category") || "")
+  const [companyParam, setCompanyParam] = useState(searchParams.get("company") || "")
   const [selectedTypes, setSelectedTypes] = useState<JobType[]>(
     searchParams.getAll("type") as JobType[],
   )
@@ -73,22 +69,6 @@ export default function Jobs() {
   const [salaryMin, setSalaryMin] = useState(
     Number(searchParams.get("salary")) || 0,
   )
-  const [viewMode, setViewMode] = useState<ViewMode>("split")
-  const [selectedJob, setSelectedJob] = useState<Job | null>(null)
-  const [selectedCompany, setSelectedCompany] = useState<string | null>(null)
-  const [selectedCountry, setSelectedCountry] = useState<string | null>(null)
-  const [filterScope, setFilterScope] = useState<"both" | "company" | "country">("both")
-  const jobCardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
-
-  // Synchronize scroll: when a pin on the map is clicked, scroll the job list on the right straight to that position
-  useEffect(() => {
-    if (selectedJob && jobCardRefs.current[selectedJob.id]) {
-      jobCardRefs.current[selectedJob.id]?.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-      })
-    }
-  }, [selectedJob])
 
   // Debounce keyword
   useEffect(() => {
@@ -173,6 +153,10 @@ export default function Jobs() {
             j.category.toLowerCase().includes(cat)),
       )
     }
+    if (companyParam) {
+      const cmp = companyParam.toLowerCase()
+      jobs = jobs.filter((j) => j.company.name.toLowerCase().includes(cmp))
+    }
     if (selectedTypes.length > 0) {
       jobs = jobs.filter((j) => selectedTypes.includes(j.type))
     }
@@ -203,6 +187,7 @@ export default function Jobs() {
     debouncedKeyword,
     location,
     category,
+    companyParam,
     selectedTypes,
     selectedExp,
     salaryMin,
@@ -211,46 +196,15 @@ export default function Jobs() {
     storeJobs,
   ])
 
-  // Filter jobs by selected company and related country from the map
-  const splitViewJobs = useMemo(() => {
-    if (!selectedCompany && !selectedCountry) return filtered
-
-    return filtered
-      .filter((j) => {
-        const matchCompany =
-          !selectedCompany ||
-          j.company?.name?.toLowerCase() === selectedCompany.toLowerCase() ||
-          j.company?.id === selectedCompany
-
-        const matchCountry =
-          !selectedCountry ||
-          (j.location && j.location.toLowerCase().includes(selectedCountry.toLowerCase()))
-
-        if (filterScope === "company") return matchCompany
-        if (filterScope === "country") return matchCountry
-        return matchCompany || matchCountry
-      })
-      .sort((a, b) => {
-        if (!selectedCompany) return 0
-        const aIsCompany = a.company?.name?.toLowerCase() === selectedCompany.toLowerCase()
-        const bIsCompany = b.company?.name?.toLowerCase() === selectedCompany.toLowerCase()
-        if (aIsCompany && !bIsCompany) return -1
-        if (!aIsCompany && bIsCompany) return 1
-        return 0
-      })
-  }, [filtered, selectedCompany, selectedCountry, filterScope])
-
   const clearAll = () => {
     setKeyword("")
     setLocation("")
     setCategory("")
+    setCompanyParam("")
     setSelectedTypes([])
     setSelectedExp([])
     setSalaryMin(0)
     setDatePosted("")
-    setSelectedCompany(null)
-    setSelectedCountry(null)
-    setFilterScope("both")
   }
 
   const activeFilterCount =
@@ -258,7 +212,8 @@ export default function Jobs() {
     selectedExp.length +
     (salaryMin > 0 ? 1 : 0) +
     (datePosted ? 1 : 0) +
-    (category ? 1 : 0)
+    (category ? 1 : 0) +
+    (companyParam ? 1 : 0)
 
   return (
     <div className="min-h-screen bg-[var(--background)] pt-20 w-full max-w-full overflow-x-hidden">
@@ -284,49 +239,10 @@ export default function Jobs() {
               </p>
             </div>
 
-            {/* View Mode Toggle Switcher: Split / List / Map */}
-            <div className="flex items-center bg-white/10 p-1 rounded-xl border border-white/20 self-start sm:self-auto backdrop-blur-md">
-              <button
-                type="button"
-                onClick={() => setViewMode("split")}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                  viewMode === "split"
-                    ? "bg-[var(--accent)] text-white shadow-md font-bold"
-                    : "text-white/80 hover:text-white"
-                }`}
-                title="Split View (Side-by-Side Map & Job List)"
-              >
-                <Layers size={14} />
-                <span>Split View</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setViewMode("list")}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                  viewMode === "list"
-                    ? "bg-[var(--accent)] text-white shadow-md font-bold"
-                    : "text-white/80 hover:text-white"
-                }`}
-                title="List View (Full Job Board & Filters)"
-              >
-                <List size={14} />
-                <span>List View</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setViewMode("map")}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                  viewMode === "map"
-                    ? "bg-[var(--accent)] text-white shadow-md font-bold"
-                    : "text-white/80 hover:text-white"
-                }`}
-                title="Map View (Only Map + Search Location + Search Role)"
-              >
-                <MapIcon size={14} />
-                <span>Map View</span>
-              </button>
+            {/* List View Indicator */}
+            <div className="flex items-center gap-2 bg-white/10 px-3.5 py-1.5 rounded-xl border border-white/20 text-white text-xs font-semibold backdrop-blur-md self-start sm:self-auto">
+              <List size={14} />
+              <span>List View</span>
             </div>
           </div>
 
@@ -366,219 +282,9 @@ export default function Jobs() {
         </div>
       </div>
 
-      {/* VIEW MODE 1: PURE MAP VIEW */}
-      {viewMode === "map" ? (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-          <JobMap
-            jobs={filtered}
-            selectedJob={selectedJob}
-            onSelectJob={(j) => setSelectedJob(j)}
-            activeLocation={location}
-            onLocationChange={(loc) => setLocation(loc)}
-            roleKeyword={debouncedKeyword || category}
-            mapHeightClass="h-[580px] lg:h-[660px]"
-            selectedCompany={selectedCompany}
-            onSelectCompany={(compName, country) => {
-              setSelectedCompany(compName)
-              setSelectedCountry(country || null)
-              setFilterScope("both")
-              setViewMode("split")
-            }}
-          />
-        </div>
-      ) : viewMode === "split" ? (
-        /* VIEW MODE 2: TRUE SPLIT VIEW (Opening Positions on LEFT, Interactive Map on RIGHT) */
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* LEFT Column: Scrollable List of Job Openings */}
-            <div className="lg:col-span-5 space-y-4 order-2 lg:order-1">
-              <div className="flex flex-col gap-2 pb-2.5 border-b border-[var(--border)]">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 flex-wrap min-w-0">
-                    <h3 className="font-poppins font-bold text-sm text-[var(--foreground)] truncate">
-                      {selectedCompany
-                        ? `${selectedCompany} & Related Openings`
-                        : selectedCountry
-                          ? `${selectedCountry} Openings`
-                          : "Open Positions"}{" "}
-                      ({splitViewJobs.length})
-                    </h3>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    {(selectedCompany || selectedCountry) && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedCompany(null)
-                          setSelectedCountry(null)
-                          setSelectedJob(null)
-                          setFilterScope("both")
-                        }}
-                        className="text-xs font-semibold text-[var(--primary)] hover:underline cursor-pointer"
-                      >
-                        Show All Worldwide
-                      </button>
-                    )}
-                    {location && (
-                      <span className="text-xs text-[var(--primary)] font-semibold truncate max-w-[120px] flex items-center gap-1">
-                        <MapPin size={12} /> {location}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Company & Country Filter Badges with Quick Scope Toggles */}
-                {(selectedCompany || selectedCountry) && (
-                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                    {selectedCompany && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                        <Building2 size={11} />
-                        <span className="truncate max-w-[110px]">{selectedCompany}</span>
-                        <button
-                          type="button"
-                          onClick={() => setSelectedCompany(null)}
-                          className="hover:text-red-500 ml-0.5 font-bold cursor-pointer"
-                          title="Remove company filter"
-                        >
-                          <X size={12} />
-                        </button>
-                      </span>
-                    )}
-
-                    {selectedCountry && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30">
-                        <Globe size={11} />
-                        <span className="truncate max-w-[100px]">{selectedCountry}</span>
-                        <button
-                          type="button"
-                          onClick={() => setSelectedCountry(null)}
-                          className="hover:text-red-500 ml-0.5 font-bold cursor-pointer"
-                          title="Remove country filter"
-                        >
-                          <X size={12} />
-                        </button>
-                      </span>
-                    )}
-
-                    {selectedCompany && selectedCountry && (
-                      <div className="flex items-center gap-1 ml-auto text-[11px]">
-                        <button
-                          type="button"
-                          onClick={() => setFilterScope("both")}
-                          className={`px-2 py-0.5 rounded-md font-semibold transition-colors ${
-                            filterScope === "both"
-                              ? "bg-[var(--primary)] text-white"
-                              : "bg-[var(--muted)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-                          }`}
-                        >
-                          All Related
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setFilterScope("company")}
-                          className={`px-2 py-0.5 rounded-md font-semibold transition-colors ${
-                            filterScope === "company"
-                              ? "bg-[var(--primary)] text-white"
-                              : "bg-[var(--muted)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-                          }`}
-                        >
-                          {selectedCompany} Only
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setFilterScope("country")}
-                          className={`px-2 py-0.5 rounded-md font-semibold transition-colors ${
-                            filterScope === "country"
-                              ? "bg-[var(--primary)] text-white"
-                              : "bg-[var(--muted)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-                          }`}
-                        >
-                          {selectedCountry} Only
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {splitViewJobs.length > 0 ? (
-                <div className="space-y-4 max-h-[640px] overflow-y-auto pr-1">
-                  {splitViewJobs.map((job) => (
-                    <div
-                      key={job.id}
-                      ref={(el) => {
-                        jobCardRefs.current[job.id] = el
-                      }}
-                      onClick={() => setSelectedJob(job)}
-                      className={`cursor-pointer transition-all rounded-2xl ${
-                        selectedJob?.id === job.id
-                          ? "ring-2 ring-[var(--primary)] shadow-lg"
-                          : ""
-                      }`}
-                    >
-                      <JobCard job={job} />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-16 text-center bg-[var(--card)] rounded-2xl border border-[var(--border)] p-6">
-                  <Briefcase
-                    size={36}
-                    className="text-[var(--muted-foreground)] mb-3"
-                  />
-                  <h4 className="font-bold text-sm text-[var(--foreground)] mb-1">
-                    {selectedCompany
-                      ? `No open positions match ${selectedCompany}`
-                      : "No openings match this exact location or role"}
-                  </h4>
-                  <p className="text-xs text-[var(--muted-foreground)] max-w-xs mb-4">
-                    {selectedCompany
-                      ? "Clear the company filter or click another location pin on the map."
-                      : "Try entering another city or clearing your search filters."}
-                  </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      if (selectedCompany) {
-                        setSelectedCompany(null)
-                        setSelectedJob(null)
-                      } else {
-                        clearAll()
-                      }
-                    }}
-                  >
-                    {selectedCompany ? "Show All Companies" : "Reset Search"}
-                  </Button>
-                </div>
-              )}
-            </div>
-
-            {/* RIGHT Column: Interactive Map (sticky) */}
-            <div className="lg:col-span-7 sticky top-24 order-1 lg:order-2">
-              <JobMap
-                jobs={filtered}
-                selectedJob={selectedJob}
-                onSelectJob={(j) => setSelectedJob(j)}
-                activeLocation={location}
-                onLocationChange={(loc) => setLocation(loc)}
-                roleKeyword={debouncedKeyword || category}
-                mapHeightClass="h-[480px] lg:h-[600px]"
-                selectedCompany={selectedCompany}
-                onSelectCompany={(compName, country) => {
-                  setSelectedCompany(compName)
-                  setSelectedCountry(country || null)
-                  setFilterScope("both")
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      ) : (
-        /* VIEW MODE 3: STANDARD LIST VIEW (With Filter Sidebar) */
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-          <div className="flex flex-col lg:flex-row gap-8">
+      {/* LIST VIEW */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
             {/* Sidebar Filters */}
             <aside
               className={`lg:w-72 shrink-0 ${
@@ -867,7 +573,6 @@ export default function Jobs() {
             </div>
           </div>
         </div>
-      )}
     </div>
   )
 }

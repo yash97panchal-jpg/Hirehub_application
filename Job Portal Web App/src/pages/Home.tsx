@@ -197,7 +197,7 @@ export default function Home() {
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
-                  <span>Interactive worldwide map of global tech hubs</span>
+                  <span>Comprehensive worldwide job listings across major tech hubs</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />

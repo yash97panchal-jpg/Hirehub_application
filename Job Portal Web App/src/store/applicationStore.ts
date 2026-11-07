@@ -1,6 +1,6 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
-import type { Application } from "../types"
+import type { Application, ApplicationStatus } from "../types"
 import { worldwideOpenPositions } from "../data/worldwideJobs"
 
 const googleJob = worldwideOpenPositions.find((j) => j.company.id === "comp-google") || worldwideOpenPositions[0]
@@ -83,6 +83,8 @@ interface ApplicationState {
   applications: Application[]
   setApplications: (applications: Application[]) => void
   addApplication: (application: Application) => void
+  updateApplicationStatus: (id: string, status: ApplicationStatus, notes?: string) => void
+  withdrawApplication: (id: string) => void
   getApplicationsByJobId: (jobId: string) => Application[]
 }
 
@@ -93,8 +95,20 @@ export const useApplicationStore = create<ApplicationState>()(
       setApplications: (applications) => set({ applications }),
       addApplication: (application) =>
         set((state) => ({ applications: [application, ...state.applications] })),
+      updateApplicationStatus: (id, status, notes) =>
+        set((state) => ({
+          applications: state.applications.map((a) =>
+            a.id === id ? { ...a, status, notes: notes !== undefined ? notes : a.notes } : a
+          ),
+        })),
+      withdrawApplication: (id) =>
+        set((state) => ({
+          applications: state.applications.map((a) =>
+            a.id === id ? { ...a, status: "Withdrawn" as ApplicationStatus } : a
+          ),
+        })),
       getApplicationsByJobId: (jobId) =>
-        get().applications.filter((app) => app.job.id === jobId),
+        get().applications.filter((app) => (app.job?.id || app.jobId) === jobId),
     }),
     {
       name: "application-storage-v3",

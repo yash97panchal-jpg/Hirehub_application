@@ -109,7 +109,10 @@ export default function Messages() {
     if (!msg.interviewInvite) return
     const { jobTitle, date, time, meetLink } = msg.interviewInvite
     const icsDate = date.replace(/-/g, "")
-    const icsTime = time.replace(":", "") + "00"
+    const [h, m] = time.split(":")
+    const icsTime = (h || "14").padStart(2, "0") + (m || "00").padStart(2, "0") + "00"
+    const endH = String((Number(h || 14) + 1) % 24).padStart(2, "0")
+    const icsEndTime = endH + (m || "00").padStart(2, "0") + "00"
 
     const icsContent = `BEGIN:VCALENDAR
 VERSION:2.0
@@ -120,7 +123,7 @@ SUMMARY:HireHub Interview: ${jobTitle}
 DESCRIPTION:Technical interview for ${jobTitle}. Meeting Link: ${meetLink}
 STATUS:CONFIRMED
 DTSTART:${icsDate}T${icsTime}
-DTEND:${icsDate}T${icsTime}
+DTEND:${icsDate}T${icsEndTime}
 LOCATION:${meetLink}
 END:VEVENT
 END:VCALENDAR`

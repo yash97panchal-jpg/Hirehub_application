@@ -58,7 +58,7 @@ export default function JobDetail() {
   const [pendingExternalClickId, setPendingExternalClickId] = useState<string | null>(null)
   const [showExternalPrompt, setShowExternalPrompt] = useState(false)
 
-  const job = storeJobs.find((j) => j.id === id) || (storeJobs.length > 0 ? storeJobs[0] : null)
+  const job = storeJobs.find((j) => j.id === id) || null
 
   // Check if already applied
   const existingApp = applications.find((a) => a.job?.id === job?.id)

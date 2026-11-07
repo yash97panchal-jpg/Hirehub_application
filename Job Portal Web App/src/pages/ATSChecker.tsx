@@ -129,16 +129,32 @@ export default function ATSChecker() {
       toast.error("File too large (max 5MB)")
       return
     }
+    const ext = f.name.split(".").pop()?.toLowerCase() || ""
     if (
       ![
-        "application/pdf",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      ].includes(f.type)
+        "pdf",
+        "docx",
+        "doc",
+        "txt",
+        "md",
+        "rtf",
+      ].includes(ext)
     ) {
-      toast.error("Only PDF or DOCX accepted")
+      toast.error("Accepted formats: PDF, DOCX, TXT, MD")
       return
     }
     setFile(f)
+    if (ext === "txt" || ext === "md" || f.type.startsWith("text/")) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const text = e.target?.result as string
+        if (text) {
+          setResumeText(text)
+        }
+      }
+      reader.readAsText(f)
+    }
+    toast.success(`Loaded "${f.name}" ready for ATS analysis`)
   }
 
   const fillSampleResume = () => {
@@ -180,78 +196,101 @@ Tools: Git, VS Code, REST API`)
     const textToCheck = (resumeText + " " + (file ? file.name : "")).toLowerCase()
     
     // Check which must-have skills are matched
-    let matched: string[] = []
-    let missingCore: string[] = []
+    const matched: string[] = []
+    const missingCore: string[] = []
 
     activeProfile.mustHaveSkills.forEach((skill) => {
       const normalizedSkill = skill.toLowerCase()
-      // Normalize simple acronyms or multi-word
-      const isPresent = textToCheck.includes(normalizedSkill.replace(/[^a-z0-9]/g, "")) ||
-        textToCheck.includes(normalizedSkill.split(" ")[0].replace(/[^a-z0-9]/g, "")) ||
-        textToCheck.includes(normalizedSkill)
+      const isPresent =
+        textToCheck.includes(normalizedSkill) ||
+        textToCheck.includes(normalizedSkill.replace(/[^a-z0-9]/g, "")) ||
+        (normalizedSkill.length > 3 && textToCheck.includes(normalizedSkill.split(" ")[0]))
       
-      if (isPresent || (!resumeText.trim() && Math.random() > 0.4)) {
+      if (isPresent) {
         matched.push(skill)
       } else {
         missingCore.push(skill)
       }
     })
 
-    // If candidate provided sample text or file, ensure at least some matched
-    if (matched.length === 0 && activeProfile.mustHaveSkills.length > 0) {
-      matched = activeProfile.mustHaveSkills.slice(0, 2)
-      missingCore = activeProfile.mustHaveSkills.slice(2)
-    }
-
     // In-demand skills recommended to add
     const inDemand = activeProfile.inDemandSkills.slice(0, 4)
+    const inDemandMatched = activeProfile.inDemandSkills.filter((s) => textToCheck.includes(s.toLowerCase()))
 
-    // Compute realistic score based on role requirements
+    // 1. Role Core Keywords (max 25)
     const matchRatio = matched.length / Math.max(activeProfile.mustHaveSkills.length, 1)
-    const baseScore = Math.min(Math.round(45 + matchRatio * 45), 94)
+    const keywordScore = Math.min(25, Math.round(matchRatio * 25))
+
+    // 2. Modern Tooling & Frameworks (max 20)
+    const toolingRatio = inDemandMatched.length / Math.max(activeProfile.inDemandSkills.length, 1)
+    const toolingScore = Math.min(20, Math.round(toolingRatio * 14 + (matched.length > 0 ? 6 : 2)))
+
+    // 3. Formatting & Parseability (max 20)
+    const hasEmail = /[\w.-]+@[\w.-]+\.\w+/.test(textToCheck)
+    const hasSections = ["experience", "education", "skill", "summary"].filter((s) => textToCheck.includes(s)).length
+    const formatScore = Math.min(20, 10 + (hasEmail ? 4 : 0) + (hasSections >= 2 ? 6 : 2))
+
+    // 4. Quantified Business Metrics (max 15)
+    const metricMatches = (textToCheck.match(/\d+[\%kmb\+]|\$\d+|\b\d+\s*(percent|users|engineers|teams|days|months|years|x)\b/g) || []).length
+    const metricScore = Math.min(15, Math.max(4, Math.round(4 + Math.min(metricMatches, 5) * 2.2)))
+
+    // 5. Section Hierarchy & Action Verbs (max 12)
+    const verbs = ["spearheaded", "architected", "engineered", "developed", "led", "reduced", "scaled", "optimized", "built", "implemented", "designed", "collaborated", "mentored", "automated", "created", "delivered"]
+    const matchedVerbs = verbs.filter((v) => textToCheck.includes(v)).length
+    const verbScore = Math.min(12, Math.max(4, Math.round(4 + Math.min(matchedVerbs, 8) * 1)))
+
+    // 6. Resume Length & Structure (max 8)
+    const wordCount = textToCheck.trim().split(/\s+/).filter(Boolean).length
+    const lengthScore = wordCount >= 120 && wordCount <= 1200 ? 8 : wordCount >= 50 ? 6 : 4
 
     const breakdown = [
       {
         label: `Role Core Keywords (${activeProfile.title})`,
-        score: Math.round(matchRatio * 25),
+        score: keywordScore,
         max: 25,
       },
       {
         label: "Modern Tooling & Frameworks",
-        score: Math.min(Math.round(10 + Math.random() * 8), 20),
+        score: toolingScore,
         max: 20,
       },
       {
         label: "Formatting & Parseability",
-        score: 18,
+        score: formatScore,
         max: 20,
       },
       {
         label: "Quantified Business Metrics",
-        score: Math.round(7 + Math.random() * 5),
+        score: metricScore,
         max: 15,
       },
       {
         label: "Section Hierarchy & Action Verbs",
-        score: Math.round(7 + Math.random() * 4),
+        score: verbScore,
         max: 12,
       },
       {
         label: "Resume Length & Structure",
-        score: 7,
+        score: lengthScore,
         max: 8,
       },
     ]
 
+    const totalScore = Math.min(99, Math.max(25, breakdown.reduce((sum, item) => sum + item.score, 0)))
+
     const suggestions = [
-      `Explicitly weave missing core skills: ${missingCore.slice(0, 3).join(", ")} into your work experience bullet points.`,
-      `ATS screeners for ${activeProfile.title} penalize vague bullets; replace generic verbs with quantified achievements (e.g., 'Reduced bundle size by 35%').`,
-      `Add modern differentiating tools like ${inDemand.slice(0, 2).join(" & ")} to score in the top 10% of applicants.`,
+      missingCore.length > 0
+        ? `Explicitly weave missing core skills: ${missingCore.slice(0, 3).join(", ")} into your work experience bullet points.`
+        : `Strong core skill coverage! Highlight specialized depth in ${matched.slice(0, 2).join(" and ")}.`,
+      metricMatches < 3
+        ? `Add quantifiable metrics (e.g. 'boosted performance by 35%', 'managed $100k budget') to score full points in business impact.`
+        : `Great quantified impact! ATS screeners favor measurable business results.`,
+      `Add modern differentiating tools like ${inDemand.slice(0, 2).join(" & ")} to score in the top percentile of applicants.`,
       "Ensure standard section headings: 'Work Experience', 'Technical Skills', 'Education', and 'Projects'.",
     ]
 
     setResult({
-      score: baseScore,
+      score: totalScore,
       targetRole: activeProfile,
       breakdown,
       matchedSkills: matched,

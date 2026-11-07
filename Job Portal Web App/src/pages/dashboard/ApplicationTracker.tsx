@@ -29,7 +29,7 @@ import type { Application, ApplicationStatus } from "../../types"
 import toast from "react-hot-toast"
 
 export default function ApplicationTracker() {
-  const { applications: storeApplications } = useApplicationStore()
+  const { applications: storeApplications, withdrawApplication } = useApplicationStore()
   const { user } = useAuthStore()
 
   const [filterSource, setFilterSource] = useState<"all" | "easy" | "external">("all")
@@ -60,6 +60,7 @@ export default function ApplicationTracker() {
 
     setWithdrawingId(appId)
     try {
+      withdrawApplication(appId)
       await applicationService.withdrawApplication(appId)
       toast.success("Application successfully withdrawn.")
     } catch (err: any) {

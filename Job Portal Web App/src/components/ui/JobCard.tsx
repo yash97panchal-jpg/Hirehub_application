@@ -119,7 +119,7 @@ export default function JobCard({ job, compact = false }: JobCardProps) {
       {/* Top row */}
       <div className="flex items-start justify-between gap-3 mb-4">
         <Link
-          to={`/companies/${job.company.id}`}
+          to={`/companies/${job.company.slug || job.company.id || job.company.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
           className="flex items-center gap-3 min-w-0"
         >
           <div className="w-12 h-12 rounded-xl overflow-hidden bg-white dark:bg-slate-900 shrink-0 ring-1 ring-[var(--border)] p-1 flex items-center justify-center shadow-xs">
