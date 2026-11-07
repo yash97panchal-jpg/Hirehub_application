@@ -15,6 +15,7 @@ import {
   Sparkles,
 } from "lucide-react"
 import Badge from "./Badge"
+import RoundSkillMatchBadge from "./RoundSkillMatchBadge"
 import type { Job } from "../../types"
 import { useSavedJobsStore } from "../../store/savedJobsStore"
 import { useAuthStore } from "../../store/authStore"
@@ -169,7 +170,7 @@ export default function JobCard({ job, compact = false }: JobCardProps) {
         </button>
       </div>
 
-      {/* Badges & Resume Skill Match */}
+      {/* Badges & Round Skill Match */}
       <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
         <div className="flex flex-wrap gap-1.5 items-center">
           <Badge variant={typeColors[job.type] as any}>{job.type}</Badge>
@@ -182,27 +183,8 @@ export default function JobCard({ job, compact = false }: JobCardProps) {
           {job.isUrgent && <Badge variant="error">Urgent</Badge>}
         </div>
 
-        {/* Resume Skill Match Percentage Badge */}
-        <div
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border transition-colors shadow-xs ${
-            skillMatch.matchPercent >= 80
-              ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-              : skillMatch.matchPercent >= 60
-              ? "bg-[var(--primary)]/15 text-[var(--primary)] border-[var(--primary)]/30"
-              : "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
-          }`}
-          title={`Resume Match: ${skillMatch.matchedCount} of ${skillMatch.totalCount} skills match your profile resume (${skillMatch.matchedSkills.join(", ") || "No direct skill match"})`}
-        >
-          <Sparkles
-            size={12}
-            className={
-              skillMatch.matchPercent >= 80
-                ? "text-emerald-500 fill-emerald-500"
-                : "text-[var(--primary)] fill-[var(--primary)]"
-            }
-          />
-          <span>{skillMatch.matchPercent}% Skill Match</span>
-        </div>
+        {/* Round Circular Skill Match Badge */}
+        <RoundSkillMatchBadge skillMatch={skillMatch} size="sm" showLabel={true} />
       </div>
 
       {/* Title */}

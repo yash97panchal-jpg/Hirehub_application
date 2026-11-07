@@ -25,6 +25,7 @@ import {
 } from "lucide-react"
 import Button from "../components/ui/Button"
 import Badge from "../components/ui/Badge"
+import RoundSkillMatchBadge from "../components/ui/RoundSkillMatchBadge"
 import JobCard from "../components/ui/JobCard"
 import { useJobStore } from "../store/jobStore"
 import { useAuthStore } from "../store/authStore"
@@ -394,28 +395,7 @@ export default function JobDetail() {
                 <h3 className="font-semibold text-[var(--foreground)]">
                   Skills Required
                 </h3>
-                <span
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border transition-colors shadow-xs ${
-                    skillMatch.matchPercent >= 80
-                      ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-                      : skillMatch.matchPercent >= 60
-                      ? "bg-[var(--primary)]/15 text-[var(--primary)] border-[var(--primary)]/30"
-                      : "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
-                  }`}
-                  title={`Matched ${skillMatch.matchedCount} of ${skillMatch.totalCount} skills from your profile resume: ${skillMatch.matchedSkills.join(", ") || "No direct matches"}`}
-                >
-                  <Sparkles
-                    size={12}
-                    className={
-                      skillMatch.matchPercent >= 80
-                        ? "text-emerald-500 fill-emerald-500"
-                        : "text-[var(--primary)] fill-[var(--primary)]"
-                    }
-                  />
-                  <span>
-                    {skillMatch.matchPercent}% Resume Match ({skillMatch.matchedCount}/{job.skills.length} skills)
-                  </span>
-                </span>
+                <RoundSkillMatchBadge skillMatch={skillMatch} size="sm" showLabel={true} />
               </div>
               <div className="flex flex-wrap gap-2 mb-6">
                 {job.skills.map((skill) => {
