@@ -153,7 +153,7 @@ END:VCALENDAR`
         {/* Left: Conversation List */}
         <div className="w-full md:w-80 lg:w-96 border-r border-[var(--border)] flex flex-col h-full bg-[var(--card)]">
           <div className="p-4 border-b border-[var(--border)]">
-            <h2 className="text-xl font-bold font-poppins text-[var(--foreground)] mb-3">Messages</h2>
+            <h2 className="text-lg font-bold text-[var(--foreground)] tracking-tight mb-2.5">Direct Messages</h2>
             <div className="relative">
               <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]" />
               <input
@@ -161,7 +161,7 @@ END:VCALENDAR`
                 placeholder="Search recruiters or chats..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-[var(--muted)]/50 border border-[var(--border)] text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                className="w-full pl-9 pr-3 py-2 text-xs rounded-lg bg-[var(--muted)]/50 border border-[var(--border)] text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
               />
             </div>
           </div>

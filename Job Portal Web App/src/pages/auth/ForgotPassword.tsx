@@ -126,35 +126,24 @@ export default function ForgotPassword() {
 
   return (
     <div className="min-h-screen flex bg-[var(--background)] w-full max-w-full overflow-x-hidden">
-      {/* Left panel - Decorative */}
-      <div
-        className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center p-12 relative overflow-hidden"
-        style={{
-          background:
-            "linear-gradient(135deg, var(--accent) 0%, #1A0924 55%, var(--primary-deep) 100%)",
-        }}
-      >
-        <div
-          className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0)",
-            backgroundSize: "32px 32px",
-          }}
-        />
+      {/* Left panel - Decorative Deep Navy Canvas */}
+      <div className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center p-12 relative overflow-hidden bg-[#142B4A] border-r border-[#1E3A5F]">
+        {/* Ambient radial gradients */}
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#2563EB]/25 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-[#14B8A6]/20 rounded-full blur-3xl pointer-events-none" />
+
         <div className="relative z-10 text-center max-w-md">
-          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-white shadow-lg border border-[var(--border)] mb-6 shrink-0 overflow-hidden mx-auto p-2">
-            <img
-              src={symbolLogo}
-              alt="HireHub Logo"
-              className="w-full h-full object-contain"
-            />
+          <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-[#14B8A6] text-white shadow-lg mb-6 shrink-0 mx-auto">
+            <Lock size={24} />
           </div>
-          <h2 className="font-poppins text-4xl font-black text-white mb-4">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-[#14B8A6] font-semibold mb-3">
+            <ShieldCheck size={14} /> Enterprise Account Security
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 tracking-tight">
             Secure Account Recovery
           </h2>
-          <p className="text-white/80 text-base leading-relaxed">
-            Enter your registered email address to receive a secure password reset link and restore account access.
+          <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
+            Enter your registered email address to receive a secure password reset link and restore your candidate or recruiter portal access.
           </p>
         </div>
       </div>

@@ -320,7 +320,7 @@ export default function ResumeBuilder() {
               <ArrowLeft size={16} className="mr-1.5" /> Back
             </Button>
             <div>
-              <h1 className="font-poppins text-lg font-bold text-[var(--foreground)] leading-tight">
+              <h1 className="text-base sm:text-lg font-bold text-[var(--foreground)] leading-tight tracking-tight">
                 AI Resume Builder
               </h1>
               <p className="text-xs text-[var(--muted-foreground)]">
