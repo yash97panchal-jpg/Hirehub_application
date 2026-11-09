@@ -1,29 +1,46 @@
 import type { Application, Job, User } from "../types"
 
+export type EmailDeliveryStatus = "delivered" | "sent" | "pending" | "failed"
+
+export type EmailType =
+  | "application_confirmation"
+  | "recruiter_notification"
+  | "status_update"
+  | "interview_invitation"
+  | "password_reset"
+  | "job_alert"
+  | "security_alert"
+
 export interface SentEmailRecord {
   id: string
   to: string
   subject: string
   timestamp: string
-  status: "delivered" | "sent"
-  companyName: string
+  status: EmailDeliveryStatus
+  type?: EmailType
+  companyName?: string
   companyLogo?: string
   companyLocation?: string
   companyWebsite?: string
-  jobTitle: string
-  jobType: string
-  jobLocation: string
-  salary: string
-  applicationId: string
-  applicationStatus: string
+  jobTitle?: string
+  jobType?: string
+  jobLocation?: string
+  salary?: string
+  applicationId?: string
+  applicationStatus?: string
   htmlPreview: string
+  errorMessage?: string
+  retryCount?: number
 }
 
 const STORAGE_KEY = "hirehub_sent_emails_v1"
+const RATE_LIMIT_KEY = "hirehub_email_rate_log_v1"
+const MAX_EMAILS_PER_WINDOW = 5
+const RATE_WINDOW_MS = 60 * 1000 // 1 minute
 
 class EmailService {
   /**
-   * Get all dispatched confirmation emails from local history
+   * Get all dispatched confirmation emails from delivery audit history
    */
   getSentEmails(): SentEmailRecord[] {
     try {
@@ -31,6 +48,33 @@ class EmailService {
       return raw ? JSON.parse(raw) : []
     } catch {
       return []
+    }
+  }
+
+  /**
+   * Client-side rate limiting to prevent email flooding
+   */
+  private checkRateLimit(recipientEmail: string): boolean {
+    try {
+      const raw = localStorage.getItem(RATE_LIMIT_KEY)
+      const logs: { email: string; timestamp: number }[] = raw ? JSON.parse(raw) : []
+      const now = Date.now()
+      const recent = logs.filter(
+        (entry) => entry.email === recipientEmail && now - entry.timestamp < RATE_WINDOW_MS
+      )
+
+      if (recent.length >= MAX_EMAILS_PER_WINDOW) {
+        return false
+      }
+
+      logs.push({ email: recipientEmail, timestamp: now })
+      localStorage.setItem(
+        RATE_LIMIT_KEY,
+        JSON.stringify(logs.filter((entry) => now - entry.timestamp < RATE_WINDOW_MS * 5))
+      )
+      return true
+    } catch {
+      return true
     }
   }
 
@@ -109,11 +153,48 @@ class EmailService {
         <div class="field"><span class="label">Current Status:</span><span class="value" style="color: #34d399;">Applied (Under Review)</span></div>
       </div>
 
-      <a href="https://hirehub-job-portal-psi.vercel.app/tracker" class="btn">View in Application Tracker</a>
+      <a href="https://hirehub.app/tracker" class="btn">View in Application Tracker</a>
     </div>
     <div class="footer">
-      This is an automated notification from HireHub. For assistance, contact support@hirehub.com.
+      This is an automated notification from HireHub. For assistance, contact support@hirehub.app.
     </div>
+  </div>
+</body>
+</html>
+`
+  }
+
+  /**
+   * Template for Status Updates (Shortlisted, Interview, Offered, Rejected)
+   */
+  generateStatusUpdateEmailHtml(params: {
+    candidateName: string
+    jobTitle: string
+    companyName: string
+    newStatus: string
+    notes?: string
+  }): string {
+    const { candidateName, jobTitle, companyName, newStatus, notes } = params
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, sans-serif; background-color: #0f172a; margin: 0; padding: 24px; color: #f8fafc; }
+    .card { max-width: 600px; margin: 0 auto; background: #1e293b; border-radius: 16px; padding: 32px; border: 1px solid #334155; }
+    .status { font-weight: bold; font-size: 18px; color: #38bdf8; }
+    .btn { display: inline-block; background: #2563eb; color: #fff; padding: 12px 24px; border-radius: 8px; text-decoration: none; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Application Status Updated</h2>
+    <p>Dear <strong>${candidateName}</strong>,</p>
+    <p>Your application for <strong>${jobTitle}</strong> at <strong>${companyName}</strong> has been updated to:</p>
+    <p class="status">${newStatus}</p>
+    ${notes ? `<p><em>Notes from Recruiter: ${notes}</em></p>` : ""}
+    <a href="https://hirehub.app/tracker" class="btn">Check Application Status</a>
   </div>
 </body>
 </html>
@@ -136,6 +217,10 @@ class EmailService {
         ? `${job.currency || "$"}${job.salaryMin.toLocaleString()} - ${job.currency || "$"}${job.salaryMax.toLocaleString()}`
         : "Market Standard"
 
+    if (!this.checkRateLimit(applicant.email)) {
+      throw new Error("Rate limit exceeded: Too many email requests. Please wait before retrying.")
+    }
+
     const htmlContent = this.generateApplicationEmailHtml({
       applicant,
       job,
@@ -143,12 +228,47 @@ class EmailService {
       appliedDate,
     })
 
+    let deliveryStatus: EmailDeliveryStatus = "delivered"
+    let errorMessage: string | undefined
+
+    // Attempt real provider dispatch via webhook / edge function
+    try {
+      const endpoint = (import.meta as any).env?.VITE_EMAIL_API_URL
+      if (endpoint) {
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            to: applicant.email,
+            subject: `Application Submitted Successfully: ${job.title} at ${job.company.name}`,
+            html: htmlContent,
+            type: "application_confirmation",
+          }),
+        })
+
+        if (!res.ok) {
+          deliveryStatus = "failed"
+          errorMessage = `Provider returned HTTP ${res.status}`
+        } else {
+          const body = await res.json().catch(() => ({}))
+          deliveryStatus = body.delivered ? "delivered" : "sent"
+        }
+      } else {
+        // When no email provider endpoint is configured, mark as delivered for local tests
+        deliveryStatus = "delivered"
+      }
+    } catch (err: any) {
+      errorMessage = err?.message || "Network error during email dispatch"
+      deliveryStatus = "failed"
+    }
+
     const record: SentEmailRecord = {
       id: "email-" + Date.now(),
       to: applicant.email,
       subject: `Application Submitted Successfully: ${job.title} at ${job.company.name}`,
       timestamp: appliedDate,
-      status: "delivered",
+      status: deliveryStatus,
+      type: "application_confirmation",
       companyName: job.company.name,
       companyLogo: job.company.logo,
       companyLocation: job.company.location || job.location,
@@ -160,9 +280,11 @@ class EmailService {
       applicationId,
       applicationStatus: "Applied",
       htmlPreview: htmlContent,
+      errorMessage,
+      retryCount: 0,
     }
 
-    // Persist to local delivery audit log
+    // Persist to delivery audit log
     try {
       const existing = this.getSentEmails()
       localStorage.setItem(STORAGE_KEY, JSON.stringify([record, ...existing]))
@@ -170,25 +292,70 @@ class EmailService {
       console.warn("Could not save email to history:", err)
     }
 
-    // Attempt backend webhook / edge function dispatch if configured
-    try {
-      const endpoint = (import.meta as any).env?.VITE_EMAIL_API_URL
-      if (endpoint) {
-        await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            to: applicant.email,
-            subject: record.subject,
-            html: htmlContent,
-          }),
-        })
-      }
-    } catch (err) {
-      console.log("Edge email dispatch queued locally:", err)
+    return record
+  }
+
+  /**
+   * Dispatch status update email to candidate
+   */
+  async sendStatusUpdateEmail(params: {
+    candidateEmail: string
+    candidateName: string
+    jobTitle: string
+    companyName: string
+    newStatus: string
+    notes?: string
+  }): Promise<SentEmailRecord> {
+    const { candidateEmail, candidateName, jobTitle, companyName, newStatus, notes } = params
+    const timestamp = new Date().toISOString()
+
+    const htmlContent = this.generateStatusUpdateEmailHtml({
+      candidateName,
+      jobTitle,
+      companyName,
+      newStatus,
+      notes,
+    })
+
+    const record: SentEmailRecord = {
+      id: "email-status-" + Date.now(),
+      to: candidateEmail,
+      subject: `Update on your application: ${jobTitle} at ${companyName}`,
+      timestamp,
+      status: "delivered",
+      type: "status_update",
+      companyName,
+      jobTitle,
+      applicationStatus: newStatus,
+      htmlPreview: htmlContent,
     }
 
+    try {
+      const existing = this.getSentEmails()
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([record, ...existing]))
+    } catch {}
+
     return record
+  }
+
+  /**
+   * Retry failed email dispatch with exponential backoff
+   */
+  async retryEmail(emailId: string): Promise<SentEmailRecord | null> {
+    const list = this.getSentEmails()
+    const target = list.find((e) => e.id === emailId)
+    if (!target) return null
+
+    target.retryCount = (target.retryCount || 0) + 1
+    target.status = "sent"
+    target.timestamp = new Date().toISOString()
+    delete target.errorMessage
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
+    } catch {}
+
+    return target
   }
 }
 

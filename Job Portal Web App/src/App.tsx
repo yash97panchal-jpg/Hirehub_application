@@ -124,56 +124,62 @@ function AppRoutes() {
   const navigate = useNavigate()
   const { isAuthenticated, user } = useAuthStore()
 
-  // Keep useAuthStore synchronized with Supabase OAuth sessions across reloads
+  // Keep useAuthStore synchronized with Supabase verified profile sessions across reloads
   useEffect(() => {
-    if (isSupabaseConfigured && supabase) {
-      supabase.auth.getSession().then(({ data }) => {
+    const client = supabase
+    if (isSupabaseConfigured && client) {
+      const syncUserWithDb = async (authUser: any, token: string) => {
+        try {
+          // Strictly read assigned role and status from the protected database profiles table
+          const { data: profile } = await client
+            .from("profiles")
+            .select("name, role, skills, phone, profile_completion, is_verified")
+            .eq("id", authUser.id)
+            .maybeSingle()
+
+          const verifiedRole = profile?.role || "job_seeker"
+          useAuthStore.getState().login(
+            {
+              id: authUser.id,
+              email: authUser.email || "",
+              name: profile?.name || authUser.user_metadata?.full_name || authUser.email?.split("@")[0] || "User",
+              role: verifiedRole,
+              skills: profile?.skills || [],
+              phone: profile?.phone,
+              profileCompletion: profile?.profile_completion || 50,
+              isVerified: profile?.is_verified ?? false,
+              createdAt: authUser.created_at,
+            },
+            token,
+          )
+        } catch {
+          // Default to least-privileged role if database profile lookup encounters network failure
+          useAuthStore.getState().login(
+            {
+              id: authUser.id,
+              email: authUser.email || "",
+              name: authUser.user_metadata?.full_name || authUser.email?.split("@")[0] || "User",
+              role: "job_seeker",
+              skills: [],
+              profileCompletion: 30,
+              isVerified: false,
+              createdAt: authUser.created_at,
+            },
+            token,
+          )
+        }
+      }
+
+      client.auth.getSession().then(({ data }) => {
         if (data?.session?.user) {
-          const authUser = data.session.user
-          const current = useAuthStore.getState()
-          if (!current.isAuthenticated || !current.user) {
-            useAuthStore.getState().login(
-              {
-                id: authUser.id,
-                email: authUser.email || "",
-                name:
-                  authUser.user_metadata?.full_name ||
-                  authUser.email?.split("@")[0] ||
-                  "User",
-                role:
-                  (authUser.user_metadata?.role as any) || "job_seeker",
-                skills: authUser.user_metadata?.skills || [],
-                profileCompletion: 80,
-                isVerified: true,
-                createdAt: authUser.created_at,
-              },
-              data.session.access_token,
-            )
-          }
+          syncUserWithDb(data.session.user, data.session.access_token)
         }
       })
 
-      const { data: authListener } = supabase.auth.onAuthStateChange(
+      const { data: authListener } = client.auth.onAuthStateChange(
         (_event, session) => {
           if (session?.user) {
-            const authUser = session.user
-            useAuthStore.getState().login(
-              {
-                id: authUser.id,
-                email: authUser.email || "",
-                name:
-                  authUser.user_metadata?.full_name ||
-                  authUser.email?.split("@")[0] ||
-                  "User",
-                role:
-                  (authUser.user_metadata?.role as any) || "job_seeker",
-                skills: authUser.user_metadata?.skills || [],
-                profileCompletion: 80,
-                isVerified: true,
-                createdAt: authUser.created_at,
-              },
-              session.access_token,
-            )
+            syncUserWithDb(session.user, session.access_token)
           }
         },
       )

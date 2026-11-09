@@ -46,6 +46,7 @@ import ApplicationPipelineStepper from "../../components/dashboard/ApplicationPi
 import ProfileStrengthRing from "../../components/dashboard/ProfileStrengthRing"
 import { getCompanyRealLogo } from "../../data/companyLogos"
 import { calculateSkillMatch } from "../../utils/skillMatcher"
+import { isLocalhost } from "../../utils/env"
 import type { ApplicationStatus } from "../../types"
 
 type DashboardTab = "all" | "interview" | "shortlisted" | "recommended" | "saved"

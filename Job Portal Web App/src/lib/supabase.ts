@@ -140,7 +140,13 @@ export const authService = {
       return data
     }
 
-    // Local Mock Fallback
+    if (import.meta.env.PROD) {
+      throw new Error(
+        "Production backend configuration missing: Supabase URL and Anon Key are required for account registration."
+      )
+    }
+
+    // Local Mock Fallback (Development Only)
     const mockUser: User = {
       id: "usr-" + Date.now(),
       name,
@@ -186,7 +192,13 @@ export const authService = {
       }
     }
 
-    // Local Mock Fallback
+    if (import.meta.env.PROD) {
+      throw new Error(
+        "Production backend configuration missing: Supabase URL and Anon Key are required for account registration."
+      )
+    }
+
+    // Local Mock Fallback (Development Only)
     const isRecruiter = email.toLowerCase().includes("recruiter")
     const isAdmin = email.toLowerCase().includes("admin")
 
@@ -219,7 +231,13 @@ export const authService = {
       return data
     }
 
-    // Local Mock Fallback
+    if (import.meta.env.PROD) {
+      throw new Error(
+        "Production backend configuration missing: Supabase URL and Anon Key are required for account registration."
+      )
+    }
+
+    // Local Mock Fallback (Development Only)
     const name = account?.name || (account?.email ? account.email.split("@")[0] : "Google User")
     const email = account?.email || "candidate@hirehub.app"
     const role = account?.role || "job_seeker"
@@ -245,7 +263,13 @@ export const authService = {
       return { success: true, email }
     }
 
-    // Local Mock Fallback: Generate token & store in localStorage
+    if (import.meta.env.PROD) {
+      throw new Error(
+        "Production backend configuration missing: Supabase URL and Anon Key are required for account registration."
+      )
+    }
+
+    // Local Mock Fallback (Development Only): Generate token & store in localStorage
     const token = "reset-" + Math.random().toString(36).substring(2, 10) + Date.now().toString(36)
     const resetData = { email, token, expiresAt: Date.now() + 1000 * 60 * 60 }
     localStorage.setItem(`hirehub_reset_token_${token}`, JSON.stringify(resetData))
@@ -260,7 +284,13 @@ export const authService = {
       return data
     }
 
-    // Local Mock Fallback
+    if (import.meta.env.PROD) {
+      throw new Error(
+        "Production backend configuration missing: Supabase URL and Anon Key are required for account registration."
+      )
+    }
+
+    // Local Mock Fallback (Development Only)
     if (token) {
       localStorage.removeItem(`hirehub_reset_token_${token}`)
     }
@@ -278,11 +308,30 @@ export const authService = {
 
   async deleteAccount(userId: string) {
     if (isSupabaseConfigured && supabase) {
+      try {
+        // Execute server-side administrative deletion RPC to purge storage files,
+        // applications, profile row, and auth.users credentials permanently
+        const { data, error } = await supabase.rpc("delete_user_account")
+        if (!error) {
+          await supabase.auth.signOut()
+          return data || { success: true }
+        }
+      } catch (rpcErr) {
+        console.warn("RPC delete_user_account not ready; falling back to profile cascade delete:", rpcErr)
+      }
+
       // Cascade deletes profile, applications, saved jobs via foreign keys
       const { error } = await supabase.from("profiles").delete().eq("id", userId)
       if (error) throw error
       await supabase.auth.signOut()
+      return { success: true }
     }
+
+    // Local Mock Fallback: Clear local authentication state
+    try {
+      localStorage.removeItem("HireHub-auth")
+    } catch {}
+    return { success: true }
   },
 }
 
@@ -377,7 +426,13 @@ export const companyService = {
       return formatCompanyFromDb(data)
     }
 
-    // Local Mock Fallback
+    if (import.meta.env.PROD) {
+      throw new Error(
+        "Production backend configuration missing: Supabase URL and Anon Key are required for account registration."
+      )
+    }
+
+    // Local Mock Fallback (Development Only)
     const newCompany: Company = {
       ...companyData,
       id: "comp-" + Date.now(),
@@ -496,7 +551,13 @@ export const jobService = {
       return (data || []).map(formatJobFromDb)
     }
 
-    // Local Mock Fallback with full in-memory filtering
+    if (import.meta.env.PROD) {
+      throw new Error(
+        "Production backend configuration missing: Supabase URL and Anon Key are required for account registration."
+      )
+    }
+
+    // Local Mock Fallback (Development Only) with full in-memory filtering
     let list = getStored<Job[]>(STORAGE_KEYS.JOBS, mockJobs)
 
     if (filters?.keyword) {
@@ -599,7 +660,13 @@ export const jobService = {
       return formatJobFromDb(data)
     }
 
-    // Local Mock Fallback
+    if (import.meta.env.PROD) {
+      throw new Error(
+        "Production backend configuration missing: Supabase URL and Anon Key are required for account registration."
+      )
+    }
+
+    // Local Mock Fallback (Development Only)
     const newJob: Job = {
       ...jobData,
       id: "job-" + Date.now(),
@@ -684,7 +751,13 @@ export const applicationService = {
       }
     }
 
-    // Local Mock Fallback
+    if (import.meta.env.PROD) {
+      throw new Error(
+        "Production backend configuration missing: Supabase URL and Anon Key are required for account registration."
+      )
+    }
+
+    // Local Mock Fallback (Development Only)
     const stored = getStored<Application[]>(STORAGE_KEYS.APPLICATIONS, [])
     const activeExists = stored.find(
       (a) => a.job.id === application.jobId && a.applicant.id === application.userId && a.status !== "Withdrawn"
@@ -863,27 +936,52 @@ export const externalApplyService = {
 }
 
 // -----------------------------------------------------------------------------
-// STORAGE SERVICE (Private Resumes with Signed URLs)
+// STORAGE SERVICE (Private Resumes with Signed URLs, Public Avatars & Logos)
 // -----------------------------------------------------------------------------
 export const storageService = {
+  validateFile(
+    file: File,
+    options: {
+      maxSize: number
+      allowedTypes: string[]
+      allowedExtensions: string[]
+    }
+  ): void {
+    if (!file) throw new Error("No file provided.")
+
+    // Prevent directory traversal or malicious characters in file name
+    if (file.name.includes("..") || file.name.includes("/") || file.name.includes("\\")) {
+      throw new Error("Invalid file name. Path traversal characters are not permitted.")
+    }
+
+    if (file.size > options.maxSize) {
+      const maxMb = (options.maxSize / (1024 * 1024)).toFixed(0)
+      throw new Error(`File exceeds maximum allowed size of ${maxMb} MB.`)
+    }
+
+    const fileExt = (file.name.split(".").pop() || "").toLowerCase()
+    const isExtensionAllowed = options.allowedExtensions.includes(fileExt)
+    const isMimeAllowed = options.allowedTypes.includes(file.type)
+
+    if (!isExtensionAllowed || (!isMimeAllowed && file.type !== "")) {
+      throw new Error(
+        `Invalid file type. Allowed formats: ${options.allowedExtensions.map((e) => "." + e).join(", ")}`
+      )
+    }
+  },
+
   async uploadResume(file: File, userId: string): Promise<string> {
-    // Validate size (max 5 MB)
-    const MAX_SIZE = 5 * 1024 * 1024
-    if (file.size > MAX_SIZE) {
-      throw new Error("File exceeds maximum allowed size of 5 MB.")
-    }
+    this.validateFile(file, {
+      maxSize: 5 * 1024 * 1024, // 5 MB
+      allowedTypes: [
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ],
+      allowedExtensions: ["pdf", "docx", "doc"],
+    })
 
-    // Validate mime type (PDF / DOCX)
-    const allowedTypes = [
-      "application/pdf",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    ]
-    if (!allowedTypes.includes(file.type) && !file.name.match(/\.(pdf|docx|doc)$/i)) {
-      throw new Error("Invalid file type. Only PDF and DOCX files are permitted.")
-    }
-
-    const fileExt = file.name.split(".").pop()
+    const fileExt = (file.name.split(".").pop() || "pdf").toLowerCase()
     const filePath = `${userId}/${Date.now()}.${fileExt}`
 
     if (isSupabaseConfigured && supabase) {
@@ -896,6 +994,53 @@ export const storageService = {
     }
 
     return `resumes/${filePath}`
+  },
+
+  async uploadAvatar(file: File, userId: string): Promise<string> {
+    this.validateFile(file, {
+      maxSize: 2 * 1024 * 1024, // 2 MB
+      allowedTypes: ["image/png", "image/jpeg", "image/webp"],
+      allowedExtensions: ["png", "jpg", "jpeg", "webp"],
+    })
+
+    const fileExt = (file.name.split(".").pop() || "png").toLowerCase()
+    const filePath = `${userId}/${Date.now()}.${fileExt}`
+
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase.storage.from("avatars").upload(filePath, file, {
+        cacheControl: "86400",
+        upsert: true,
+      })
+      if (error) throw error
+      const { data: pubData } = supabase.storage.from("avatars").getPublicUrl(data.path)
+      return pubData.publicUrl
+    }
+
+    return URL.createObjectURL(file)
+  },
+
+  async uploadCompanyLogo(file: File, companySlug: string): Promise<string> {
+    this.validateFile(file, {
+      maxSize: 2 * 1024 * 1024, // 2 MB
+      allowedTypes: ["image/png", "image/jpeg", "image/webp", "image/svg+xml"],
+      allowedExtensions: ["png", "jpg", "jpeg", "webp", "svg"],
+    })
+
+    const fileExt = (file.name.split(".").pop() || "png").toLowerCase()
+    const cleanSlug = companySlug.toLowerCase().replace(/[^a-z0-9_-]/g, "-")
+    const filePath = `${cleanSlug}/${Date.now()}.${fileExt}`
+
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase.storage.from("company-logos").upload(filePath, file, {
+        cacheControl: "86400",
+        upsert: true,
+      })
+      if (error) throw error
+      const { data: pubData } = supabase.storage.from("company-logos").getPublicUrl(data.path)
+      return pubData.publicUrl
+    }
+
+    return URL.createObjectURL(file)
   },
 
   async getResumeSignedUrl(path: string): Promise<string> {

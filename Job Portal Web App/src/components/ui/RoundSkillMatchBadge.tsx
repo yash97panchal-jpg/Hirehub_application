@@ -5,7 +5,12 @@ import type { SkillMatchResult } from "../../utils/skillMatcher"
 export type RoundBadgeSize = "xs" | "sm" | "md" | "lg"
 
 interface RoundSkillMatchBadgeProps {
-  skillMatch: SkillMatchResult
+  skillMatch: Partial<SkillMatchResult> & {
+    matchPercent: number
+    matchedSkills: string[]
+    matchedCount: number
+    totalCount: number
+  }
   size?: RoundBadgeSize
   showTooltip?: boolean
   className?: string
