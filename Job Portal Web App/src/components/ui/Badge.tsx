@@ -2,7 +2,7 @@ import { cn } from "../../utils/cn"
 
 interface BadgeProps {
   children: React.ReactNode
-  variant?: "default" | "primary" | "accent" | "success" | "error" | "warning" | "outline"
+  variant?: "default" | "primary" | "accent" | "navy" | "success" | "error" | "warning" | "outline"
   size?: "sm" | "md"
   className?: string
 }
@@ -16,9 +16,11 @@ export default function Badge({
   const variants = {
     default: "bg-slate-100 text-slate-700 dark:bg-slate-800/80 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60",
     primary:
-      "bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60 font-semibold",
+      "bg-orange-50 text-[#EA580C] dark:bg-orange-950/60 dark:text-orange-300 border border-orange-200/60 dark:border-orange-800/60 font-semibold",
     accent:
-      "bg-teal-50 text-teal-700 dark:bg-teal-950/60 dark:text-teal-300 border border-teal-200/60 dark:border-teal-800/60 font-semibold",
+      "bg-orange-50 text-[#EA580C] dark:bg-orange-950/60 dark:text-orange-300 border border-orange-200/60 dark:border-orange-800/60 font-semibold",
+    navy:
+      "bg-[#101F3E]/10 text-[#101F3E] dark:bg-white/10 dark:text-white border border-[#101F3E]/20 dark:border-white/20 font-semibold",
     success:
       "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 font-medium",
     error:

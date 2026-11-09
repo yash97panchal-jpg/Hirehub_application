@@ -126,11 +126,11 @@ export default function ForgotPassword() {
 
   return (
     <div className="min-h-screen flex bg-[var(--background)] w-full max-w-full overflow-x-hidden">
-      {/* Left panel - Decorative Deep Navy Canvas */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center p-12 relative overflow-hidden bg-[#142B4A] border-r border-[#1E3A5F]">
+      {/* Left panel - Decorative Deep Navy Canvas (30% Structural Authority) */}
+      <div className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center p-12 relative overflow-hidden bg-[#101F3E] border-r border-[#1E3563]">
         {/* Ambient radial gradients */}
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#2563EB]/25 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-[#14B8A6]/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#F97316]/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-[#101F3E]/60 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 text-center max-w-md">
           <div className="flex items-center justify-center w-14 h-14 rounded-full bg-white shadow-lg border border-slate-700/50 mb-6 shrink-0 overflow-hidden mx-auto p-1.5">
@@ -140,7 +140,7 @@ export default function ForgotPassword() {
               className="w-full h-full object-contain"
             />
           </div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-[#14B8A6] font-semibold mb-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-[#F97316] font-semibold mb-3">
             <ShieldCheck size={14} /> Enterprise Account Security
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 tracking-tight">

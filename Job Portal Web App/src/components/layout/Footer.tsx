@@ -105,10 +105,10 @@ export default function Footer() {
   ]
 
   return (
-    <footer className="relative overflow-hidden bg-[#0B132B] text-slate-300 border-t border-slate-800 select-none">
+    <footer className="relative overflow-hidden bg-[#0A1224] text-slate-300 border-t border-slate-800 select-none">
       {/* Decorative Glow Elements */}
-      <div className="absolute top-0 left-1/4 -translate-x-1/2 w-96 h-96 bg-[#2563EB]/15 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-[420px] h-[420px] bg-[#14B8A6]/10 rounded-full blur-[160px] pointer-events-none" />
+      <div className="absolute top-0 left-1/4 -translate-x-1/2 w-96 h-96 bg-[#F97316]/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-[420px] h-[420px] bg-[#101F3E]/60 rounded-full blur-[160px] pointer-events-none" />
 
       {/* Top Dynamic Live Activity Status Ticker */}
       <div className="border-b border-slate-800/80 bg-black/25 backdrop-blur-md py-3 px-4 sm:px-6">
@@ -127,7 +127,7 @@ export default function Footer() {
           {/* Quick metric stats */}
           <div className="flex items-center gap-5 text-slate-400 text-[11px] font-medium">
             <div className="flex items-center gap-1.5">
-              <ShieldCheck size={14} className="text-[#38BDF8]" />
+              <ShieldCheck size={14} className="text-[#F97316]" />
               <span>{uniqueCompaniesCount} Verified Employers</span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -135,7 +135,7 @@ export default function Footer() {
               <span>Real-Time Matching</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <Globe size={14} className="text-[#14B8A6]" />
+              <Globe size={14} className="text-orange-400" />
               <span>{uniqueCountriesCount} Global Hubs Active</span>
             </div>
           </div>
@@ -169,7 +169,7 @@ export default function Footer() {
               </div>
               <div>
                 <span className="font-poppins text-2xl font-black tracking-tight text-white flex items-center gap-1">
-                  Hire<span className="text-[#38BDF8]">Hub</span>
+                  Hire<span className="text-[#F97316]">Hub</span>
                 </span>
                 <span className="text-[10px] tracking-widest uppercase font-semibold text-slate-400 block -mt-1">
                   Global Talent Network
@@ -185,7 +185,7 @@ export default function Footer() {
             <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 backdrop-blur-sm">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <Sparkles size={14} className="text-[#38BDF8]" />
+                  <Sparkles size={14} className="text-[#F97316]" />
                   Worldwide Job Alerts
                 </span>
                 <span className="text-[10px] text-emerald-400 font-semibold bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded-full">
@@ -214,11 +214,11 @@ export default function Footer() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="Enter your email address…"
                       required
-                      className="flex-1 px-3.5 py-2 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                      className="flex-1 px-3.5 py-2 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#F97316]"
                     />
                     <button
                       type="submit"
-                      className="px-4 py-2 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-xs transition-all flex items-center gap-1 shrink-0 shadow-sm cursor-pointer"
+                      className="px-4 py-2 rounded-lg bg-[#F97316] hover:bg-[#EA580C] text-white font-semibold text-xs transition-all flex items-center gap-1 shrink-0 shadow-sm cursor-pointer"
                     >
                       <Send size={12} />
                       Join
@@ -237,7 +237,7 @@ export default function Footer() {
           <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-8">
             {/* Column 1: Find Careers */}
             <div>
-              <h3 className="font-poppins font-bold text-xs uppercase tracking-wider text-[#38BDF8] mb-4 flex items-center gap-1.5">
+              <h3 className="font-poppins font-bold text-xs uppercase tracking-wider text-orange-400 mb-4 flex items-center gap-1.5">
                 <Briefcase size={14} /> Popular Careers
               </h3>
               <ul className="space-y-2.5 text-xs">
@@ -249,7 +249,7 @@ export default function Footer() {
                     >
                       <ChevronRight
                         size={11}
-                        className="text-[#2563EB] opacity-0 group-hover:opacity-100 -ml-2 group-hover:ml-0 transition-all"
+                        className="text-[#F97316] opacity-0 group-hover:opacity-100 -ml-2 group-hover:ml-0 transition-all"
                       />
                       <span>{item.label}</span>
                     </Link>
@@ -260,7 +260,7 @@ export default function Footer() {
 
             {/* Column 2: Career Tools */}
             <div>
-              <h3 className="font-poppins font-bold text-xs uppercase tracking-wider text-[#38BDF8] mb-4 flex items-center gap-1.5">
+              <h3 className="font-poppins font-bold text-xs uppercase tracking-wider text-orange-400 mb-4 flex items-center gap-1.5">
                 <Sparkles size={14} /> AI Career Tools
               </h3>
               <ul className="space-y-2.5 text-xs">
@@ -274,7 +274,7 @@ export default function Footer() {
                         {item.label}
                       </span>
                       {item.isNew && (
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#2563EB] text-white">
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#F97316] text-white">
                           HOT
                         </span>
                       )}
@@ -286,7 +286,7 @@ export default function Footer() {
 
             {/* Column 3: Platform & Company */}
             <div>
-              <h3 className="font-poppins font-bold text-xs uppercase tracking-wider text-[#38BDF8] mb-4 flex items-center gap-1.5">
+              <h3 className="font-poppins font-bold text-xs uppercase tracking-wider text-orange-400 mb-4 flex items-center gap-1.5">
                 <Globe size={14} /> Platform & Trust
               </h3>
               <ul className="space-y-2.5 text-xs">

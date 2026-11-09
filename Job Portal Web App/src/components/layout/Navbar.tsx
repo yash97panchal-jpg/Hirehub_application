@@ -237,7 +237,7 @@ export default function Navbar() {
               />
             </div>
             <span className="font-poppins font-extrabold text-xl text-[var(--foreground)] tracking-tight">
-              Hire<span className="text-[#2563EB]">Hub</span>
+              Hire<span className="text-[#F97316]">Hub</span>
             </span>
           </Link>
 
@@ -250,8 +250,8 @@ export default function Navbar() {
                   onClick={() => setJobsOpen((v) => !v)}
                   className={cn(
                     "flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer",
-                    "text-[var(--foreground)] hover:text-[#2563EB] hover:bg-[var(--muted)]",
-                    jobsOpen && "text-[#2563EB] bg-[var(--muted)]",
+                    "text-[var(--foreground)] hover:text-[#F97316] hover:bg-[var(--muted)]",
+                    jobsOpen && "text-[#F97316] bg-[var(--muted)]",
                   )}
                 >
                   Find Jobs
@@ -284,10 +284,10 @@ export default function Navbar() {
                               onClick={() => setJobsOpen(false)}
                               className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--muted)] transition-colors group"
                             >
-                              <div className="w-9 h-9 rounded-lg bg-[var(--muted)] flex items-center justify-center group-hover:bg-[#2563EB] transition-colors">
+                              <div className="w-9 h-9 rounded-lg bg-[var(--muted)] flex items-center justify-center group-hover:bg-[#F97316] transition-colors">
                                 <cat.icon
                                   size={16}
-                                  className="text-[#2563EB] group-hover:text-white transition-colors"
+                                  className="text-[#F97316] group-hover:text-white transition-colors"
                                 />
                               </div>
                               <div>
@@ -309,7 +309,7 @@ export default function Navbar() {
                         <Link
                           to="/jobs"
                           onClick={() => setJobsOpen(false)}
-                          className="text-xs font-semibold text-[#2563EB] hover:underline flex items-center gap-1"
+                          className="text-xs font-semibold text-[#F97316] hover:underline flex items-center gap-1"
                         >
                           View all jobs <Zap size={13} />
                         </Link>
@@ -321,21 +321,21 @@ export default function Navbar() {
 
               <Link
                 to="/companies"
-                className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[#2563EB] hover:bg-[var(--muted)] transition-colors"
+                className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[#F97316] hover:bg-[var(--muted)] transition-colors"
               >
                 Companies
               </Link>
 
               <Link
                 to="/ats-checker"
-                className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[#2563EB] hover:bg-[var(--muted)] transition-colors"
+                className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[#F97316] hover:bg-[var(--muted)] transition-colors"
               >
                 ATS Checker
               </Link>
 
               <Link
                 to="/resume-builder"
-                className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[#2563EB] hover:bg-[var(--muted)] transition-colors"
+                className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[#F97316] hover:bg-[var(--muted)] transition-colors"
               >
                 Resume Builder
               </Link>
@@ -344,8 +344,8 @@ export default function Navbar() {
                 to="/salaries"
                 className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   location.pathname === "/salaries" || location.pathname === "/salary-insights"
-                    ? "text-[#2563EB] font-semibold bg-[var(--muted)]"
-                    : "text-[var(--foreground)] hover:text-[#2563EB] hover:bg-[var(--muted)]"
+                    ? "text-[#F97316] font-semibold bg-[var(--muted)]"
+                    : "text-[var(--foreground)] hover:text-[#F97316] hover:bg-[var(--muted)]"
                 }`}
               >
                 Salary Insights
@@ -354,7 +354,7 @@ export default function Navbar() {
               {user?.role === "recruiter" && (
                 <Link
                   to="/recruiter/talent-search"
-                  className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-semibold text-[#2563EB] hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors"
+                  className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-semibold text-[#F97316] hover:bg-orange-50 dark:hover:bg-orange-950/40 transition-colors"
                 >
                   Talent Search
                 </Link>
@@ -363,7 +363,7 @@ export default function Navbar() {
               {!isAuthenticated && (
                 <Link
                   to="/about"
-                  className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[#2563EB] hover:bg-[var(--muted)] transition-colors"
+                  className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[#F97316] hover:bg-[var(--muted)] transition-colors"
                 >
                   About Us
                 </Link>
@@ -757,42 +757,42 @@ export default function Navbar() {
                   <Link
                     to="/jobs"
                     onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[#2563EB]"
+                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[#F97316]"
                   >
                     <Briefcase size={17} /> Find Jobs
                   </Link>
                   <Link
                     to="/companies"
                     onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[#2563EB]"
+                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[#F97316]"
                   >
                     <Building2 size={17} /> Companies
                   </Link>
                   <Link
                     to="/ats-checker"
                     onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[#2563EB]"
+                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[#F97316]"
                   >
                     <FileText size={17} /> ATS Resume Checker
                   </Link>
                   <Link
                     to="/resume-builder"
                     onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[#2563EB]"
+                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[#F97316]"
                   >
                     <FileText size={17} /> Resume Builder
                   </Link>
                   <Link
                     to="/salaries"
                     onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[#2563EB]"
+                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[#F97316]"
                   >
                     <DollarSign size={17} /> Salary Insights
                   </Link>
                   <Link
                     to="/about"
                     onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[#2563EB]"
+                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[#F97316]"
                   >
                     <Globe size={17} /> About Us
                   </Link>

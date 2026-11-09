@@ -291,7 +291,7 @@ export default function JobDetail() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <Link
                       to={`/companies/${job.company.slug || job.company.id}`}
-                      className="text-sm font-semibold text-[#2563EB] hover:underline"
+                      className="text-sm font-semibold text-[#F97316] hover:underline"
                     >
                       {job.company.name}
                     </Link>
@@ -313,11 +313,11 @@ export default function JobDetail() {
 
                   <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-[var(--muted-foreground)]">
                     <span className="flex items-center gap-1.5">
-                      <MapPin size={15} className="text-[#2563EB]" />
+                      <MapPin size={15} className="text-[#F97316]" />
                       {job.location}
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <Briefcase size={15} className="text-[#2563EB]" />
+                      <Briefcase size={15} className="text-[#101F3E] dark:text-orange-400" />
                       {job.type}
                     </span>
                     {job.isRemote && (
@@ -378,7 +378,7 @@ export default function JobDetail() {
                     <div className="flex items-center gap-1.5">
                       <item.icon
                         size={14}
-                        className="text-[#2563EB] shrink-0"
+                        className="text-[#F97316] shrink-0"
                       />
                       <p className="text-xs sm:text-sm font-semibold text-[var(--foreground)] truncate">
                         {item.value}
@@ -431,7 +431,7 @@ export default function JobDetail() {
                         key={r}
                         className="flex items-start gap-2.5 text-sm text-[var(--foreground)]"
                       >
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#2563EB] shrink-0 mt-2" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#F97316] shrink-0 mt-2" />
                         <span>{r}</span>
                       </li>
                     ))}
@@ -460,12 +460,12 @@ export default function JobDetail() {
                       key={skill}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
                         isMatched
-                          ? "bg-teal-50 dark:bg-teal-950/40 text-[#14B8A6] border-teal-200 dark:border-teal-800 font-semibold"
+                          ? "bg-orange-50 dark:bg-orange-950/40 text-[#EA580C] border-orange-200 dark:border-orange-800 font-semibold"
                           : "bg-[var(--muted)] text-[var(--foreground)] border-[var(--border)]"
                       }`}
                       title={isMatched ? "Matches your profile / resume skills" : "Job requirement"}
                     >
-                      {isMatched && <span className="mr-1 text-teal-600 font-bold">✓</span>}
+                      {isMatched && <span className="mr-1 text-[#EA580C] font-bold">✓</span>}
                       {skill}
                     </span>
                   )
@@ -485,7 +485,7 @@ export default function JobDetail() {
                       >
                         <Star
                           size={14}
-                          className="text-[#2563EB] fill-[#2563EB]/20 shrink-0"
+                          className="text-[#F97316] fill-[#F97316]/20 shrink-0"
                         />
                         <span>{b}</span>
                       </div>
@@ -499,7 +499,7 @@ export default function JobDetail() {
             <div className="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 shadow-xs space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-bold text-base text-[var(--foreground)] flex items-center gap-2">
-                  <Navigation size={17} className="text-[#2563EB]" />
+                  <Navigation size={17} className="text-[#F97316]" />
                   Workplace Location & GIS Map
                 </h3>
                 <span className="text-xs text-[var(--muted-foreground)]">
@@ -521,7 +521,7 @@ export default function JobDetail() {
                 />
               </div>
               <p className="text-xs text-[var(--muted-foreground)] flex items-center gap-1.5">
-                <MapPin size={13} className="text-[#2563EB] shrink-0" />
+                <MapPin size={13} className="text-[#F97316] shrink-0" />
                 <span>{job.address || `${job.location} · Verified workplace coordinate`}</span>
               </p>
             </div>
@@ -568,8 +568,8 @@ export default function JobDetail() {
 
               {/* Application Status or Apply Buttons by Mode */}
               {!isAuthenticated || !user ? (
-                <div className="p-4 rounded-xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 text-center space-y-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/50 text-[#2563EB] flex items-center justify-center mx-auto">
+                <div className="p-4 rounded-xl bg-orange-50/70 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 text-center space-y-3">
+                  <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/50 text-[#EA580C] flex items-center justify-center mx-auto">
                     <Lock size={18} />
                   </div>
                   <div>
@@ -624,7 +624,7 @@ export default function JobDetail() {
                   <div className="pt-2 flex flex-col gap-1.5">
                     <Link
                       to="/dashboard/applications"
-                      className="text-xs font-semibold text-[#2563EB] hover:underline"
+                      className="text-xs font-semibold text-[#F97316] hover:underline"
                     >
                       View in Application Tracker →
                     </Link>
@@ -754,7 +754,7 @@ export default function JobDetail() {
               <div className="pt-2 border-t border-[var(--border)]">
                 <Link
                   to={`/companies/${job.company.slug || job.company.id}`}
-                  className="text-xs font-bold text-[#2563EB] hover:underline flex items-center justify-between"
+                  className="text-xs font-bold text-[#F97316] hover:underline flex items-center justify-between"
                 >
                   <span>View Full Company Profile & Jobs</span>
                   <ArrowRight size={14} />

@@ -183,7 +183,7 @@ export default function RecruiterDashboard() {
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold capitalize transition-all cursor-pointer ${
                 activeTab === tab
-                  ? "bg-[var(--card)] text-[#2563EB] shadow-xs"
+                  ? "bg-[var(--card)] text-[#F97316] shadow-xs"
                   : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
               }`}
             >
@@ -192,23 +192,23 @@ export default function RecruiterDashboard() {
           ))}
         </div>
 
-        {/* Stats cards */}
+        {/* Stats cards (60% White cards, 30% Deep Navy text, 10% Symbol Orange accents) */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
             {
               label: "Active Jobs",
               value: storeJobs.length,
               icon: Briefcase,
-              color: "#2563EB",
-              bg: "bg-blue-50 dark:bg-blue-950/40 text-[#2563EB]",
+              color: "#F97316",
+              bg: "bg-orange-50 dark:bg-orange-950/40 text-[#EA580C]",
               change: storeJobs.length > 0 ? `+${storeJobs.length} active` : "0 posted",
             },
             {
               label: "Total Applicants",
               value: realApplied,
               icon: Users,
-              color: "#14B8A6",
-              bg: "bg-teal-50 dark:bg-teal-950/40 text-[#14B8A6]",
+              color: "#101F3E",
+              bg: "bg-slate-100 dark:bg-slate-800 text-[#101F3E] dark:text-orange-300",
               change: realApplied > 0 ? `${realApplied} active candidates` : "0 candidates",
             },
             {

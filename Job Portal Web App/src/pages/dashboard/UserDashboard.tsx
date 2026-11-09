@@ -285,18 +285,18 @@ export default function UserDashboard() {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative rounded-2xl p-6 sm:p-8 overflow-hidden bg-[#142B4A] text-white border border-[#1E3A5F] shadow-xl"
+          className="relative rounded-2xl p-6 sm:p-8 overflow-hidden bg-[#101F3E] text-white border border-[#1E3563] shadow-xl"
         >
           {/* Subtle background ambient mesh */}
-          <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#2563EB]/25 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-[#14B8A6]/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#F97316]/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-[#101F3E]/60 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
             <div className="space-y-3">
               {/* Top Meta Bar */}
               <div className="flex items-center gap-3 flex-wrap">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase bg-[#14B8A6]/15 text-[#14B8A6] border border-[#14B8A6]/30">
-                  <Sparkles size={13} className="text-[#14B8A6]" /> Candidate Command Center
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase bg-orange-500/15 text-[#F97316] border border-orange-500/30">
+                  <Sparkles size={13} className="text-[#F97316]" /> Candidate Command Center
                 </span>
 
                 {/* Candidate Availability Status Picker */}
@@ -306,11 +306,11 @@ export default function UserDashboard() {
                     onClick={() => setCandidateStatus("active")}
                     className={`px-3 py-1 rounded-md transition-all flex items-center gap-1.5 cursor-pointer ${
                       candidateStatus === "active"
-                        ? "bg-[#14B8A6] text-slate-950 shadow-xs font-bold"
+                        ? "bg-[#F97316] text-white shadow-xs font-bold"
                         : "text-slate-300 hover:text-white"
                     }`}
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-slate-950 animate-pulse" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                     <span>Actively Seeking</span>
                   </button>
 
@@ -319,7 +319,7 @@ export default function UserDashboard() {
                     onClick={() => setCandidateStatus("interviewing")}
                     className={`px-3 py-1 rounded-md transition-all flex items-center gap-1.5 cursor-pointer ${
                       candidateStatus === "interviewing"
-                        ? "bg-[#2563EB] text-white shadow-xs font-bold"
+                        ? "bg-blue-600 text-white shadow-xs font-bold"
                         : "text-slate-300 hover:text-white"
                     }`}
                   >
@@ -345,7 +345,7 @@ export default function UserDashboard() {
               <div className="space-y-1">
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight flex items-center gap-2">
                   <span>{greeting}, {user?.name ? user.name.split(" ")[0] : "Candidate"}</span>
-                  <span className="inline-flex items-center p-1 rounded-full bg-[#14B8A6]/20 text-[#14B8A6]" title="Verified Profile">
+                  <span className="inline-flex items-center p-1 rounded-full bg-orange-500/20 text-[#F97316]" title="Verified Profile">
                     <ShieldCheck size={20} />
                   </span>
                 </h1>
@@ -359,7 +359,7 @@ export default function UserDashboard() {
             <div className="flex items-center gap-3 self-stretch sm:self-auto shrink-0 flex-wrap">
               <Link
                 to="/jobs"
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[#2563EB] hover:bg-[#1d4ed8] text-white text-xs sm:text-sm font-semibold transition-all shadow-sm"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[#F97316] hover:bg-[#EA580C] text-white text-xs sm:text-sm font-semibold transition-all shadow-sm"
               >
                 <Compass size={15} /> Discover Jobs
               </Link>

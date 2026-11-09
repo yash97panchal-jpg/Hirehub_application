@@ -151,9 +151,9 @@ export default function Home() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200/80 dark:border-blue-800/80 text-xs font-semibold text-[#2563EB] dark:text-blue-300 mb-6 shadow-xs"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/80 text-xs font-semibold text-[#EA580C] dark:text-orange-300 mb-6 shadow-xs"
           >
-            <Sparkles size={13} className="text-[#14B8A6]" />
+            <Sparkles size={13} className="text-[#F97316]" />
             <span>Intelligent Career Discovery & Role-Based ATS Matching</span>
           </motion.div>
 
@@ -162,10 +162,10 @@ export default function Home() {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.1 }}
-            className="font-poppins text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#142B4A] dark:text-white tracking-tight leading-[1.12] mb-5"
+            className="font-poppins text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#101F3E] dark:text-white tracking-tight leading-[1.12] mb-5"
           >
             Find the Right Opportunity.{" "}
-            <span className="text-[#2563EB] block sm:inline">Build Your Future.</span>
+            <span className="text-[#F97316] block sm:inline">Build Your Future.</span>
           </motion.h1>
 
           <motion.p
@@ -252,25 +252,25 @@ export default function Home() {
       <section className="py-7 px-4 sm:px-6 bg-[#F8FAFC] dark:bg-[#0E1833] border-b border-slate-200/80 dark:border-slate-800">
         <div className="max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
           <div>
-            <p className="font-poppins font-extrabold text-2xl sm:text-3xl text-[#142B4A] dark:text-white">
+            <p className="font-poppins font-extrabold text-2xl sm:text-3xl text-[#101F3E] dark:text-white">
               {jobs.length.toLocaleString()}+
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">Active Job Openings</p>
           </div>
           <div>
-            <p className="font-poppins font-extrabold text-2xl sm:text-3xl text-[#2563EB]">
+            <p className="font-poppins font-extrabold text-2xl sm:text-3xl text-[#F97316]">
               {topCompanies.length * 15}+
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">Verified Employers</p>
           </div>
           <div>
-            <p className="font-poppins font-extrabold text-2xl sm:text-3xl text-[#14B8A6]">
+            <p className="font-poppins font-extrabold text-2xl sm:text-3xl text-[#101F3E] dark:text-orange-400">
               96.4%
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">ATS Match Accuracy</p>
           </div>
           <div>
-            <p className="font-poppins font-extrabold text-2xl sm:text-3xl text-[#142B4A] dark:text-white">
+            <p className="font-poppins font-extrabold text-2xl sm:text-3xl text-[#101F3E] dark:text-white">
               100%
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">Verified Direct Listings</p>
@@ -283,16 +283,16 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-[#2563EB] mb-1">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#F97316] mb-1">
                 Explore by Discipline
               </p>
-              <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-[#142B4A] dark:text-white">
+              <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-[#101F3E] dark:text-white">
                 Popular Career Categories
               </h2>
             </div>
             <Link
               to="/jobs"
-              className="text-xs font-semibold text-[#2563EB] hover:underline flex items-center gap-1 group"
+              className="text-xs font-semibold text-[#F97316] hover:underline flex items-center gap-1 group"
             >
               <span>Explore all categories</span>
               <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
@@ -304,14 +304,14 @@ export default function Home() {
               <Link
                 key={cat.label}
                 to={`/jobs?keyword=${encodeURIComponent(cat.query)}`}
-                className="p-5 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-[#F8FAFC] dark:bg-[#13223B] hover:bg-white dark:hover:bg-[#1A2E4E] hover:border-blue-400/60 dark:hover:border-blue-500/60 transition-all duration-150 flex items-center justify-between group shadow-xs hover:shadow-sm"
+                className="p-5 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-[#F8FAFC] dark:bg-[#13223B] hover:bg-white dark:hover:bg-[#1A2E4E] hover:border-orange-400/60 dark:hover:border-orange-500/60 transition-all duration-150 flex items-center justify-between group shadow-xs hover:shadow-sm"
               >
                 <div className="flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-950/70 border border-blue-200/60 dark:border-blue-800/60 flex items-center justify-center text-[#2563EB] dark:text-blue-300 group-hover:bg-[#2563EB] group-hover:text-white transition-colors">
+                  <div className="w-10 h-10 rounded-lg bg-orange-50 dark:bg-orange-950/70 border border-orange-200/60 dark:border-orange-800/60 flex items-center justify-center text-[#F97316] dark:text-orange-300 group-hover:bg-[#F97316] group-hover:text-white transition-colors">
                     <cat.icon size={18} />
                   </div>
                   <div>
-                    <h3 className="font-poppins font-semibold text-sm text-slate-900 dark:text-white group-hover:text-[#2563EB] transition-colors">
+                    <h3 className="font-poppins font-semibold text-sm text-slate-900 dark:text-white group-hover:text-[#F97316] transition-colors">
                       {cat.label}
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -319,7 +319,7 @@ export default function Home() {
                     </p>
                   </div>
                 </div>
-                <ArrowRight size={15} className="text-slate-400 group-hover:text-[#2563EB] group-hover:translate-x-1 transition-all" />
+                <ArrowRight size={15} className="text-slate-400 group-hover:text-[#F97316] group-hover:translate-x-1 transition-all" />
               </Link>
             ))}
           </div>
@@ -331,16 +331,16 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-[#2563EB] mb-1">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#F97316] mb-1">
                 Handpicked Opportunities
               </p>
-              <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-[#142B4A] dark:text-white">
+              <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-[#101F3E] dark:text-white">
                 Featured Positions
               </h2>
             </div>
             <Link
               to="/jobs"
-              className="text-xs font-semibold text-[#2563EB] hover:underline flex items-center gap-1 group"
+              className="text-xs font-semibold text-[#F97316] hover:underline flex items-center gap-1 group"
             >
               <span>View all {jobs.length} jobs</span>
               <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
@@ -360,16 +360,16 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-[#2563EB] mb-1">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#F97316] mb-1">
                 Verified Global Leaders
               </p>
-              <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-[#142B4A] dark:text-white">
+              <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-[#101F3E] dark:text-white">
                 Top Hiring Companies
               </h2>
             </div>
             <Link
               to="/companies"
-              className="text-xs font-semibold text-[#2563EB] hover:underline flex items-center gap-1 group"
+              className="text-xs font-semibold text-[#F97316] hover:underline flex items-center gap-1 group"
             >
               <span>Explore all companies</span>
               <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
@@ -381,7 +381,7 @@ export default function Home() {
               <Link
                 key={c.name}
                 to={`/companies/${c.slug || c.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
-                className="p-5 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-[#F8FAFC] dark:bg-[#13223B] hover:bg-white dark:hover:bg-[#1A2E4E] hover:border-blue-400/60 dark:hover:border-blue-500/60 transition-all duration-150 flex flex-col items-center text-center group shadow-xs hover:shadow-sm"
+                className="p-5 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-[#F8FAFC] dark:bg-[#13223B] hover:bg-white dark:hover:bg-[#1A2E4E] hover:border-orange-400/60 dark:hover:border-orange-500/60 transition-all duration-150 flex flex-col items-center text-center group shadow-xs hover:shadow-sm"
               >
                 <div className="w-14 h-14 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
                   <img
@@ -390,7 +390,7 @@ export default function Home() {
                     className="w-full h-full object-contain"
                   />
                 </div>
-                <h3 className="font-poppins font-semibold text-sm text-slate-900 dark:text-white group-hover:text-[#2563EB] transition-colors truncate max-w-full">
+                <h3 className="font-poppins font-semibold text-sm text-slate-900 dark:text-white group-hover:text-[#F97316] transition-colors truncate max-w-full">
                   {c.name}
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -406,10 +406,10 @@ export default function Home() {
       <section className="py-16 px-4 sm:px-6 bg-[#F8FAFC] dark:bg-[#0E1833] border-t border-slate-200/80 dark:border-slate-800">
         <div className="max-w-6xl mx-auto">
           <div className="text-center max-w-2xl mx-auto mb-12">
-            <p className="text-xs font-bold uppercase tracking-wider text-[#2563EB] mb-1">
+            <p className="text-xs font-bold uppercase tracking-wider text-[#F97316] mb-1">
               Streamlined Process
             </p>
-            <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-[#142B4A] dark:text-white mb-3">
+            <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-[#101F3E] dark:text-white mb-3">
               How HireHub Works
             </h2>
             <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
@@ -419,8 +419,8 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="p-6 rounded-xl bg-white dark:bg-[#13223B] border border-slate-200/90 dark:border-slate-800 shadow-sm relative">
-              <span className="text-4xl font-extrabold text-blue-100 dark:text-slate-800 absolute top-4 right-4">01</span>
-              <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-950/80 border border-blue-200/60 dark:border-blue-800/60 flex items-center justify-center text-[#2563EB] mb-4">
+              <span className="text-4xl font-extrabold text-orange-100 dark:text-slate-800 absolute top-4 right-4">01</span>
+              <div className="w-10 h-10 rounded-lg bg-orange-50 dark:bg-orange-950/80 border border-orange-200/60 dark:border-orange-800/60 flex items-center justify-center text-[#F97316] mb-4">
                 <Search size={20} />
               </div>
               <h3 className="font-poppins font-semibold text-base text-slate-900 dark:text-white mb-2">
@@ -432,8 +432,8 @@ export default function Home() {
             </div>
 
             <div className="p-6 rounded-xl bg-white dark:bg-[#13223B] border border-slate-200/90 dark:border-slate-800 shadow-sm relative">
-              <span className="text-4xl font-extrabold text-blue-100 dark:text-slate-800 absolute top-4 right-4">02</span>
-              <div className="w-10 h-10 rounded-lg bg-teal-50 dark:bg-teal-950/80 border border-teal-200/60 dark:border-teal-800/60 flex items-center justify-center text-[#14B8A6] mb-4">
+              <span className="text-4xl font-extrabold text-orange-100 dark:text-slate-800 absolute top-4 right-4">02</span>
+              <div className="w-10 h-10 rounded-lg bg-orange-50 dark:bg-orange-950/80 border border-orange-200/60 dark:border-orange-800/60 flex items-center justify-center text-[#F97316] mb-4">
                 <Sparkles size={20} />
               </div>
               <h3 className="font-poppins font-semibold text-base text-slate-900 dark:text-white mb-2">
@@ -445,7 +445,7 @@ export default function Home() {
             </div>
 
             <div className="p-6 rounded-xl bg-white dark:bg-[#13223B] border border-slate-200/90 dark:border-slate-800 shadow-sm relative">
-              <span className="text-4xl font-extrabold text-blue-100 dark:text-slate-800 absolute top-4 right-4">03</span>
+              <span className="text-4xl font-extrabold text-orange-100 dark:text-slate-800 absolute top-4 right-4">03</span>
               <div className="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200/60 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 mb-4">
                 <CheckCircle2 size={20} />
               </div>
@@ -461,10 +461,10 @@ export default function Home() {
       </section>
 
       {/* 7. EMPLOYER CALL TO ACTION */}
-      <section className="py-14 px-4 sm:px-6 bg-[#142B4A] text-white">
+      <section className="py-14 px-4 sm:px-6 bg-[#101F3E] text-white">
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
           <div className="max-w-xl">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#14B8A6] mb-2 block">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#F97316] mb-2 block">
               For Hiring Teams & Tech Employers
             </span>
             <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-white mb-2">

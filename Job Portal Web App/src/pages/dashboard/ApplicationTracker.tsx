@@ -108,7 +108,7 @@ export default function ApplicationTracker() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-[var(--foreground)] tracking-tight flex items-center gap-2.5">
-              <Briefcase className="text-[#2563EB]" />
+              <Briefcase className="text-[#F97316]" />
               Application Tracker
             </h1>
             <p className="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1">

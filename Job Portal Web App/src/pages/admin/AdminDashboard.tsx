@@ -154,7 +154,7 @@ export default function AdminDashboard() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <div className="flex items-center gap-2.5 mb-1">
-                <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 text-[#2563EB] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#EA580C] dark:text-orange-400 flex items-center justify-center">
                   <Shield size={18} />
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-[var(--foreground)] tracking-tight">

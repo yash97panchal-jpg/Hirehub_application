@@ -2,7 +2,7 @@ import { forwardRef } from "react"
 import { cn } from "../../utils/cn"
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "ghost" | "accent" | "danger"
+  variant?: "primary" | "secondary" | "navy" | "outline" | "ghost" | "accent" | "danger"
   size?: "sm" | "md" | "lg" | "xl"
   isLoading?: boolean
 }
@@ -21,19 +21,21 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const base =
-      "inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none select-none cursor-pointer active:scale-[0.98]"
+      "inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F97316] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none select-none cursor-pointer active:scale-[0.98]"
 
     const variants = {
       primary:
-        "bg-[#2563EB] hover:bg-[#1D4ED8] active:bg-[#1E40AF] text-white shadow-sm hover:shadow font-semibold",
+        "bg-[#F97316] hover:bg-[#EA580C] active:bg-[#C2410C] text-white shadow-sm hover:shadow font-semibold",
       secondary:
-        "bg-white dark:bg-[#13223B] border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-sm",
+        "bg-white dark:bg-[#101F3E] border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800/80 shadow-sm",
+      navy:
+        "bg-[#101F3E] hover:bg-[#182C58] active:bg-[#0B152B] text-white shadow-sm hover:shadow font-semibold",
       outline:
-        "border border-[#2563EB] text-[#2563EB] hover:bg-blue-50 dark:hover:bg-blue-950/40 font-medium",
+        "border border-[#101F3E] dark:border-orange-500 text-[#101F3E] dark:text-orange-400 hover:bg-orange-50/50 dark:hover:bg-orange-950/20 font-medium",
       ghost:
         "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white",
       accent:
-        "bg-[#14B8A6] hover:bg-[#0D9488] active:bg-[#0F766E] text-white shadow-sm font-semibold",
+        "bg-[#F97316] hover:bg-[#EA580C] active:bg-[#C2410C] text-white shadow-sm font-semibold",
       danger:
         "bg-[#DC2626] hover:bg-[#B91C1C] active:bg-[#991B1B] text-white shadow-sm font-semibold",
     }
