@@ -77,7 +77,7 @@ const typeColors: Record<string, string> = {
 }
 
 export default function JobCard({ job, compact = false }: JobCardProps) {
-  const { user } = useAuthStore()
+  const { user, isAuthenticated } = useAuthStore()
   const { isJobSaved, toggleSaveJob } = useSavedJobsStore()
   const isSaved = isJobSaved(job.id)
   const cardRef = useRef<HTMLDivElement>(null)
@@ -100,6 +100,10 @@ export default function JobCard({ job, compact = false }: JobCardProps) {
   const handleBookmarkClick = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
+    if (!isAuthenticated || !user) {
+      toast.error("Please log in or create an account to save jobs.")
+      return
+    }
     const nowSaved = toggleSaveJob(job.id)
     if (nowSaved) {
       toast.success(`Saved "${job.title}" to bookmarks!`)

@@ -23,6 +23,7 @@ import {
   Navigation,
   ArrowRight,
   Sparkles,
+  Lock,
 } from "lucide-react"
 import Button from "../components/ui/Button"
 import Badge from "../components/ui/Badge"
@@ -113,6 +114,11 @@ export default function JobDetail() {
   const skillMatch = calculateSkillMatch(job.skills, undefined, user)
 
   const handleToggleSave = () => {
+    if (!isAuthenticated || !user) {
+      toast.error("Please log in or create an account to save jobs.")
+      navigate(`/login?redirect=${encodeURIComponent(`/jobs/${job.id}`)}`)
+      return
+    }
     const nowSaved = toggleSaveJob(job.id)
     if (nowSaved) {
       toast.success(`Saved "${job.title}" to your bookmarks!`)
@@ -123,6 +129,17 @@ export default function JobDetail() {
 
   // Handle External Apply Button Click
   const handleExternalApply = async () => {
+    if (!isAuthenticated || !user) {
+      toast.error("Please log in or create an account to apply.")
+      navigate(`/login?redirect=${encodeURIComponent(`/jobs/${job.id}`)}`)
+      return
+    }
+
+    if (user.role === "recruiter") {
+      toast.error("Recruiter accounts cannot submit candidate job applications.")
+      return
+    }
+
     const url = job.externalApplyUrl || job.company.website
     if (!url) {
       toast.error("External application link not available.")
@@ -550,7 +567,49 @@ export default function JobDetail() {
               </div>
 
               {/* Application Status or Apply Buttons by Mode */}
-              {isAlreadyApplied ? (
+              {!isAuthenticated || !user ? (
+                <div className="p-4 rounded-xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 text-center space-y-3">
+                  <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/50 text-[#2563EB] flex items-center justify-center mx-auto">
+                    <Lock size={18} />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-[var(--foreground)]">
+                      Candidate Sign In Required
+                    </h4>
+                    <p className="text-[11px] text-[var(--muted-foreground)] mt-0.5 leading-relaxed">
+                      You must be signed in as a job seeker to submit an application and track recruiter responses.
+                    </p>
+                  </div>
+                  <div className="space-y-2 pt-1">
+                    <Button
+                      variant="primary"
+                      size="md"
+                      className="w-full font-bold justify-center"
+                      onClick={() => navigate(`/login?redirect=${encodeURIComponent(`/jobs/${job.id}`)}`)}
+                    >
+                      Log In to Apply
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="md"
+                      className="w-full justify-center text-xs"
+                      onClick={() => navigate(`/register?redirect=${encodeURIComponent(`/jobs/${job.id}`)}`)}
+                    >
+                      Create Candidate Account
+                    </Button>
+                  </div>
+                </div>
+              ) : user.role === "recruiter" ? (
+                <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-center space-y-1">
+                  <div className="flex items-center justify-center gap-1.5 text-amber-700 dark:text-amber-300 text-xs font-bold">
+                    <AlertCircle size={14} />
+                    <span>Recruiter Account</span>
+                  </div>
+                  <p className="text-[11px] text-[var(--muted-foreground)]">
+                    You are signed in as an employer/recruiter. Candidate applications can only be submitted from job seeker profiles.
+                  </p>
+                </div>
+              ) : isAlreadyApplied ? (
                 <div className="text-center p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 space-y-2">
                   <CheckCircle size={24} className="text-green-500 mx-auto" />
                   <div>
@@ -565,14 +624,14 @@ export default function JobDetail() {
                   <div className="pt-2 flex flex-col gap-1.5">
                     <Link
                       to="/dashboard/applications"
-                      className="text-xs font-semibold text-[var(--primary)] hover:underline"
+                      className="text-xs font-semibold text-[#2563EB] hover:underline"
                     >
                       View in Application Tracker →
                     </Link>
                     <button
                       type="button"
                       onClick={() => setShowWithdrawModal(true)}
-                      className="text-xs text-red-500 hover:text-red-700 hover:underline pt-1 transition-colors"
+                      className="text-xs text-red-500 hover:text-red-700 hover:underline pt-1 transition-colors cursor-pointer"
                     >
                       Withdraw Application
                     </button>
@@ -600,8 +659,12 @@ export default function JobDetail() {
                       className="w-full font-bold justify-center"
                       onClick={() => {
                         if (!isAuthenticated || !user) {
-                          toast("Please log in or create an account to apply.")
-                          navigate("/login")
+                          toast.error("Please log in or create an account to apply.")
+                          navigate(`/login?redirect=${encodeURIComponent(`/jobs/${job.id}`)}`)
+                          return
+                        }
+                        if (user.role === "recruiter") {
+                          toast.error("Recruiter accounts cannot submit candidate job applications.")
                           return
                         }
                         setIsEasyApplyOpen(true)

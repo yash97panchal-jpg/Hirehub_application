@@ -201,7 +201,10 @@ export default function Register() {
 
         login(res.user as UserType, (res as any).session?.access_token || "auth-token-" + Date.now())
         toast.success("Email verified successfully! Welcome to HireHub.")
-        navigate(role === "recruiter" ? "/recruiter" : "/dashboard")
+        const params = new URLSearchParams(window.location.search)
+        const redirect = params.get("redirect")
+        const dest = redirect && redirect.startsWith("/") ? redirect : (role === "recruiter" ? "/recruiter" : "/dashboard")
+        navigate(dest)
       } else {
         toast.success("Account created! Please log in with your credentials.")
         navigate("/login")
@@ -222,7 +225,10 @@ export default function Register() {
       if (res && "user" in res && res.user) {
         login(res.user as any, (res as any).session?.access_token || "google-token")
         toast.success(`Welcome to HireHub, ${account.name || account.email}!`)
-        navigate(role === "recruiter" ? "/recruiter" : "/dashboard")
+        const params = new URLSearchParams(window.location.search)
+        const redirect = params.get("redirect")
+        const dest = redirect && redirect.startsWith("/") ? redirect : (role === "recruiter" ? "/recruiter" : "/dashboard")
+        navigate(dest)
       }
     } catch (err: any) {
       console.error("Google account creation error:", err)

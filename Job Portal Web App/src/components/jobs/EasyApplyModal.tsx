@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   X,
@@ -12,6 +13,7 @@ import {
   HelpCircle,
   Loader2,
   Zap,
+  Lock,
 } from "lucide-react"
 import Button from "../ui/Button"
 import Input from "../ui/Input"
@@ -36,6 +38,7 @@ export default function EasyApplyModal({
   onClose,
   onSuccess,
 }: EasyApplyModalProps) {
+  const navigate = useNavigate()
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1)
   const [resumeFile, setResumeFile] = useState<File | null>(null)
   const [resumePath, setResumePath] = useState(user?.resumeUrl || "resumes/sample-candidate-resume.pdf")
@@ -130,6 +133,59 @@ export default function EasyApplyModal({
   }
 
   if (!isOpen) return null
+
+  if (!user) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full max-w-md bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-2xl p-6 text-center space-y-4"
+        >
+          <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#2563EB] flex items-center justify-center mx-auto">
+            <Lock size={22} />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-[var(--foreground)] tracking-tight">
+              Sign In Required to Apply
+            </h2>
+            <p className="text-xs text-[var(--muted-foreground)] mt-1.5 leading-relaxed">
+              You must be logged into a verified candidate account to submit an application for <strong className="text-[var(--foreground)]">{job.title}</strong> at {job.company.name}.
+            </p>
+          </div>
+          <div className="space-y-2 pt-2">
+            <Button
+              variant="primary"
+              className="w-full font-bold justify-center"
+              onClick={() => {
+                onClose()
+                navigate(`/login?redirect=${encodeURIComponent(`/jobs/${job.id}`)}`)
+              }}
+            >
+              Log In to Continue
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full justify-center"
+              onClick={() => {
+                onClose()
+                navigate(`/register?redirect=${encodeURIComponent(`/jobs/${job.id}`)}`)
+              }}
+            >
+              Create Free Candidate Account
+            </Button>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors pt-1 block mx-auto cursor-pointer"
+          >
+            Cancel
+          </button>
+        </motion.div>
+      </div>
+    )
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in">

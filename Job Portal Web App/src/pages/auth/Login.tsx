@@ -36,15 +36,26 @@ export default function Login() {
   useEffect(() => {
     document.title = "Log In — HireHub"
     if (isAuthenticated && user) {
+      const params = new URLSearchParams(window.location.search)
+      const redirect = params.get("redirect")
       const target =
-        user.role === "admin"
-          ? "/admin"
-          : user.role === "recruiter"
-            ? "/recruiter"
-            : "/dashboard"
+        redirect && redirect.startsWith("/")
+          ? redirect
+          : user.role === "admin"
+            ? "/admin"
+            : user.role === "recruiter"
+              ? "/recruiter"
+              : "/dashboard"
       navigate(target, { replace: true })
     }
   }, [isAuthenticated, user, navigate])
+
+  const getDestination = (role: string) => {
+    const params = new URLSearchParams(window.location.search)
+    const redirect = params.get("redirect")
+    if (redirect && redirect.startsWith("/")) return redirect
+    return role === "admin" ? "/admin" : role === "recruiter" ? "/recruiter" : "/dashboard"
+  }
 
   const handleLogIn = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -67,13 +78,7 @@ export default function Login() {
       if (res?.user) {
         login(res.user, res.session?.access_token || "auth-session-token")
         toast.success(`Welcome back, ${res.user.name || "User"}!`)
-        const target =
-          res.user.role === "admin"
-            ? "/admin"
-            : res.user.role === "recruiter"
-              ? "/recruiter"
-              : "/dashboard"
-        navigate(target)
+        navigate(getDestination(res.user.role))
       }
     } catch (err: any) {
       console.error("Log in error:", err)
@@ -92,7 +97,7 @@ export default function Login() {
       if (res && "user" in res && res.user) {
         login(res.user as any, (res as any).session?.access_token || "google-token")
         toast.success(`Logged in as ${account.email}!`)
-        navigate(res.user.role === "recruiter" ? "/recruiter" : "/dashboard")
+        navigate(getDestination(res.user.role))
       }
     } catch (err: any) {
       console.error("Google log in error:", err)
