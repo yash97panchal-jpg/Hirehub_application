@@ -165,7 +165,7 @@ export default function ApplicantManagement() {
         {/* Top Header */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
           <div>
-            <h1 className="font-poppins text-2xl sm:text-3xl font-bold text-[var(--foreground)]">
+            <h1 className="text-2xl sm:text-3xl font-bold text-[var(--foreground)] tracking-tight">
               Applicant Pipeline & Review
             </h1>
             <p className="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1">
@@ -197,7 +197,7 @@ export default function ApplicantManagement() {
                 placeholder="Search candidates..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--card)] text-xs text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]"
+                className="w-full pl-9 pr-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--card)] text-xs text-[var(--foreground)] focus:outline-none focus:border-[#2563EB]"
               />
             </div>
 

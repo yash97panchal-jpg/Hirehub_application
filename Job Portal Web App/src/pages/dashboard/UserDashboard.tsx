@@ -285,41 +285,41 @@ export default function UserDashboard() {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative rounded-3xl p-6 sm:p-8 overflow-hidden bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 text-white border border-slate-800 shadow-2xl"
+          className="relative rounded-2xl p-6 sm:p-8 overflow-hidden bg-[#142B4A] text-white border border-[#1E3A5F] shadow-xl"
         >
           {/* Subtle background ambient mesh */}
-          <div className="absolute -top-24 -right-24 w-96 h-96 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#2563EB]/25 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-[#14B8A6]/20 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
             <div className="space-y-3">
               {/* Top Meta Bar */}
               <div className="flex items-center gap-3 flex-wrap">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase bg-amber-400/15 text-amber-300 border border-amber-400/30">
-                  <Sparkles size={13} className="text-amber-400" /> Executive Candidate Portal
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase bg-[#14B8A6]/15 text-[#14B8A6] border border-[#14B8A6]/30">
+                  <Sparkles size={13} className="text-[#14B8A6]" /> Candidate Command Center
                 </span>
 
                 {/* Candidate Availability Status Picker */}
-                <div className="inline-flex items-center bg-black/40 backdrop-blur-md p-1 rounded-full text-xs font-semibold border border-white/10">
+                <div className="inline-flex items-center bg-black/40 backdrop-blur-md p-1 rounded-lg text-xs font-semibold border border-white/10">
                   <button
                     type="button"
                     onClick={() => setCandidateStatus("active")}
-                    className={`px-3 py-1 rounded-full transition-all flex items-center gap-1.5 ${
+                    className={`px-3 py-1 rounded-md transition-all flex items-center gap-1.5 cursor-pointer ${
                       candidateStatus === "active"
-                        ? "bg-emerald-500 text-white shadow-sm font-bold"
+                        ? "bg-[#14B8A6] text-slate-950 shadow-xs font-bold"
                         : "text-slate-300 hover:text-white"
                     }`}
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-950 animate-pulse" />
                     <span>Actively Seeking</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setCandidateStatus("interviewing")}
-                    className={`px-3 py-1 rounded-full transition-all flex items-center gap-1.5 ${
+                    className={`px-3 py-1 rounded-md transition-all flex items-center gap-1.5 cursor-pointer ${
                       candidateStatus === "interviewing"
-                        ? "bg-purple-600 text-white shadow-sm font-bold"
+                        ? "bg-[#2563EB] text-white shadow-xs font-bold"
                         : "text-slate-300 hover:text-white"
                     }`}
                   >
@@ -330,9 +330,9 @@ export default function UserDashboard() {
                   <button
                     type="button"
                     onClick={() => setCandidateStatus("open")}
-                    className={`px-3 py-1 rounded-full transition-all flex items-center gap-1.5 ${
+                    className={`px-3 py-1 rounded-md transition-all flex items-center gap-1.5 cursor-pointer ${
                       candidateStatus === "open"
-                        ? "bg-amber-500 text-slate-950 shadow-sm font-bold"
+                        ? "bg-amber-500 text-slate-950 shadow-xs font-bold"
                         : "text-slate-300 hover:text-white"
                     }`}
                   >
@@ -343,65 +343,32 @@ export default function UserDashboard() {
 
               {/* Title & Greeting */}
               <div className="space-y-1">
-                <h1 className="font-poppins text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight flex items-center gap-2">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight flex items-center gap-2">
                   <span>{greeting}, {user?.name ? user.name.split(" ")[0] : "Candidate"}</span>
-                  <span className="inline-flex items-center p-1 rounded-full bg-emerald-500/20 text-emerald-400" title="Verified Profile">
+                  <span className="inline-flex items-center p-1 rounded-full bg-[#14B8A6]/20 text-[#14B8A6]" title="Verified Profile">
                     <ShieldCheck size={20} />
                   </span>
                 </h1>
-                <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-                  Real-time pipeline overview, AI resume skill matching, and executive interview scheduling.
+                <p className="text-xs sm:text-sm text-slate-300">
+                  Track your job applications, view ATS skill match scores, and discover curated opportunities.
                 </p>
-              </div>
-
-              {/* Key Indicators */}
-              <div className="flex items-center gap-4 text-xs text-slate-300 pt-1 flex-wrap">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                  <span>Profile Strength: <strong className="text-white">{user?.profileCompletion || 80}%</strong></span>
-                </span>
-                <span className="text-slate-600">•</span>
-                <span className="flex items-center gap-1.5">
-                  <Award size={13} className="text-amber-400" />
-                  <span>ATS Benchmark: <strong className="text-white">88/100 (High Readiness)</strong></span>
-                </span>
-                <span className="text-slate-600">•</span>
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle size={13} className="text-blue-400" />
-                  <span>Platform Status: <strong className="text-white">Active & Verified</strong></span>
-                </span>
               </div>
             </div>
 
-            {/* Quick Action Navigation Buttons */}
-            <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto shrink-0">
-              <Button
-                variant="primary"
-                size="md"
-                onClick={() => navigate("/jobs")}
-                className="font-bold flex-1 sm:flex-initial shadow-lg bg-amber-500 hover:bg-amber-400 text-slate-950"
+            {/* Quick Actions */}
+            <div className="flex items-center gap-3 self-stretch sm:self-auto shrink-0 flex-wrap">
+              <Link
+                to="/jobs"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[#2563EB] hover:bg-[#1d4ed8] text-white text-xs sm:text-sm font-semibold transition-all shadow-sm"
               >
-                <Search size={15} className="mr-1.5" /> Explore Open Roles
-              </Button>
-
-              <Button
-                variant="outline"
-                size="md"
-                onClick={() => navigate("/ats-checker")}
-                className="font-semibold flex-1 sm:flex-initial border-slate-700 bg-slate-800/60 hover:bg-slate-700 text-white"
+                <Compass size={15} /> Discover Jobs
+              </Link>
+              <Link
+                to="/ats-checker"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-white/10 hover:bg-white/15 text-white text-xs sm:text-sm font-semibold transition-all border border-white/15"
               >
-                <TrendingUp size={15} className="mr-1.5 text-amber-400" /> Scan Resume ATS
-              </Button>
-
-              <Button
-                variant="outline"
-                size="md"
-                onClick={() => navigate("/settings")}
-                className="font-semibold flex-1 sm:flex-initial border-slate-700 bg-slate-800/60 hover:bg-slate-700 text-white"
-                title="Account Settings"
-              >
-                <SettingsIcon size={15} className="mr-1.5" /> Settings
-              </Button>
+                <Zap size={15} /> ATS Checker
+              </Link>
             </div>
           </div>
         </motion.div>

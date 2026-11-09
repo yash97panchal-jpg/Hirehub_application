@@ -254,11 +254,11 @@ export default function JobDetail() {
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-6 shadow-[var(--shadow-card)]"
+              className="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 sm:p-7 shadow-xs"
             >
-              <div className="flex items-start gap-4">
+              <div className="flex flex-col sm:flex-row items-start gap-4">
                 <Link to={`/companies/${job.company.slug || job.company.id}`} className="shrink-0">
-                  <div className="w-16 h-16 rounded-xl overflow-hidden bg-white dark:bg-slate-900 ring-1 ring-[var(--border)] p-1.5 flex items-center justify-center shadow-xs">
+                  <div className="w-16 h-16 rounded-xl overflow-hidden bg-white dark:bg-slate-900 border border-[var(--border)] p-2 flex items-center justify-center shadow-xs">
                     <img
                       src={getCompanyRealLogo(job.company.name, job.company.website, job.company.logo)}
                       alt={job.company.name}
@@ -274,7 +274,7 @@ export default function JobDetail() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <Link
                       to={`/companies/${job.company.slug || job.company.id}`}
-                      className="text-sm font-semibold text-[var(--primary)] hover:underline"
+                      className="text-sm font-semibold text-[#2563EB] hover:underline"
                     >
                       {job.company.name}
                     </Link>
@@ -290,39 +290,39 @@ export default function JobDetail() {
                     )}
                   </div>
 
-                  <h1 className="font-poppins font-bold text-xl sm:text-2xl text-[var(--foreground)] mt-1 mb-2">
+                  <h1 className="text-xl sm:text-2xl font-bold text-[var(--foreground)] mt-1 mb-2 tracking-tight">
                     {job.title}
                   </h1>
 
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-[var(--muted-foreground)]">
+                  <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-[var(--muted-foreground)]">
                     <span className="flex items-center gap-1.5">
-                      <MapPin size={15} className="text-[var(--primary)]" />
+                      <MapPin size={15} className="text-[#2563EB]" />
                       {job.location}
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <Briefcase size={15} className="text-[var(--primary)]" />
+                      <Briefcase size={15} className="text-[#2563EB]" />
                       {job.type}
                     </span>
                     {job.isRemote && (
-                      <span className="flex items-center gap-1.5 text-green-600 dark:text-green-400 font-medium">
+                      <span className="flex items-center gap-1.5 text-teal-700 dark:text-teal-400 font-medium">
                         <Globe size={15} /> Remote Available
                       </span>
                     )}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2.5 shrink-0">
+                <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
                   <RoundSkillMatchBadge skillMatch={skillMatch} size="md" />
                   <button
                     onClick={() => setIsShareOpen(true)}
-                    className="p-2.5 rounded-xl border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors"
+                    className="p-2.5 rounded-lg border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors cursor-pointer"
                     title="Share this role"
                   >
                     <Share2 size={16} />
                   </button>
                   <button
                     onClick={() => setIsReportOpen(true)}
-                    className="p-2.5 rounded-xl border border-[var(--border)] text-[var(--muted-foreground)] hover:text-red-500 hover:bg-[var(--muted)] transition-colors"
+                    className="p-2.5 rounded-lg border border-[var(--border)] text-[var(--muted-foreground)] hover:text-red-500 hover:bg-[var(--muted)] transition-colors cursor-pointer"
                     title="Report scam or issue"
                   >
                     <ShieldAlert size={16} />
@@ -331,7 +331,7 @@ export default function JobDetail() {
               </div>
 
               {/* Key metadata grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-[var(--border)]">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-6 border-t border-[var(--border)]">
                 {[
                   {
                     icon: DollarSign,
@@ -354,16 +354,16 @@ export default function JobDetail() {
                     value: daysAgo === 0 ? "Today" : `${daysAgo} days ago`,
                   },
                 ].map((item) => (
-                  <div key={item.label}>
-                    <p className="text-xs text-[var(--muted-foreground)] mb-1">
+                  <div key={item.label} className="p-3 rounded-lg bg-[var(--muted)]/40 border border-[var(--border)]/60">
+                    <p className="text-[11px] font-medium text-[var(--muted-foreground)] mb-1 uppercase tracking-wider">
                       {item.label}
                     </p>
                     <div className="flex items-center gap-1.5">
                       <item.icon
-                        size={13}
-                        className="text-[var(--primary)] shrink-0"
+                        size={14}
+                        className="text-[#2563EB] shrink-0"
                       />
-                      <p className="text-sm font-medium text-[var(--foreground)] truncate">
+                      <p className="text-xs sm:text-sm font-semibold text-[var(--foreground)] truncate">
                         {item.value}
                       </p>
                     </div>
@@ -373,8 +373,8 @@ export default function JobDetail() {
             </motion.div>
 
             {/* Description */}
-            <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-6 shadow-[var(--shadow-card)]">
-              <h2 className="font-poppins font-bold text-lg text-[var(--foreground)] mb-4">
+            <div className="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 sm:p-7 shadow-xs">
+              <h2 className="text-base sm:text-lg font-bold text-[var(--foreground)] mb-4 tracking-tight">
                 Job Description
               </h2>
               <p className="text-[var(--foreground)] text-sm leading-relaxed mb-6 whitespace-pre-line">
@@ -383,20 +383,20 @@ export default function JobDetail() {
 
               {job.responsibilities && job.responsibilities.length > 0 && (
                 <>
-                  <h3 className="font-semibold text-[var(--foreground)] mb-3">
+                  <h3 className="font-semibold text-sm text-[var(--foreground)] mb-3 uppercase tracking-wider text-[var(--muted-foreground)]">
                     Key Responsibilities
                   </h3>
-                  <ul className="space-y-2 mb-6">
+                  <ul className="space-y-2.5 mb-6">
                     {job.responsibilities.map((r) => (
                       <li
                         key={r}
-                        className="flex items-start gap-2 text-sm text-[var(--foreground)]"
+                        className="flex items-start gap-2.5 text-sm text-[var(--foreground)]"
                       >
                         <CheckCircle
-                          size={15}
-                          className="text-[var(--primary)] shrink-0 mt-0.5"
+                          size={16}
+                          className="text-[#14B8A6] shrink-0 mt-0.5"
                         />
-                        {r}
+                        <span>{r}</span>
                       </li>
                     ))}
                   </ul>
@@ -405,27 +405,27 @@ export default function JobDetail() {
 
               {job.requirements && job.requirements.length > 0 && (
                 <>
-                  <h3 className="font-semibold text-[var(--foreground)] mb-3">
+                  <h3 className="font-semibold text-sm text-[var(--foreground)] mb-3 uppercase tracking-wider text-[var(--muted-foreground)]">
                     Requirements & Qualifications
                   </h3>
-                  <ul className="space-y-2 mb-6">
+                  <ul className="space-y-2.5 mb-6">
                     {job.requirements.map((r) => (
                       <li
                         key={r}
-                        className="flex items-start gap-2 text-sm text-[var(--foreground)]"
+                        className="flex items-start gap-2.5 text-sm text-[var(--foreground)]"
                       >
-                        <div className="w-1.5 h-1.5 rounded-full bg-[var(--primary)] shrink-0 mt-2" />
-                        {r}
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#2563EB] shrink-0 mt-2" />
+                        <span>{r}</span>
                       </li>
                     ))}
                   </ul>
                 </>
               )}
 
-              <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+              <div className="flex items-center justify-between mb-3 flex-wrap gap-2 pt-4 border-t border-[var(--border)]">
                 <div>
-                  <h3 className="font-semibold text-[var(--foreground)]">
-                    Skills Required
+                  <h3 className="font-bold text-sm text-[var(--foreground)]">
+                    Skills & Tech Stack
                   </h3>
                   <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
                     {skillMatch.matchedCount} of {job.skills.length} skills match your active profile resume
@@ -433,7 +433,7 @@ export default function JobDetail() {
                 </div>
                 <RoundSkillMatchBadge skillMatch={skillMatch} size="sm" />
               </div>
-              <div className="flex flex-wrap gap-2 mb-6">
+              <div className="flex flex-wrap gap-1.5 mb-6">
                 {job.skills.map((skill) => {
                   const isMatched = skillMatch.matchedSkills.some(
                     (ms) => ms.toLowerCase() === skill.toLowerCase()
@@ -441,14 +441,14 @@ export default function JobDetail() {
                   return (
                     <span
                       key={skill}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
                         isMatched
-                          ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 font-semibold"
+                          ? "bg-teal-50 dark:bg-teal-950/40 text-[#14B8A6] border-teal-200 dark:border-teal-800 font-semibold"
                           : "bg-[var(--muted)] text-[var(--foreground)] border-[var(--border)]"
                       }`}
                       title={isMatched ? "Matches your profile / resume skills" : "Job requirement"}
                     >
-                      {isMatched && <span className="mr-1 text-emerald-500 font-bold">✓</span>}
+                      {isMatched && <span className="mr-1 text-teal-600 font-bold">✓</span>}
                       {skill}
                     </span>
                   )
@@ -457,20 +457,20 @@ export default function JobDetail() {
 
               {job.benefits && job.benefits.length > 0 && (
                 <>
-                  <h3 className="font-semibold text-[var(--foreground)] mb-3">
+                  <h3 className="font-bold text-sm text-[var(--foreground)] mb-3 pt-4 border-t border-[var(--border)]">
                     Benefits & Perks
                   </h3>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {job.benefits.map((b) => (
                       <div
                         key={b}
-                        className="flex items-center gap-2 text-sm text-[var(--foreground)]"
+                        className="flex items-center gap-2 p-2.5 rounded-lg bg-[var(--muted)]/40 border border-[var(--border)]/60 text-xs sm:text-sm text-[var(--foreground)]"
                       >
                         <Star
-                          size={13}
-                          className="text-[var(--accent)] fill-[var(--accent)] shrink-0"
+                          size={14}
+                          className="text-[#2563EB] fill-[#2563EB]/20 shrink-0"
                         />
-                        {b}
+                        <span>{b}</span>
                       </div>
                     ))}
                   </div>
@@ -478,12 +478,12 @@ export default function JobDetail() {
               )}
             </div>
 
-            {/* LOCATION MAP VIEW (User Request: "relateed to job location it is show in the map view also") */}
-            <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-6 shadow-[var(--shadow-card)] space-y-4">
+            {/* LOCATION MAP VIEW */}
+            <div className="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 shadow-xs space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-poppins font-bold text-lg text-[var(--foreground)] flex items-center gap-2">
-                  <Navigation size={18} className="text-[var(--primary)]" />
-                  Office Location & GIS Map
+                <h3 className="font-bold text-base text-[var(--foreground)] flex items-center gap-2">
+                  <Navigation size={17} className="text-[#2563EB]" />
+                  Workplace Location & GIS Map
                 </h3>
                 <span className="text-xs text-[var(--muted-foreground)]">
                   {job.location}
@@ -491,7 +491,7 @@ export default function JobDetail() {
               </div>
 
               {/* Embedded Interactive Map Frame */}
-              <div className="w-full h-64 rounded-2xl overflow-hidden border border-[var(--border)] shadow-sm relative bg-[var(--muted)]">
+              <div className="w-full h-64 rounded-xl overflow-hidden border border-[var(--border)] shadow-xs relative bg-[var(--muted)]">
                 <iframe
                   title="Job Location Map"
                   width="100%"
@@ -504,7 +504,7 @@ export default function JobDetail() {
                 />
               </div>
               <p className="text-xs text-[var(--muted-foreground)] flex items-center gap-1.5">
-                <MapPin size={13} className="text-[var(--primary)] shrink-0" />
+                <MapPin size={13} className="text-[#2563EB] shrink-0" />
                 <span>{job.address || `${job.location} · Verified workplace coordinate`}</span>
               </p>
             </div>
@@ -512,10 +512,10 @@ export default function JobDetail() {
             {/* Similar Jobs */}
             {similarJobs.length > 0 && (
               <div>
-                <h2 className="font-poppins font-bold text-xl text-[var(--foreground)] mb-4">
+                <h2 className="font-bold text-lg text-[var(--foreground)] mb-3 tracking-tight">
                   Similar Opportunities
                 </h2>
-                <div className="grid gap-4">
+                <div className="grid gap-3.5">
                   {similarJobs.map((j) => (
                     <JobCard key={j.id} job={j} compact />
                   ))}
@@ -525,26 +525,26 @@ export default function JobDetail() {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-5">
+          <div className="space-y-4">
             {/* Apply card */}
-            <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-5 shadow-[var(--shadow-card)] sticky top-24">
+            <div className="bg-[var(--card)] rounded-xl border border-[var(--border)] p-5 sm:p-6 shadow-xs sticky top-24">
               <div className="text-center mb-4">
-                <p className="text-2xl font-bold text-[var(--foreground)] font-poppins">
+                <p className="text-2xl sm:text-3xl font-bold text-[var(--foreground)] tracking-tight">
                   {salary}
                 </p>
-                <p className="text-sm text-[var(--muted-foreground)]">
-                  Annual compensation
+                <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
+                  Estimated annual compensation
                 </p>
               </div>
 
-              <div className="flex items-center justify-center gap-4 text-sm text-[var(--muted-foreground)] mb-5">
+              <div className="flex items-center justify-center gap-3 text-xs text-[var(--muted-foreground)] mb-5">
                 <span className="flex items-center gap-1">
-                  <Users size={14} />
+                  <Users size={13} />
                   {job.applicationCount} applied
                 </span>
                 <span className="w-1 h-1 rounded-full bg-[var(--border)]" />
                 <span className="flex items-center gap-1">
-                  <Clock size={14} />
+                  <Clock size={13} />
                   {daysAgo === 0 ? "Today" : `${daysAgo}d ago`}
                 </span>
               </div>
@@ -662,9 +662,9 @@ export default function JobDetail() {
             </div>
 
             {/* Company Sidebar Card */}
-            <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-5 shadow-[var(--shadow-card)] space-y-4">
+            <div className="bg-[var(--card)] rounded-xl border border-[var(--border)] p-5 sm:p-6 shadow-xs space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-white dark:bg-slate-900 ring-1 ring-[var(--border)] overflow-hidden shrink-0 p-1 flex items-center justify-center shadow-xs">
+                <div className="w-12 h-12 rounded-xl bg-white dark:bg-slate-900 border border-[var(--border)] overflow-hidden shrink-0 p-1 flex items-center justify-center shadow-xs">
                   <img
                     src={getCompanyRealLogo(job.company.name, job.company.website, job.company.logo)}
                     alt={job.company.name}
@@ -691,7 +691,7 @@ export default function JobDetail() {
               <div className="pt-2 border-t border-[var(--border)]">
                 <Link
                   to={`/companies/${job.company.slug || job.company.id}`}
-                  className="text-xs font-bold text-[var(--primary)] hover:underline flex items-center justify-between"
+                  className="text-xs font-bold text-[#2563EB] hover:underline flex items-center justify-between"
                 >
                   <span>View Full Company Profile & Jobs</span>
                   <ArrowRight size={14} />

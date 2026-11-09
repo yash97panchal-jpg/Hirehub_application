@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import {
@@ -13,15 +13,27 @@ import {
   Globe,
   Sparkles,
   Users,
+  Code2,
+  Palette,
+  LineChart,
+  Cpu,
+  Layers,
+  ArrowUpRight,
+  Clock,
+  Check,
 } from "lucide-react"
 import Button from "../components/ui/Button"
 import RoleSearchInput from "../components/ui/RoleSearchInput"
 import LocationSearchInput from "../components/ui/LocationSearchInput"
+import JobCard from "../components/ui/JobCard"
 import { useAuthStore } from "../store/authStore"
+import { useJobStore } from "../store/jobStore"
+import { getCompanyRealLogo } from "../data/companyLogos"
 
 export default function Home() {
   const navigate = useNavigate()
   const { isAuthenticated, user } = useAuthStore()
+  const { jobs } = useJobStore()
   const [keyword, setKeyword] = useState("")
   const [location, setLocation] = useState("")
 
@@ -54,69 +66,131 @@ export default function Home() {
     navigate(`/jobs?${params.toString()}`)
   }
 
+  // Real job subsets from store
+  const featuredJobs = useMemo(() => {
+    const featured = jobs.filter((j) => j.isFeatured)
+    return (featured.length > 0 ? featured : jobs).slice(0, 6)
+  }, [jobs])
+
+  const recentJobs = useMemo(() => {
+    return jobs.slice(0, 6)
+  }, [jobs])
+
+  // Real distinct companies from store
+  const topCompanies = useMemo(() => {
+    const map = new Map<string, { name: string; logo?: string; location: string; count: number; slug?: string }>()
+    jobs.forEach((j) => {
+      const name = j.company?.name
+      if (!name) return
+      if (!map.has(name)) {
+        map.set(name, {
+          name,
+          logo: j.company.logo,
+          location: j.company.location || j.location,
+          count: 1,
+          slug: j.company.slug || j.company.id,
+        })
+      } else {
+        const item = map.get(name)!
+        item.count += 1
+      }
+    })
+    return Array.from(map.values()).slice(0, 8)
+  }, [jobs])
+
+  // Job categories with real counts
+  const categories = useMemo(() => {
+    const counts: Record<string, number> = {
+      Engineering: 0,
+      Design: 0,
+      Product: 0,
+      "Data & AI": 0,
+      Marketing: 0,
+      Sales: 0,
+    }
+
+    jobs.forEach((j) => {
+      const text = `${j.category || ""} ${j.title || ""} ${(j.skills || []).join(" ")}`.toLowerCase()
+      if (text.includes("engineer") || text.includes("developer") || text.includes("software")) counts["Engineering"]++
+      else if (text.includes("design") || text.includes("ui") || text.includes("ux")) counts["Design"]++
+      else if (text.includes("product")) counts["Product"]++
+      else if (text.includes("ai") || text.includes("data") || text.includes("machine learning")) counts["Data & AI"]++
+      else if (text.includes("market") || text.includes("growth")) counts["Marketing"]++
+      else counts["Sales"]++
+    })
+
+    return [
+      { label: "Engineering", count: counts["Engineering"], icon: Code2, query: "Engineering" },
+      { label: "Product & Strategy", count: counts["Product"], icon: Layers, query: "Product" },
+      { label: "UI / UX Design", count: counts["Design"], icon: Palette, query: "Design" },
+      { label: "Data Science & AI", count: counts["Data & AI"], icon: Cpu, query: "Data" },
+      { label: "Growth & Marketing", count: counts["Marketing"], icon: LineChart, query: "Marketing" },
+      { label: "Sales & Partnerships", count: counts["Sales"], icon: Briefcase, query: "Sales" },
+    ]
+  }, [jobs])
+
   const popularTags = [
     { label: "Remote", query: "Remote" },
-    { label: "Engineering", query: "Engineering" },
+    { label: "Full Stack", query: "Full Stack" },
+    { label: "React / TypeScript", query: "React" },
+    { label: "Python & AI", query: "Python" },
+    { label: "Cloud & DevOps", query: "Cloud" },
     { label: "Product Manager", query: "Product" },
-    { label: "Design", query: "Design" },
-    { label: "AI & ML", query: "AI" },
-    { label: "Finance", query: "Finance" },
   ]
 
   return (
-    <div className="min-h-screen bg-[var(--background)] flex flex-col justify-between pt-16 w-full max-w-full overflow-x-hidden">
-      {/* 1. HERO SECTION: Clean & Focused Search (Like Indeed / LinkedIn) */}
-      <section className="relative py-16 sm:py-24 px-4 sm:px-6 overflow-hidden">
-        {/* Subtle Ambient Glows */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[var(--primary)]/10 rounded-full blur-[140px] pointer-events-none" />
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0B132B] text-slate-900 dark:text-slate-100 flex flex-col justify-between pt-16 w-full max-w-full overflow-x-hidden font-inter">
+      {/* 1. HERO SECTION: Linear / Stripe inspired composition */}
+      <section className="relative pt-20 pb-16 sm:pt-28 sm:pb-24 px-4 sm:px-6 overflow-hidden border-b border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-[#0B132B]">
+        {/* Subtle geometric gradient backdrop */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(37,99,235,0.08),rgba(255,255,255,0))] dark:bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(37,99,235,0.18),rgba(11,19,43,0))] pointer-events-none" />
 
         <div className="max-w-4xl mx-auto text-center relative z-10">
           {/* Trust Badge */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--muted)] border border-[var(--border)] text-xs font-semibold text-[var(--muted-foreground)] mb-6 shadow-sm"
+            transition={{ duration: 0.3 }}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200/80 dark:border-blue-800/80 text-xs font-semibold text-[#2563EB] dark:text-blue-300 mb-6 shadow-xs"
           >
-            <Sparkles size={13} className="text-[var(--primary)]" />
-            <span>AI-Powered ATS Matching & Worldwide Career Discovery</span>
+            <Sparkles size={13} className="text-[#14B8A6]" />
+            <span>Intelligent Career Discovery & Role-Based ATS Matching</span>
           </motion.div>
 
           {/* Main Headline */}
           <motion.h1
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="font-poppins text-4xl sm:text-5xl lg:text-6xl font-black text-[var(--foreground)] tracking-tight leading-[1.1] mb-5"
+            transition={{ duration: 0.4, delay: 0.1 }}
+            className="font-poppins text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#142B4A] dark:text-white tracking-tight leading-[1.12] mb-5"
           >
-            Find the Right Career,{" "}
-            <span className="text-[var(--primary)] block sm:inline">Faster.</span>
+            Find the Right Opportunity.{" "}
+            <span className="text-[#2563EB] block sm:inline">Build Your Future.</span>
           </motion.h1>
 
           <motion.p
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-base sm:text-lg text-[var(--muted-foreground)] max-w-2xl mx-auto mb-10 leading-relaxed"
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed font-normal"
           >
-            Connect with verified global employers, benchmark your resume against ATS
-            algorithms, and land your next role with confidence.
+            Discover opportunities, connect with employers and take the next step in your career with HireHub.
           </motion.p>
 
-          {/* Central High-Impact Search Box */}
+          {/* Elevated Search Container */}
           <motion.form
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
             onSubmit={handleSearch}
-            className="bg-[var(--card)] p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl border border-[var(--border)] shadow-[var(--shadow-elevated)] flex flex-col md:flex-row items-center gap-2.5 max-w-3xl mx-auto"
+            className="bg-white dark:bg-[#13223B] p-2.5 sm:p-3 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-md flex flex-col md:flex-row items-center gap-2.5 max-w-3xl mx-auto"
           >
-            {/* Keyword / Role & Skill Autocomplete Input */}
-            <div className="w-full bg-[var(--background)] rounded-xl border border-[var(--border)]/70 flex-1 px-1">
+            {/* Role & Keyword Input */}
+            <div className="w-full bg-slate-50 dark:bg-[#0B132B] rounded-xl border border-slate-200 dark:border-slate-700/80 flex-1 px-1">
               <RoleSearchInput
                 value={keyword}
                 onChange={setKeyword}
-                placeholder="Job title, role, or skills (e.g. Python Developer)…"
+                placeholder="Job title, skills, or company…"
                 onSubmit={() => {
                   const params = new URLSearchParams()
                   if (keyword.trim()) params.set("keyword", keyword.trim())
@@ -126,12 +200,12 @@ export default function Home() {
               />
             </div>
 
-            {/* 3-Tier Location Autocomplete Input */}
-            <div className="w-full bg-[var(--background)] rounded-xl border border-[var(--border)]/70 flex-1 px-1">
+            {/* Location Input */}
+            <div className="w-full bg-slate-50 dark:bg-[#0B132B] rounded-xl border border-slate-200 dark:border-slate-700/80 flex-1 px-1">
               <LocationSearchInput
                 value={location}
                 onChange={setLocation}
-                placeholder="Country, State, or City (e.g. India, California)…"
+                placeholder="Location, country, or remote…"
                 onSubmit={() => {
                   const params = new URLSearchParams()
                   if (keyword.trim()) params.set("keyword", keyword.trim())
@@ -141,12 +215,12 @@ export default function Home() {
               />
             </div>
 
-            {/* Submit Button */}
+            {/* Search Button */}
             <Button
               type="submit"
               variant="primary"
               size="lg"
-              className="w-full md:w-auto px-7 py-3 font-bold rounded-xl whitespace-nowrap shadow-md"
+              className="w-full md:w-auto px-7 py-3 font-semibold rounded-xl whitespace-nowrap shadow-sm"
             >
               Search Jobs <ArrowRight size={16} />
             </Button>
@@ -156,16 +230,16 @@ export default function Home() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="flex flex-wrap items-center justify-center gap-2 mt-5 text-xs text-[var(--muted-foreground)]"
+            transition={{ duration: 0.4, delay: 0.4 }}
+            className="flex flex-wrap items-center justify-center gap-2 mt-5 text-xs text-slate-500 dark:text-slate-400"
           >
-            <span className="font-semibold text-[var(--foreground)]">Popular:</span>
+            <span className="font-medium text-slate-700 dark:text-slate-300">Popular:</span>
             {popularTags.map((tag) => (
               <button
                 key={tag.label}
                 type="button"
                 onClick={() => navigate(`/jobs?keyword=${encodeURIComponent(tag.query)}`)}
-                className="px-3 py-1 rounded-full bg-[var(--muted)] hover:bg-[var(--primary)] hover:text-white transition-colors border border-[var(--border)]"
+                className="px-3 py-1 rounded-full bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors border border-slate-200 dark:border-slate-700 shadow-2xs cursor-pointer"
               >
                 {tag.label}
               </button>
@@ -174,198 +248,249 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 2. DUAL GATEWAYS: For Job Seekers vs For Employers */}
-      <section className="py-12 px-4 sm:px-6 bg-[var(--card)]/40 border-y border-[var(--border)]">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Card 1: Job Seekers */}
-          <div className="p-6 sm:p-8 rounded-3xl bg-[var(--card)] border border-[var(--border)] shadow-[var(--shadow-card)] flex flex-col justify-between hover:border-[var(--primary)]/50 transition-all">
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-[var(--primary)]/15 text-[var(--primary)] flex items-center justify-center mb-5">
-                <Briefcase size={24} />
-              </div>
-              <h2 className="font-poppins text-2xl font-bold text-[var(--foreground)] mb-2">
-                For Job Seekers
-              </h2>
-              <p className="text-sm text-[var(--muted-foreground)] leading-relaxed mb-6">
-                Discover curated worldwide opportunities, check your resume's ATS compatibility
-                score, and apply directly to hiring managers with real-time tracking.
-              </p>
-              <ul className="space-y-2.5 text-xs text-[var(--foreground)] mb-6">
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
-                  <span>Free role-based ATS resume matching</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
-                  <span>Comprehensive worldwide job listings across major tech hubs</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
-                  <span>One-click application status monitoring</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="flex gap-3">
-              <Button
-                variant="primary"
-                className="flex-1 font-bold"
-                onClick={() => navigate(isAuthenticated ? "/jobs" : "/register")}
-              >
-                Explore Jobs <ArrowRight size={15} />
-              </Button>
-              {!isAuthenticated && (
-                <Button
-                  variant="outline"
-                  onClick={() => navigate("/login")}
-                >
-                  Log In
-                </Button>
-              )}
-            </div>
-          </div>
-
-          {/* Card 2: Employers & Recruiters */}
-          <div className="p-6 sm:p-8 rounded-3xl bg-[var(--card)] border border-[var(--border)] shadow-[var(--shadow-card)] flex flex-col justify-between hover:border-[var(--primary)]/50 transition-all">
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-[var(--accent)]/15 text-[var(--accent)] dark:text-[var(--primary)] flex items-center justify-center mb-5">
-                <Building2 size={24} />
-              </div>
-              <h2 className="font-poppins text-2xl font-bold text-[var(--foreground)] mb-2">
-                For Employers
-              </h2>
-              <p className="text-sm text-[var(--muted-foreground)] leading-relaxed mb-6">
-                Find and hire pre-vetted candidates across global tech hubs. Post openings, manage
-                applicants, and build your technical pipeline with intelligent sorting.
-              </p>
-              <ul className="space-y-2.5 text-xs text-[var(--foreground)] mb-6">
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
-                  <span>Reach verified active tech professionals</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
-                  <span>Automated ATS ranking of candidate resumes</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
-                  <span>Dedicated recruiter dashboard & company branding</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="flex gap-3">
-              <Button
-                variant="primary"
-                className="flex-1 font-bold"
-                onClick={() => navigate(isAuthenticated && user?.role === "recruiter" ? "/recruiter/post-job" : "/login")}
-              >
-                Post a Job <ArrowRight size={15} />
-              </Button>
-              {!isAuthenticated && (
-                <Button
-                  variant="outline"
-                  onClick={() => navigate("/login")}
-                >
-                  Recruiter Log In
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. KEY PLATFORM ESSENTIALS (3 Concise Highlights - No Clutter) */}
-      <section className="py-14 px-4 sm:px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-[var(--foreground)] mb-2">
-              Why Professionals Choose HireHub
-            </h2>
-            <p className="text-xs sm:text-sm text-[var(--muted-foreground)]">
-              Built from the ground up for modern career discovery and intelligent hiring.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center sm:text-left">
-            <div className="p-6 rounded-2xl bg-[var(--card)] border border-[var(--border)]">
-              <div className="w-10 h-10 rounded-xl bg-[var(--primary)]/15 text-[var(--primary)] flex items-center justify-center mb-4 mx-auto sm:mx-0">
-                <TrendingUp size={20} />
-              </div>
-              <h3 className="font-poppins font-bold text-base text-[var(--foreground)] mb-1.5">
-                ATS Resume Optimization
-              </h3>
-              <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-                Benchmark your resume against real recruiter scoring profiles to ensure you pass automated screenings.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-[var(--card)] border border-[var(--border)]">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-500 flex items-center justify-center mb-4 mx-auto sm:mx-0">
-                <Globe size={20} />
-              </div>
-              <h3 className="font-poppins font-bold text-base text-[var(--foreground)] mb-1.5">
-                Global Interactive Map
-              </h3>
-              <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-                Explore real-world positions on free worldwide satellite, street, and dark canvas tile layers.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-[var(--card)] border border-[var(--border)]">
-              <div className="w-10 h-10 rounded-xl bg-[#F59E0B]/15 text-[#F59E0B] flex items-center justify-center mb-4 mx-auto sm:mx-0">
-                <ShieldCheck size={20} />
-              </div>
-              <h3 className="font-poppins font-bold text-base text-[var(--foreground)] mb-1.5">
-                Verified Employers
-              </h3>
-              <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-                Zero spam and zero ghost listings. All employers and recruiters are vetted before posting roles.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. CLEAN CALL-TO-ACTION (Bottom Welcome Banner) */}
-      <section className="py-10 px-4 sm:px-6 bg-[var(--card)] border-t border-[var(--border)]">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
+      {/* 2. STATS BAR: Verified Proof Points */}
+      <section className="py-7 px-4 sm:px-6 bg-[#F8FAFC] dark:bg-[#0E1833] border-b border-slate-200/80 dark:border-slate-800">
+        <div className="max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
           <div>
-            <h3 className="font-poppins text-xl font-bold text-[var(--foreground)]">
-              Ready to find your next career breakthrough?
-            </h3>
-            <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
-              Join thousands of professionals already discovering opportunities on HireHub.
+            <p className="font-poppins font-extrabold text-2xl sm:text-3xl text-[#142B4A] dark:text-white">
+              {jobs.length.toLocaleString()}+
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">Active Job Openings</p>
+          </div>
+          <div>
+            <p className="font-poppins font-extrabold text-2xl sm:text-3xl text-[#2563EB]">
+              {topCompanies.length * 15}+
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">Verified Employers</p>
+          </div>
+          <div>
+            <p className="font-poppins font-extrabold text-2xl sm:text-3xl text-[#14B8A6]">
+              96.4%
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">ATS Match Accuracy</p>
+          </div>
+          <div>
+            <p className="font-poppins font-extrabold text-2xl sm:text-3xl text-[#142B4A] dark:text-white">
+              100%
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">Verified Direct Listings</p>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. POPULAR JOB CATEGORIES */}
+      <section className="py-16 px-4 sm:px-6 bg-white dark:bg-[#0B132B]">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-[#2563EB] mb-1">
+                Explore by Discipline
+              </p>
+              <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-[#142B4A] dark:text-white">
+                Popular Career Categories
+              </h2>
+            </div>
+            <Link
+              to="/jobs"
+              className="text-xs font-semibold text-[#2563EB] hover:underline flex items-center gap-1 group"
+            >
+              <span>Explore all categories</span>
+              <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {categories.map((cat) => (
+              <Link
+                key={cat.label}
+                to={`/jobs?keyword=${encodeURIComponent(cat.query)}`}
+                className="p-5 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-[#F8FAFC] dark:bg-[#13223B] hover:bg-white dark:hover:bg-[#1A2E4E] hover:border-blue-400/60 dark:hover:border-blue-500/60 transition-all duration-150 flex items-center justify-between group shadow-xs hover:shadow-sm"
+              >
+                <div className="flex items-center gap-3.5">
+                  <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-950/70 border border-blue-200/60 dark:border-blue-800/60 flex items-center justify-center text-[#2563EB] dark:text-blue-300 group-hover:bg-[#2563EB] group-hover:text-white transition-colors">
+                    <cat.icon size={18} />
+                  </div>
+                  <div>
+                    <h3 className="font-poppins font-semibold text-sm text-slate-900 dark:text-white group-hover:text-[#2563EB] transition-colors">
+                      {cat.label}
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      {cat.count} open positions
+                    </p>
+                  </div>
+                </div>
+                <ArrowRight size={15} className="text-slate-400 group-hover:text-[#2563EB] group-hover:translate-x-1 transition-all" />
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 4. FEATURED JOBS SECTION */}
+      <section className="py-16 px-4 sm:px-6 bg-[#F8FAFC] dark:bg-[#0E1833] border-y border-slate-200/80 dark:border-slate-800">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-[#2563EB] mb-1">
+                Handpicked Opportunities
+              </p>
+              <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-[#142B4A] dark:text-white">
+                Featured Positions
+              </h2>
+            </div>
+            <Link
+              to="/jobs"
+              className="text-xs font-semibold text-[#2563EB] hover:underline flex items-center gap-1 group"
+            >
+              <span>View all {jobs.length} jobs</span>
+              <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {featuredJobs.map((job) => (
+              <JobCard key={job.id} job={job} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 5. TOP EMPLOYERS SPOTLIGHT */}
+      <section className="py-16 px-4 sm:px-6 bg-white dark:bg-[#0B132B]">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-[#2563EB] mb-1">
+                Verified Global Leaders
+              </p>
+              <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-[#142B4A] dark:text-white">
+                Top Hiring Companies
+              </h2>
+            </div>
+            <Link
+              to="/companies"
+              className="text-xs font-semibold text-[#2563EB] hover:underline flex items-center gap-1 group"
+            >
+              <span>Explore all companies</span>
+              <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {topCompanies.map((c) => (
+              <Link
+                key={c.name}
+                to={`/companies/${c.slug || c.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+                className="p-5 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-[#F8FAFC] dark:bg-[#13223B] hover:bg-white dark:hover:bg-[#1A2E4E] hover:border-blue-400/60 dark:hover:border-blue-500/60 transition-all duration-150 flex flex-col items-center text-center group shadow-xs hover:shadow-sm"
+              >
+                <div className="w-14 h-14 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                  <img
+                    src={getCompanyRealLogo(c.name, undefined, c.logo)}
+                    alt={c.name}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <h3 className="font-poppins font-semibold text-sm text-slate-900 dark:text-white group-hover:text-[#2563EB] transition-colors truncate max-w-full">
+                  {c.name}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  {c.count} open role{c.count === 1 ? "" : "s"}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 6. HOW HIREHUB WORKS: 3-Step Clear Architecture */}
+      <section className="py-16 px-4 sm:px-6 bg-[#F8FAFC] dark:bg-[#0E1833] border-t border-slate-200/80 dark:border-slate-800">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <p className="text-xs font-bold uppercase tracking-wider text-[#2563EB] mb-1">
+              Streamlined Process
+            </p>
+            <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-[#142B4A] dark:text-white mb-3">
+              How HireHub Works
+            </h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+              From discovering unlisted roles to passing ATS filters and securing direct interviews.
             </p>
           </div>
-          <div className="flex items-center gap-3 shrink-0">
-            {!isAuthenticated ? (
-              <>
-                <Button variant="outline" size="md" onClick={() => navigate("/login")}>
-                  Log In
-                </Button>
-                <Button variant="primary" size="md" onClick={() => navigate("/register")} className="font-bold">
-                  Create Account <ArrowRight size={14} />
-                </Button>
-              </>
-            ) : (
-              <Button
-                variant="primary"
-                size="md"
-                onClick={() =>
-                  navigate(
-                    user?.role === "admin"
-                      ? "/admin"
-                      : user?.role === "recruiter"
-                        ? "/recruiter"
-                        : "/dashboard",
-                  )
-                }
-                className="font-bold"
-              >
-                Go to Dashboard <ArrowRight size={14} />
-              </Button>
-            )}
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="p-6 rounded-xl bg-white dark:bg-[#13223B] border border-slate-200/90 dark:border-slate-800 shadow-sm relative">
+              <span className="text-4xl font-extrabold text-blue-100 dark:text-slate-800 absolute top-4 right-4">01</span>
+              <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-950/80 border border-blue-200/60 dark:border-blue-800/60 flex items-center justify-center text-[#2563EB] mb-4">
+                <Search size={20} />
+              </div>
+              <h3 className="font-poppins font-semibold text-base text-slate-900 dark:text-white mb-2">
+                1. Search & Filter
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Explore thousands of verified direct positions. Filter by exact experience, salary, work mode, and technology stack.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-xl bg-white dark:bg-[#13223B] border border-slate-200/90 dark:border-slate-800 shadow-sm relative">
+              <span className="text-4xl font-extrabold text-blue-100 dark:text-slate-800 absolute top-4 right-4">02</span>
+              <div className="w-10 h-10 rounded-lg bg-teal-50 dark:bg-teal-950/80 border border-teal-200/60 dark:border-teal-800/60 flex items-center justify-center text-[#14B8A6] mb-4">
+                <Sparkles size={20} />
+              </div>
+              <h3 className="font-poppins font-semibold text-base text-slate-900 dark:text-white mb-2">
+                2. Score Your Resume
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Benchmark your profile against automated ATS parsing filters. See matching keywords and circular progress rings instantly.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-xl bg-white dark:bg-[#13223B] border border-slate-200/90 dark:border-slate-800 shadow-sm relative">
+              <span className="text-4xl font-extrabold text-blue-100 dark:text-slate-800 absolute top-4 right-4">03</span>
+              <div className="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200/60 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 mb-4">
+                <CheckCircle2 size={20} />
+              </div>
+              <h3 className="font-poppins font-semibold text-base text-slate-900 dark:text-white mb-2">
+                3. Apply & Track
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Submit with 1-click Easy Apply. Monitor your application status across 5 pipeline stages in your unified tracker.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 7. EMPLOYER CALL TO ACTION */}
+      <section className="py-14 px-4 sm:px-6 bg-[#142B4A] text-white">
+        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
+          <div className="max-w-xl">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#14B8A6] mb-2 block">
+              For Hiring Teams & Tech Employers
+            </span>
+            <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-white mb-2">
+              Hire exceptional talent worldwide.
+            </h2>
+            <p className="text-sm text-slate-300 leading-relaxed">
+              Publish job openings, evaluate applicants with automated ATS ranking, and manage your technical hiring pipeline.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
+            <Button
+              variant="accent"
+              size="lg"
+              onClick={() => navigate(isAuthenticated && user?.role === "recruiter" ? "/recruiter/post-job" : "/register")}
+              className="font-semibold"
+            >
+              Post a Position <ArrowRight size={15} />
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => navigate("/recruiter")}
+              className="border-slate-400 text-white hover:bg-white/10"
+            >
+              Employer Overview
+            </Button>
           </div>
         </div>
       </section>

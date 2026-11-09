@@ -14,17 +14,18 @@ export default function Badge({
   className,
 }: BadgeProps) {
   const variants = {
-    default: "bg-[var(--muted)] text-[var(--muted-foreground)]",
+    default: "bg-slate-100 text-slate-700 dark:bg-slate-800/80 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60",
     primary:
-      "bg-[var(--primary)]/15 text-[#9A5B00] dark:bg-[var(--primary)]/20 dark:text-[var(--primary)] font-semibold",
+      "bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60 font-semibold",
     accent:
-      "bg-[var(--accent)]/15 text-[var(--accent)] dark:bg-[var(--accent)]/40 dark:text-[#E2E8F0] font-semibold",
+      "bg-teal-50 text-teal-700 dark:bg-teal-950/60 dark:text-teal-300 border border-teal-200/60 dark:border-teal-800/60 font-semibold",
     success:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
-    error: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
+      "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 font-medium",
+    error:
+      "bg-red-50 text-red-700 dark:bg-red-950/60 dark:text-red-300 border border-red-200/60 dark:border-red-800/60 font-medium",
     warning:
-      "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
-    outline: "border border-[var(--border)] text-[var(--muted-foreground)]",
+      "bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/60 font-medium",
+    outline: "border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-900/40",
   }
 
   const sizes = {

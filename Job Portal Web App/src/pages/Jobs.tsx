@@ -337,16 +337,16 @@ export default function Jobs() {
         <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)] mb-2.5">
           Job Type
         </h3>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5">
           {jobTypes.map((t) => (
             <button
               key={t}
               type="button"
               onClick={() => toggleType(t)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border cursor-pointer ${
                 selectedTypes.includes(t)
-                  ? "bg-[var(--primary)] text-white border-[var(--primary)] shadow-xs"
-                  : "bg-[var(--background)] text-[var(--foreground)] border-[var(--border)] hover:border-[var(--primary)] hover:bg-[var(--primary)]/5"
+                  ? "bg-[#2563EB] text-white border-[#2563EB] shadow-xs"
+                  : "bg-[var(--background)] text-[var(--foreground)] border-[var(--border)] hover:border-[#2563EB] hover:bg-blue-50 dark:hover:bg-blue-950/20"
               }`}
             >
               {t}
@@ -357,7 +357,7 @@ export default function Jobs() {
 
       {/* Experience Level */}
       <div className="mb-5">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)] mb-2.5">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)] mb-2">
           Experience Level
         </h3>
         <div className="space-y-1">
@@ -368,18 +368,18 @@ export default function Jobs() {
                 key={e}
                 type="button"
                 onClick={() => toggleExp(e)}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all text-left cursor-pointer group ${
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-all text-left cursor-pointer group ${
                   isChecked
-                    ? "bg-[var(--primary)]/10 text-[var(--primary)] font-semibold"
+                    ? "bg-blue-50 dark:bg-blue-950/30 text-[#2563EB] font-semibold"
                     : "text-[var(--foreground)] hover:bg-[var(--muted)]/50"
                 }`}
               >
-                <span className="text-xs font-medium">{e}</span>
+                <span className="text-xs">{e}</span>
                 <div
                   className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${
                     isChecked
-                      ? "bg-[var(--primary)] border-[var(--primary)] text-white shadow-xs"
-                      : "border-[var(--border)] bg-[var(--background)] group-hover:border-[var(--primary)]"
+                      ? "bg-[#2563EB] border-[#2563EB] text-white shadow-xs"
+                      : "border-[var(--border)] bg-[var(--background)] group-hover:border-[#2563EB]"
                   }`}
                 >
                   {isChecked && <Check size={11} strokeWidth={3} />}
@@ -396,7 +396,7 @@ export default function Jobs() {
           <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
             Min Salary
           </h3>
-          <span className="text-xs font-bold text-[var(--primary)] px-2 py-0.5 rounded-md bg-[var(--primary)]/10">
+          <span className="text-xs font-bold text-[#2563EB] px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800">
             {salaryMin > 0 ? `$${(salaryMin / 1000).toFixed(0)}k+/yr` : "Any"}
           </span>
         </div>
@@ -407,9 +407,9 @@ export default function Jobs() {
           step="10000"
           value={salaryMin}
           onChange={(e) => setSalaryMin(Number(e.target.value))}
-          className="w-full accent-[var(--primary)] cursor-pointer"
+          className="w-full accent-[#2563EB] cursor-pointer"
         />
-        <div className="flex justify-between text-[11px] text-[var(--muted-foreground)] mt-1">
+        <div className="flex justify-between text-[11px] text-[var(--muted-foreground)] mt-1 font-mono">
           <span>$0</span>
           <span>$100k</span>
           <span>$200k+</span>
@@ -418,7 +418,7 @@ export default function Jobs() {
 
       {/* Date Posted */}
       <div>
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)] mb-2.5">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)] mb-2">
           Date Posted
         </h3>
         <div className="space-y-1">
@@ -429,21 +429,21 @@ export default function Jobs() {
                 key={opt.value}
                 type="button"
                 onClick={() => setDatePosted(opt.value)}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all text-left cursor-pointer group ${
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-all text-left cursor-pointer group ${
                   isSelected
-                    ? "bg-[var(--primary)]/10 text-[var(--primary)] font-semibold"
+                    ? "bg-blue-50 dark:bg-blue-950/30 text-[#2563EB] font-semibold"
                     : "text-[var(--foreground)] hover:bg-[var(--muted)]/50"
                 }`}
               >
-                <span className="text-xs font-medium">{opt.label}</span>
+                <span className="text-xs">{opt.label}</span>
                 <div
                   className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
                     isSelected
-                      ? "border-[var(--primary)] bg-[var(--primary)]/15"
-                      : "border-[var(--border)] bg-[var(--background)] group-hover:border-[var(--primary)]"
+                      ? "border-[#2563EB] bg-[#2563EB]"
+                      : "border-[var(--border)] bg-[var(--background)] group-hover:border-[#2563EB]"
                   }`}
                 >
-                  {isSelected && <div className="w-2 h-2 rounded-full bg-[var(--primary)]" />}
+                  {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                 </div>
               </button>
             )
@@ -456,62 +456,59 @@ export default function Jobs() {
   return (
     <div className="min-h-screen bg-[var(--background)] pt-20 w-full max-w-full overflow-x-hidden">
       {/* Search Header Bar */}
-      <div
-        style={{
-          background:
-            "linear-gradient(135deg, var(--accent) 0%, #1A0924 55%, var(--primary-deep) 100%)",
-        }}
-        className="py-8 border-b border-[var(--border)]"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <div className="py-8 bg-[#142B4A] border-b border-[#1E3A5F] relative overflow-hidden">
+        {/* Subtle radial ambient gradients for premium SaaS look */}
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#2563EB]/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-10 left-10 w-72 h-72 bg-[#14B8A6]/10 rounded-full blur-2xl pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
-              <span className="text-xs uppercase font-bold tracking-wider text-[var(--primary)] flex items-center gap-1.5 mb-1">
-                <Sparkles size={14} /> Global Job Portal & Career Discovery
+              <span className="text-xs uppercase font-bold tracking-wider text-[#14B8A6] flex items-center gap-1.5 mb-1.5">
+                <Sparkles size={14} /> Career Discovery & Job Portal
               </span>
-              <h1 className="font-poppins text-2xl sm:text-3xl font-extrabold text-white">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
                 Find Your Next Opportunity
               </h1>
-              <p className="text-xs sm:text-sm text-white/75 mt-1">
-                Search and discover verified career opportunities worldwide
+              <p className="text-xs sm:text-sm text-slate-300 mt-1">
+                Explore thousands of verified roles at top global tech companies and high-growth startups
               </p>
             </div>
 
-            {/* List View Indicator */}
-            <div className="flex items-center gap-2 bg-white/10 px-3.5 py-1.5 rounded-xl border border-white/20 text-white text-xs font-semibold backdrop-blur-md self-start sm:self-auto">
-              <List size={14} />
-              <span>List View</span>
+            {/* Total verified count pill */}
+            <div className="flex items-center gap-2 bg-white/10 px-3.5 py-1.5 rounded-lg border border-white/15 text-white text-xs font-medium backdrop-blur-sm self-start sm:self-auto">
+              <span className="w-2 h-2 rounded-full bg-[#14B8A6] animate-pulse" />
+              <span>{storeJobs.length} Active Positions</span>
             </div>
           </div>
 
-          {/* Search Inputs: Role Search & Location Search with Autocomplete */}
+          {/* Search Inputs: Role Search & Location Search */}
           <div className="flex flex-col sm:flex-row gap-3">
-            {/* 1. Search Role with Role/Skill Suggestions */}
             <RoleSearchInput
               value={keyword}
               onChange={setKeyword}
               variant="dark"
-              placeholder="Search role, skills (e.g. Python Developer, React, PyTorch)…"
-              inputClassName="py-3 pl-11"
+              placeholder="Search role, title, or skills (e.g. Frontend Engineer, React, Python)…"
+              inputClassName="py-3 pl-11 bg-white/10 border-white/20 text-white placeholder:text-slate-300 rounded-lg focus:ring-2 focus:ring-[#2563EB]"
             />
 
-            {/* 2. Search Location with 3-Tier Hierarchy (Country -> State -> City) */}
             <LocationSearchInput
               value={location}
               onChange={setLocation}
               variant="dark"
-              className="sm:w-96"
-              placeholder="Search country, state, or city (e.g. India, California, San Francisco)…"
-              inputClassName="py-3 pl-11"
+              className="sm:w-80"
+              placeholder="Location or 'Remote'…"
+              inputClassName="py-3 pl-11 bg-white/10 border-white/20 text-white placeholder:text-slate-300 rounded-lg focus:ring-2 focus:ring-[#2563EB]"
             />
 
             {(keyword || location) && (
               <button
+                type="button"
                 onClick={() => {
                   setKeyword("")
                   setLocation("")
                 }}
-                className="px-5 py-3 rounded-xl bg-white/10 text-white/80 hover:text-white text-xs font-semibold transition-colors shrink-0"
+                className="px-4 py-3 rounded-lg bg-white/10 hover:bg-white/15 text-slate-200 hover:text-white text-xs font-semibold transition-colors shrink-0 border border-white/15"
               >
                 Clear
               </button>
@@ -525,15 +522,15 @@ export default function Jobs() {
         <div className="flex flex-col lg:flex-row gap-8">
             {/* Desktop Sidebar Filters */}
             <aside className="lg:w-72 shrink-0 hidden lg:block">
-              <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-5 sticky top-24 shadow-[var(--shadow-card)]">
+              <div className="bg-[var(--card)] rounded-xl border border-[var(--border)] p-5 sticky top-24 shadow-xs">
                 <div className="flex items-center justify-between mb-5">
-                  <h2 className="font-poppins font-semibold text-[var(--foreground)]">
+                  <h2 className="text-sm font-bold text-[var(--foreground)] tracking-tight">
                     Filters
                   </h2>
                   {activeFilterCount > 0 && (
                     <button
                       onClick={clearAll}
-                      className="text-xs text-[var(--primary)] font-semibold hover:underline flex items-center gap-1 cursor-pointer"
+                      className="text-xs text-[#2563EB] font-semibold hover:underline flex items-center gap-1 cursor-pointer"
                     >
                       <X size={12} /> Clear all ({activeFilterCount})
                     </button>
@@ -780,7 +777,7 @@ export default function Jobs() {
                               onClick={() => handlePageChange(page)}
                               className={`min-w-8 sm:min-w-9 h-8 sm:h-9 px-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
                                 isActive
-                                  ? "bg-[var(--primary)] text-white shadow-sm shadow-[var(--primary)]/30 font-bold"
+                                  ? "bg-[#2563EB] text-white shadow-xs font-bold"
                                   : "border border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] hover:bg-[var(--muted)]"
                               }`}
                               aria-current={isActive ? "page" : undefined}
@@ -805,24 +802,19 @@ export default function Jobs() {
                   )}
                 </>
               ) : (
-                <div className="flex flex-col items-center justify-center py-24 text-center">
-                  <div className="w-20 h-20 rounded-2xl bg-[var(--muted)] flex items-center justify-center mb-4">
-                    <Briefcase
-                      size={36}
-                      className="text-[var(--muted-foreground)]"
-                    />
+                <div className="flex flex-col items-center justify-center py-20 text-center bg-[var(--card)] rounded-xl border border-[var(--border)] p-8">
+                  <div className="w-16 h-16 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#2563EB] flex items-center justify-center mb-4">
+                    <Briefcase size={28} />
                   </div>
-                  <h3 className="font-poppins font-bold text-xl text-[var(--foreground)] mb-2">
-                    No jobs found
+                  <h3 className="font-bold text-lg text-[var(--foreground)] mb-1.5">
+                    No matching positions found
                   </h3>
-                  <p className="text-[var(--muted-foreground)] text-sm max-w-xs">
-                    Try adjusting your filters or search terms to find more
-                    opportunities.
+                  <p className="text-[var(--muted-foreground)] text-xs sm:text-sm max-w-sm mb-5">
+                    We couldn't find any positions matching your exact criteria. Try broadening your keywords, location, or clearing applied filters.
                   </p>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="mt-4"
                     onClick={clearAll}
                   >
                     Clear all filters

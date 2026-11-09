@@ -112,19 +112,41 @@ export default function Login() {
         onSelectAccount={handleGoogleAccountSelect}
       />
 
-      {/* LEFT PANEL: Interactive Particle Animation */}
-      <div className="flex flex-col justify-end w-full lg:w-1/2 h-[240px] sm:h-[280px] md:h-[320px] lg:h-full relative overflow-hidden bg-[#12051B] border-b lg:border-b-0 lg:border-r border-[var(--border)] shrink-0">
-        <ParticleTextEffect
-          words={["WELCOME", "HIREHUB", "CAREER SEARCH"]}
-          holdDurationMs={4500}
-        />
+      {/* LEFT PANEL: Premium Deep Navy Brand Hero */}
+      <div className="flex flex-col justify-between w-full lg:w-1/2 h-[260px] sm:h-[300px] md:h-[340px] lg:h-full relative overflow-hidden bg-[#142B4A] border-b lg:border-b-0 lg:border-r border-[#1E3A5F] shrink-0 p-6 sm:p-8 lg:p-12">
+        {/* Subtle radial ambient gradients */}
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#2563EB]/25 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-[#14B8A6]/20 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 p-4 sm:p-5 lg:p-8 pointer-events-none select-none max-w-md">
-          <h2 className="font-poppins text-base sm:text-lg lg:text-xl font-bold text-white mb-1 leading-tight">
-            Your Gateway to Tomorrow's Career
+        {/* Top Logo */}
+        <div className="relative z-10">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#2563EB] to-[#14B8A6] flex items-center justify-center text-white shadow-xs">
+              <span className="font-extrabold text-sm tracking-tight">H</span>
+            </div>
+            <span className="text-lg font-bold text-white tracking-tight">Hire<span className="text-[#14B8A6]">Hub</span></span>
+          </div>
+        </div>
+
+        {/* Centered Particle Text Canvas */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <ParticleTextEffect
+            words={["HIREHUB", "CAREERS", "VERIFIED", "DISCOVERY"]}
+            holdDurationMs={4000}
+          />
+        </div>
+
+        {/* Bottom Value Proposition & Proof Points */}
+        <div className="relative z-10 pointer-events-none select-none max-w-md">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-[#14B8A6] font-semibold mb-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#14B8A6] animate-pulse" />
+            Enterprise-Grade Job Platform
+          </div>
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-2 leading-tight tracking-tight">
+            Connecting Top Talent with World-Class Companies
           </h2>
-          <p className="text-white/70 text-xs sm:text-sm leading-relaxed line-clamp-2 lg:line-clamp-none">
-            Verified authentication, multi-company applications, and intelligent ATS matching.
+          <p className="text-slate-300 text-xs sm:text-sm leading-relaxed line-clamp-2 lg:line-clamp-none">
+            Verified authentication, high-speed ATS screening, and direct recruiter communication.
           </p>
         </div>
       </div>
@@ -191,7 +213,7 @@ export default function Login() {
           </Link>
 
           {/* Role Switcher: Candidate vs Recruiter */}
-          <div className="p-1 rounded-2xl bg-[var(--muted)] border border-[var(--border)] grid grid-cols-2 gap-1 mb-4 shadow-sm">
+          <div className="p-1 rounded-xl bg-[var(--muted)] border border-[var(--border)] grid grid-cols-2 gap-1 mb-5 shadow-xs">
             <button
               type="button"
               onClick={() => {
@@ -199,9 +221,9 @@ export default function Login() {
                 setFormError("")
               }}
               className={cn(
-                "flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200",
+                "flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer",
                 activeRole === "candidate"
-                  ? "bg-[var(--card)] text-[var(--primary)] font-bold shadow-sm border border-[var(--border)]"
+                  ? "bg-[var(--card)] text-[#2563EB] font-bold shadow-xs border border-[var(--border)]"
                   : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]",
               )}
             >
@@ -216,9 +238,9 @@ export default function Login() {
                 setFormError("")
               }}
               className={cn(
-                "flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200",
+                "flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer",
                 activeRole === "recruiter"
-                  ? "bg-[var(--card)] text-[var(--primary)] font-bold shadow-sm border border-[var(--border)]"
+                  ? "bg-[var(--card)] text-[#2563EB] font-bold shadow-xs border border-[var(--border)]"
                   : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]",
               )}
             >
@@ -228,12 +250,12 @@ export default function Login() {
           </div>
 
           {/* Form Title */}
-          <div className="mb-4">
-            <h1 className="font-poppins text-xl sm:text-2xl font-black text-[var(--foreground)] tracking-tight mb-1">
-              {activeRole === "recruiter" ? "Recruiter Log In" : "Candidate Log In"}
+          <div className="mb-5">
+            <h1 className="text-xl sm:text-2xl font-bold text-[var(--foreground)] tracking-tight mb-1">
+              {activeRole === "recruiter" ? "Recruiter Portal Sign In" : "Candidate Sign In"}
             </h1>
             <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-              Log in with your verified email and password. Server-side role enforcement via Supabase Auth & RLS.
+              Welcome back. Enter your verified account credentials to access your dashboard.
             </p>
           </div>
 

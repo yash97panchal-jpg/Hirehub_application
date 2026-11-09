@@ -227,31 +227,28 @@ export default function Navbar() {
                 : "/"
             }
             onClick={handleLogoClick}
-            className="flex items-center gap-2 shrink-0 cursor-pointer"
+            className="flex items-center gap-2.5 shrink-0 cursor-pointer group"
           >
-            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm border border-[var(--border)] shrink-0 overflow-hidden p-1">
-              <img
-                src={symbolLogo}
-                alt="HireHub Logo"
-                className="w-full h-full object-contain"
-              />
+            <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-[#142B4A] via-[#1E3A8A] to-[#2563EB] shadow-sm text-white font-extrabold text-base shrink-0 border border-blue-400/20 group-hover:scale-105 transition-transform duration-200">
+              <span className="tracking-tighter">H</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#14B8A6] ml-0.5" />
             </div>
-            <span className="font-poppins font-bold text-xl text-[var(--foreground)]">
-              Hire<span className="text-[var(--primary)]">Hub</span>
+            <span className="font-poppins font-extrabold text-xl text-[var(--foreground)] tracking-tight">
+              Hire<span className="text-[#2563EB]">Hub</span>
             </span>
           </Link>
 
-          {/* Desktop Nav - Options list only shows AFTER log in / create account and NEVER on auth pages */}
-          {isAuthenticated && user && !isAuthPage && (
+          {/* Desktop Nav - Visible on all non-auth pages */}
+          {!isAuthPage && (
             <nav className="hidden lg:flex items-center gap-1">
               {/* Jobs Mega Menu */}
               <div ref={jobsRef} className="relative">
                 <button
                   onClick={() => setJobsOpen((v) => !v)}
                   className={cn(
-                    "flex items-center gap-1 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors",
-                    "text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)]",
-                    jobsOpen && "text-[var(--primary)] bg-[var(--muted)]",
+                    "flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer",
+                    "text-[var(--foreground)] hover:text-[#2563EB] hover:bg-[var(--muted)]",
+                    jobsOpen && "text-[#2563EB] bg-[var(--muted)]",
                   )}
                 >
                   Find Jobs
@@ -270,7 +267,7 @@ export default function Navbar() {
                       initial="hidden"
                       animate="visible"
                       exit="exit"
-                      className="absolute left-0 top-full mt-2 w-[480px] max-w-[calc(100vw-2rem)] rounded-2xl bg-[var(--card)] border border-[var(--border)] shadow-[var(--shadow-elevated)] overflow-hidden"
+                      className="absolute left-0 top-full mt-2 w-[480px] max-w-[calc(100vw-2rem)] rounded-2xl bg-[var(--card)] border border-[var(--border)] shadow-[var(--shadow-elevated)] overflow-hidden z-50"
                     >
                       <div className="p-4">
                         <p className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-widest mb-3">
@@ -281,12 +278,13 @@ export default function Navbar() {
                             <Link
                               key={cat.label}
                               to={`/jobs?category=${cat.label.toLowerCase()}`}
+                              onClick={() => setJobsOpen(false)}
                               className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--muted)] transition-colors group"
                             >
-                              <div className="w-9 h-9 rounded-lg bg-[var(--muted)] flex items-center justify-center group-hover:bg-[var(--primary)] transition-colors">
+                              <div className="w-9 h-9 rounded-lg bg-[var(--muted)] flex items-center justify-center group-hover:bg-[#2563EB] transition-colors">
                                 <cat.icon
                                   size={16}
-                                  className="text-[var(--primary)] group-hover:text-[#180C22] transition-colors"
+                                  className="text-[#2563EB] group-hover:text-white transition-colors"
                                 />
                               </div>
                               <div>
@@ -301,15 +299,16 @@ export default function Navbar() {
                           ))}
                         </div>
                       </div>
-                      <div className="px-4 py-3 bg-[var(--muted)] flex items-center justify-between">
-                        <span className="text-sm text-[var(--muted-foreground)]">
+                      <div className="px-4 py-3 bg-[var(--muted)]/60 flex items-center justify-between border-t border-[var(--border)]">
+                        <span className="text-xs text-[var(--muted-foreground)]">
                           {jobs.length} jobs available
                         </span>
                         <Link
                           to="/jobs"
-                          className="text-sm font-semibold text-[var(--primary)] hover:underline flex items-center gap-1"
+                          onClick={() => setJobsOpen(false)}
+                          className="text-xs font-semibold text-[#2563EB] hover:underline flex items-center gap-1"
                         >
-                          View all <Zap size={13} />
+                          View all jobs <Zap size={13} />
                         </Link>
                       </div>
                     </motion.div>
@@ -319,46 +318,53 @@ export default function Navbar() {
 
               <Link
                 to="/companies"
-                className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
+                className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[#2563EB] hover:bg-[var(--muted)] transition-colors"
               >
                 Companies
               </Link>
-              <Link
-                to="/skills"
-                className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
-              >
-                Skill Tests
-              </Link>
-              {user?.role === "recruiter" && (
-                <Link
-                  to="/recruiter/talent-search"
-                  className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--primary)] hover:bg-[var(--primary)]/10 transition-colors font-semibold"
-                >
-                  Talent Search
-                </Link>
-              )}
+
               <Link
                 to="/ats-checker"
-                className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
+                className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[#2563EB] hover:bg-[var(--muted)] transition-colors"
               >
                 ATS Checker
               </Link>
+
               <Link
                 to="/resume-builder"
-                className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
+                className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[#2563EB] hover:bg-[var(--muted)] transition-colors"
               >
                 Resume Builder
               </Link>
+
               <Link
                 to="/salaries"
                 className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   location.pathname === "/salaries" || location.pathname === "/salary-insights"
-                    ? "text-[var(--primary)] font-semibold bg-[var(--muted)]"
-                    : "text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--muted)]"
+                    ? "text-[#2563EB] font-semibold bg-[var(--muted)]"
+                    : "text-[var(--foreground)] hover:text-[#2563EB] hover:bg-[var(--muted)]"
                 }`}
               >
-                Salaries
+                Salary Insights
               </Link>
+
+              {user?.role === "recruiter" && (
+                <Link
+                  to="/recruiter/talent-search"
+                  className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-semibold text-[#2563EB] hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors"
+                >
+                  Talent Search
+                </Link>
+              )}
+
+              {!isAuthenticated && (
+                <Link
+                  to="/about"
+                  className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-[var(--foreground)] hover:text-[#2563EB] hover:bg-[var(--muted)] transition-colors"
+                >
+                  About Us
+                </Link>
+              )}
             </nav>
           )}
 
@@ -744,16 +750,57 @@ export default function Navbar() {
                   </div>
                 </>
               ) : (
-                <div className="flex flex-col gap-2 pt-1">
-                  <Button variant="outline" onClick={() => navigate("/login")}>
-                    Log In
-                  </Button>
-                  <Button
-                    variant="primary"
-                    onClick={() => navigate("/register")}
+                <div className="flex flex-col gap-1.5 pt-1">
+                  <Link
+                    to="/jobs"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[#2563EB]"
                   >
-                    Create Account
-                  </Button>
+                    <Briefcase size={17} /> Find Jobs
+                  </Link>
+                  <Link
+                    to="/companies"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[#2563EB]"
+                  >
+                    <Building2 size={17} /> Companies
+                  </Link>
+                  <Link
+                    to="/ats-checker"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[#2563EB]"
+                  >
+                    <FileText size={17} /> ATS Resume Checker
+                  </Link>
+                  <Link
+                    to="/resume-builder"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[#2563EB]"
+                  >
+                    <FileText size={17} /> Resume Builder
+                  </Link>
+                  <Link
+                    to="/salaries"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[#2563EB]"
+                  >
+                    <DollarSign size={17} /> Salary Insights
+                  </Link>
+                  <Link
+                    to="/about"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[#2563EB]"
+                  >
+                    <Globe size={17} /> About Us
+                  </Link>
+                  <div className="pt-3 mt-1 flex flex-col gap-2 border-t border-[var(--border)]">
+                    <Button variant="secondary" onClick={() => { setMobileOpen(false); navigate("/login"); }}>
+                      Log In
+                    </Button>
+                    <Button variant="primary" onClick={() => { setMobileOpen(false); navigate("/register"); }}>
+                      Get Started Free
+                    </Button>
+                  </div>
                 </div>
               )}
             </nav>

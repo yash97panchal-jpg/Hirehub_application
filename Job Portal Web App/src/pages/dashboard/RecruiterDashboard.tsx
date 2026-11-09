@@ -143,7 +143,7 @@ export default function RecruiterDashboard() {
   }, [applications])
 
   return (
-    <div className="min-h-screen bg-[var(--background)] pt-20">
+    <div className="min-h-screen bg-[var(--background)] pt-20 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Header */}
         <motion.div
@@ -152,11 +152,11 @@ export default function RecruiterDashboard() {
           className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4"
         >
           <div>
-            <h1 className="font-poppins text-3xl font-bold text-[var(--foreground)]">
+            <h1 className="text-2xl sm:text-3xl font-bold text-[var(--foreground)] tracking-tight">
               Recruiter Dashboard
             </h1>
-            <p className="text-[var(--muted-foreground)] mt-1">
-              Manage your jobs and applicants.
+            <p className="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1">
+              Oversee open positions, candidate pipelines, and review incoming ATS applications.
             </p>
           </div>
           <div className="flex gap-3">
@@ -170,20 +170,20 @@ export default function RecruiterDashboard() {
               variant="primary"
               onClick={() => navigate("/recruiter/post-job")}
             >
-              <Plus size={16} className="mr-2" /> Post New Job
+              <Plus size={16} className="mr-1.5" /> Post New Job
             </Button>
           </div>
         </motion.div>
 
         {/* Tabs */}
-        <div className="flex gap-1 p-1 bg-[var(--muted)] rounded-xl mb-8 w-fit">
+        <div className="flex gap-1 p-1 bg-[var(--muted)] rounded-xl mb-8 w-fit border border-[var(--border)]">
           {(["overview", "jobs", "applicants"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all ${
+              className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold capitalize transition-all cursor-pointer ${
                 activeTab === tab
-                  ? "bg-[var(--card)] text-[var(--primary)] shadow-sm"
+                  ? "bg-[var(--card)] text-[#2563EB] shadow-xs"
                   : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
               }`}
             >
@@ -199,16 +199,16 @@ export default function RecruiterDashboard() {
               label: "Active Jobs",
               value: storeJobs.length,
               icon: Briefcase,
-              color: "var(--primary)",
-              bg: "bg-[var(--muted)] ",
+              color: "#2563EB",
+              bg: "bg-blue-50 dark:bg-blue-950/40 text-[#2563EB]",
               change: storeJobs.length > 0 ? `+${storeJobs.length} active` : "0 posted",
             },
             {
               label: "Total Applicants",
               value: realApplied,
               icon: Users,
-              color: "#22C55E",
-              bg: "bg-green-100 dark:bg-green-900/30",
+              color: "#14B8A6",
+              bg: "bg-teal-50 dark:bg-teal-950/40 text-[#14B8A6]",
               change: realApplied > 0 ? `${realApplied} active candidates` : "0 candidates",
             },
             {
@@ -216,15 +216,15 @@ export default function RecruiterDashboard() {
               value: realShortlisted,
               icon: Star,
               color: "#F59E0B",
-              bg: "bg-yellow-100 dark:bg-yellow-900/30",
+              bg: "bg-amber-50 dark:bg-amber-950/40 text-amber-500",
               change: realShortlisted > 0 ? `${realShortlisted} shortlisted` : "0 shortlisted",
             },
             {
               label: "Interviews",
               value: realInterviews,
               icon: CheckCircle,
-              color: "#8B5CF6",
-              bg: "bg-purple-100 dark:bg-purple-900/30",
+              color: "#16A34A",
+              bg: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600",
               change: realInterviews > 0 ? `${realInterviews} scheduled` : "0 scheduled",
             },
           ].map((stat, i) => (
@@ -233,21 +233,21 @@ export default function RecruiterDashboard() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.07 }}
-              className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-5 shadow-[var(--shadow-card)]"
+              className="bg-[var(--card)] rounded-xl border border-[var(--border)] p-5 shadow-xs"
             >
               <div
-                className={`w-10 h-10 rounded-xl ${stat.bg} flex items-center justify-center mb-3`}
+                className={`w-10 h-10 rounded-lg ${stat.bg} flex items-center justify-center mb-3`}
               >
-                <stat.icon size={20} style={{ color: stat.color }} />
+                <stat.icon size={19} />
               </div>
-              <p className="font-poppins text-3xl font-bold text-[var(--foreground)]">
+              <p className="text-2xl sm:text-3xl font-bold text-[var(--foreground)] tracking-tight">
                 {stat.value}
               </p>
-              <p className="text-sm text-[var(--muted-foreground)] mt-0.5">
+              <p className="text-xs sm:text-sm font-medium text-[var(--muted-foreground)] mt-0.5">
                 {stat.label}
               </p>
               <p
-                className="text-xs font-medium mt-2"
+                className="text-xs font-semibold mt-2"
                 style={{ color: stat.color }}
               >
                 {stat.change}

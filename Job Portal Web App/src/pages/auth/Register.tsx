@@ -242,22 +242,44 @@ export default function Register() {
         onSelectAccount={handleGoogleAccountSelect}
       />
 
-      {/* Left panel with Particle Text Effect */}
-      <div className="flex flex-col justify-end w-full lg:w-1/2 h-[240px] sm:h-[280px] md:h-[320px] lg:h-full relative overflow-hidden bg-[#12051B] border-b lg:border-b-0 lg:border-r border-[var(--border)] shrink-0">
-        <ParticleTextEffect words={["WELCOME", "HIREHUB", "JOIN NOW"]} holdDurationMs={4500} />
+      {/* Left panel: Premium Deep Navy Brand Hero */}
+      <div className="flex flex-col justify-between w-full lg:w-1/2 h-[260px] sm:h-[300px] md:h-[340px] lg:h-full relative overflow-hidden bg-[#142B4A] border-b lg:border-b-0 lg:border-r border-[#1E3A5F] shrink-0 p-6 sm:p-8 lg:p-12">
+        {/* Ambient mesh */}
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#2563EB]/25 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-[#14B8A6]/20 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 p-4 sm:p-5 lg:p-8 pointer-events-none select-none max-w-md">
-          <h2 className="font-poppins text-base sm:text-lg lg:text-xl font-bold text-white mb-1 leading-tight">
-            Start Your Career Journey Today
+        {/* Top Logo */}
+        <div className="relative z-10">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#2563EB] to-[#14B8A6] flex items-center justify-center text-white shadow-xs">
+              <span className="font-extrabold text-sm tracking-tight">H</span>
+            </div>
+            <span className="text-lg font-bold text-white tracking-tight">Hire<span className="text-[#14B8A6]">Hub</span></span>
+          </div>
+        </div>
+
+        {/* Centered Particle Text Canvas */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <ParticleTextEffect words={["WELCOME", "HIREHUB", "JOIN NOW"]} holdDurationMs={4500} />
+        </div>
+
+        {/* Bottom Proof Points */}
+        <div className="relative z-10 pointer-events-none select-none max-w-md">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-[#14B8A6] font-semibold mb-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#14B8A6] animate-pulse" />
+            Join 12,000+ Verified Companies
+          </div>
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-2 leading-tight tracking-tight">
+            Start Your Verified Career Journey
           </h2>
-          <p className="text-white/70 text-xs sm:text-sm leading-relaxed mb-3 line-clamp-2 lg:line-clamp-none">
-            Join verified professionals and top companies with real server-side authentication and RLS security.
+          <p className="text-slate-300 text-xs sm:text-sm leading-relaxed mb-3 line-clamp-2 lg:line-clamp-none">
+            Direct applications, intelligent ATS score matching, and real-time status updates with zero spam.
           </p>
           <div className="flex flex-wrap gap-1.5">
-            {["ATS Score Checker", "AI Matching", "Verified Employers", "Direct ATS Apply"].map((item) => (
+            {["ATS Score Checker", "AI Matching", "Verified Employers", "Direct Apply"].map((item) => (
               <span
                 key={item}
-                className="px-2 py-0.5 rounded-lg bg-white/10 backdrop-blur-md text-white/90 text-[11px] sm:text-xs font-medium border border-white/10"
+                className="px-2.5 py-1 rounded-lg bg-white/10 backdrop-blur-md text-white/90 text-[11px] sm:text-xs font-medium border border-white/10"
               >
                 ✓ {item}
               </span>
@@ -331,14 +353,14 @@ export default function Register() {
               </Link>
 
               {/* Role selector */}
-              <div className="p-1 rounded-2xl bg-[var(--muted)] border border-[var(--border)] grid grid-cols-2 gap-1 mb-3.5 shadow-sm">
+              <div className="p-1 rounded-xl bg-[var(--muted)] border border-[var(--border)] grid grid-cols-2 gap-1 mb-4 shadow-xs">
                 <button
                   type="button"
                   onClick={() => setRole("job_seeker")}
                   className={cn(
-                    "flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200",
+                    "flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer",
                     role === "job_seeker"
-                      ? "bg-[var(--card)] text-[var(--primary)] font-bold shadow-sm border border-[var(--border)]"
+                      ? "bg-[var(--card)] text-[#2563EB] font-bold shadow-xs border border-[var(--border)]"
                       : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]",
                   )}
                 >
@@ -349,9 +371,9 @@ export default function Register() {
                   type="button"
                   onClick={() => setRole("recruiter")}
                   className={cn(
-                    "flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200",
+                    "flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer",
                     role === "recruiter"
-                      ? "bg-[var(--card)] text-[var(--primary)] font-bold shadow-sm border border-[var(--border)]"
+                      ? "bg-[var(--card)] text-[#2563EB] font-bold shadow-xs border border-[var(--border)]"
                       : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]",
                   )}
                 >
@@ -360,14 +382,14 @@ export default function Register() {
                 </button>
               </div>
 
-              <div className="mb-3.5">
-                <h1 className="font-poppins text-xl sm:text-2xl font-black text-[var(--foreground)] tracking-tight mb-1">
+              <div className="mb-4">
+                <h1 className="text-xl sm:text-2xl font-bold text-[var(--foreground)] tracking-tight mb-1">
                   {role === "recruiter" ? "Create Recruiter Account" : "Create Candidate Account"}
                 </h1>
                 <p className="text-xs text-[var(--muted-foreground)]">
                   {role === "recruiter"
-                    ? "Post jobs, screen applicants, and manage your company presence."
-                    : "Apply for roles directly or through verified company ATS links."}
+                    ? "Hire top talent, manage applicants, and post verified positions."
+                    : "Create your profile to search, apply, and match with verified opportunities."}
                 </p>
               </div>
 

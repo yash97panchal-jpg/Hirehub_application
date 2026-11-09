@@ -311,40 +311,40 @@ Tools: Git, VS Code, REST API`)
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)] pt-20">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+    <div className="min-h-screen bg-[var(--background)] pt-20 pb-20">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
         {/* Header */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--primary)]/10 border border-[var(--primary)]/20 text-[var(--primary)] text-sm font-semibold mb-4">
-            <Zap size={15} /> Role-Specific ATS Intelligence
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-[#2563EB] text-xs font-semibold mb-3">
+            <Zap size={14} /> Role-Specific ATS Intelligence
           </div>
-          <h1 className="font-poppins text-3xl sm:text-4xl font-extrabold text-[var(--foreground)] tracking-tight mb-3">
-            ATS Resume Checker & Skill Suggester
+          <h1 className="text-3xl sm:text-4xl font-bold text-[var(--foreground)] tracking-tight mb-2.5">
+            ATS Resume Checker & Keyword Benchmarker
           </h1>
-          <p className="text-[var(--muted-foreground)] max-w-2xl mx-auto text-sm sm:text-base">
-            Select your <span className="text-[var(--foreground)] font-semibold">Target Job Role</span>. Our AI benchmarks your resume against real-world ATS screening filters, identifies critical missing skills, and writes copy-paste bullets to maximize interview callbacks.
+          <p className="text-xs sm:text-sm text-[var(--muted-foreground)] max-w-2xl mx-auto leading-relaxed">
+            Select your <span className="text-[var(--foreground)] font-semibold">Target Job Role</span>. Our system benchmarks your resume against real-world recruiter ATS screening filters, identifies critical missing skills, and writes copy-paste bullets.
           </p>
         </div>
 
         {!result ? (
-          <div className="space-y-8">
+          <div className="space-y-6">
             {/* Step 1: Select Target Role */}
-            <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-6 shadow-[var(--shadow-card)]">
+            <div className="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 shadow-xs">
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-[var(--primary)]/15 text-[var(--primary)] flex items-center justify-center font-bold text-sm">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-[#2563EB] flex items-center justify-center font-bold text-xs border border-blue-200 dark:border-blue-800">
                     1
                   </div>
-                  <h2 className="font-poppins font-bold text-lg text-[var(--foreground)]">
+                  <h2 className="font-bold text-base text-[var(--foreground)] tracking-tight">
                     Select Target Job Role
                   </h2>
                 </div>
-                <span className="text-xs font-medium text-[var(--muted-foreground)]">
+                <span className="text-xs text-[var(--muted-foreground)]">
                   Required for real-life keyword matching
                 </span>
               </div>
 
-              <div className="flex flex-wrap gap-2.5 mb-4">
+              <div className="flex flex-wrap gap-2 mb-4">
                 {ATS_ROLE_PROFILES.map((profile) => {
                   const isSelected = !isCustomRole && selectedRoleId === profile.id
                   return (
@@ -355,27 +355,26 @@ Tools: Git, VS Code, REST API`)
                         setSelectedRoleId(profile.id)
                         setIsCustomRole(false)
                       }}
-                      className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all flex items-center gap-2 border ${
+                      className={`px-3.5 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 border cursor-pointer ${
                         isSelected
-                          ? "bg-[var(--accent)] text-white border-[var(--accent)] shadow-sm"
-                          : "bg-[var(--muted)]/50 text-[var(--foreground)] border-[var(--border)] hover:border-[var(--primary)] hover:bg-[var(--muted)]"
+                          ? "bg-[#2563EB] text-white border-[#2563EB] shadow-xs font-semibold"
+                          : "bg-[var(--background)] text-[var(--foreground)] border-[var(--border)] hover:border-[#2563EB]"
                       }`}
                     >
-                      <Target size={14} className={isSelected ? "text-[var(--primary)]" : "text-[var(--muted-foreground)]"} />
-                      {profile.title}
+                      <span>{profile.title}</span>
                     </button>
                   )
                 })}
                 <button
                   type="button"
                   onClick={() => setIsCustomRole(true)}
-                  className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all flex items-center gap-2 border ${
+                  className={`px-3.5 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 border cursor-pointer ${
                     isCustomRole
-                      ? "bg-[var(--accent)] text-white border-[var(--accent)]"
-                      : "bg-[var(--muted)]/50 text-[var(--foreground)] border-[var(--border)] hover:border-[var(--primary)]"
+                      ? "bg-[#2563EB] text-white border-[#2563EB] font-semibold"
+                      : "bg-[var(--background)] text-[var(--foreground)] border-[var(--border)] hover:border-[#2563EB]"
                   }`}
                 >
-                  <Edit3 size={14} /> Custom Role…
+                  <Edit3 size={13} /> Custom Role…
                 </button>
               </div>
 
@@ -461,25 +460,25 @@ Tools: Git, VS Code, REST API`)
                           const f = e.dataTransfer.files[0]
                           if (f) handleFile(f)
                         }}
-                        className={`relative border-2 border-dashed rounded-2xl p-8 text-center transition-all ${
+                        className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all ${
                           drag
-                            ? "border-[var(--primary)] bg-[var(--muted)] dark:bg-[var(--accent)]/30"
-                            : "border-[var(--border)] hover:border-[var(--primary)] hover:bg-[var(--muted)]/40"
+                            ? "border-[#2563EB] bg-blue-50/50 dark:bg-blue-950/30"
+                            : "border-[var(--border)] hover:border-[#2563EB] hover:bg-[var(--muted)]/40"
                         }`}
                       >
                         <input
                           type="file"
-                          accept=".pdf,.docx"
+                          accept=".pdf,.docx,.txt"
                           onChange={(e) =>
                             e.target.files?.[0] && handleFile(e.target.files[0])
                           }
                           className="absolute inset-0 opacity-0 cursor-pointer"
                         />
-                        <div className="w-14 h-14 rounded-2xl bg-[var(--muted)] flex items-center justify-center mx-auto mb-3">
+                        <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#2563EB] flex items-center justify-center mx-auto mb-3">
                           {file ? (
-                            <FileText size={26} className="text-[var(--primary)]" />
+                            <FileText size={24} />
                           ) : (
-                            <Upload size={26} className="text-[var(--muted-foreground)]" />
+                            <Upload size={24} />
                           )}
                         </div>
                         {file ? (
@@ -494,7 +493,7 @@ Tools: Git, VS Code, REST API`)
                         ) : (
                           <div>
                             <p className="font-semibold text-sm text-[var(--foreground)]">
-                              Drop your resume here (PDF / DOCX)
+                              Drop your resume here (PDF, DOCX, TXT)
                             </p>
                             <p className="text-xs text-[var(--muted-foreground)] mt-1">
                               or click to browse from device (max 5MB)
@@ -508,7 +507,7 @@ Tools: Git, VS Code, REST API`)
                         <button
                           type="button"
                           onClick={fillSampleResume}
-                          className="text-[var(--primary)] font-semibold hover:underline flex items-center gap-1"
+                          className="text-[#2563EB] font-semibold hover:underline flex items-center gap-1 cursor-pointer"
                         >
                           <Sparkles size={12} /> Auto-fill candidate demo resume
                         </button>

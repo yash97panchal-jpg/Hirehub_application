@@ -21,28 +21,28 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const base =
-      "inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none select-none"
+      "inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none select-none cursor-pointer active:scale-[0.98]"
 
     const variants = {
       primary:
-        "bg-[var(--primary)] text-[#180C22] hover:bg-[var(--primary-hover)] shadow-lg shadow-[var(--primary)]/20 hover:shadow-[var(--primary)]/30 hover:-translate-y-0.5 active:translate-y-0 font-bold",
+        "bg-[#2563EB] hover:bg-[#1D4ED8] active:bg-[#1E40AF] text-white shadow-sm hover:shadow font-semibold",
       secondary:
-        "bg-[var(--muted)] text-[var(--foreground)] hover:bg-[var(--border)] dark:hover:bg-[var(--muted)]",
+        "bg-white dark:bg-[#13223B] border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-sm",
       outline:
-        "border-2 border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-[#180C22] font-semibold",
+        "border border-[#2563EB] text-[#2563EB] hover:bg-blue-50 dark:hover:bg-blue-950/40 font-medium",
       ghost:
-        "text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[var(--primary)]",
+        "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white",
       accent:
-        "bg-[var(--accent)] text-[#F1F5F9] hover:bg-[var(--accent-hover)] shadow-lg shadow-[var(--accent)]/20 hover:-translate-y-0.5 active:translate-y-0 font-bold",
+        "bg-[#14B8A6] hover:bg-[#0D9488] active:bg-[#0F766E] text-white shadow-sm font-semibold",
       danger:
-        "bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/20 hover:-translate-y-0.5",
+        "bg-[#DC2626] hover:bg-[#B91C1C] active:bg-[#991B1B] text-white shadow-sm font-semibold",
     }
 
     const sizes = {
-      sm: "px-3 py-1.5 text-sm",
-      md: "px-5 py-2.5 text-sm",
-      lg: "px-6 py-3 text-base",
-      xl: "px-8 py-4 text-lg",
+      sm: "px-3 py-1.5 text-xs font-medium rounded-md",
+      md: "px-4 py-2 text-sm font-medium rounded-lg",
+      lg: "px-5 py-2.5 text-base font-semibold rounded-lg",
+      xl: "px-6 py-3 text-lg font-semibold rounded-xl",
     }
 
     return (

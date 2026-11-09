@@ -105,13 +105,13 @@ export default function Footer() {
   ]
 
   return (
-    <footer className="relative overflow-hidden bg-[#12071C] text-[#F1F5F9] border-t border-white/10 select-none">
+    <footer className="relative overflow-hidden bg-[#0B132B] text-slate-300 border-t border-slate-800 select-none">
       {/* Decorative Glow Elements */}
-      <div className="absolute top-0 left-1/4 -translate-x-1/2 w-96 h-96 bg-[var(--accent)]/30 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-[420px] h-[420px] bg-[#F59E0B]/10 rounded-full blur-[160px] pointer-events-none" />
+      <div className="absolute top-0 left-1/4 -translate-x-1/2 w-96 h-96 bg-[#2563EB]/15 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-[420px] h-[420px] bg-[#14B8A6]/10 rounded-full blur-[160px] pointer-events-none" />
 
       {/* Top Dynamic Live Activity Status Ticker */}
-      <div className="border-b border-white/10 bg-black/25 backdrop-blur-md py-3 px-4 sm:px-6">
+      <div className="border-b border-slate-800/80 bg-black/25 backdrop-blur-md py-3 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
           {/* Live system pulse */}
           <div className="flex items-center gap-2.5">
@@ -120,22 +120,22 @@ export default function Footer() {
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
             </span>
             <span className="font-semibold text-emerald-400">All Global Systems Operational</span>
-            <span className="text-white/40 hidden sm:inline">|</span>
-            <span className="text-white/70 hidden sm:inline">{liveJobsCount} Live Opportunities Available</span>
+            <span className="text-slate-600 hidden sm:inline">|</span>
+            <span className="text-slate-300 hidden sm:inline">{liveJobsCount} Live Opportunities Available</span>
           </div>
 
           {/* Quick metric stats */}
-          <div className="flex items-center gap-5 text-white/60 text-[11px] font-medium">
-            <div className="flex items-center gap-1">
-              <ShieldCheck size={13} className="text-[#F59E0B]" />
+          <div className="flex items-center gap-5 text-slate-400 text-[11px] font-medium">
+            <div className="flex items-center gap-1.5">
+              <ShieldCheck size={14} className="text-[#38BDF8]" />
               <span>{uniqueCompaniesCount} Verified Employers</span>
             </div>
-            <div className="flex items-center gap-1">
-              <TrendingUp size={13} className="text-emerald-400" />
+            <div className="flex items-center gap-1.5">
+              <TrendingUp size={14} className="text-emerald-400" />
               <span>Real-Time Matching</span>
             </div>
-            <div className="flex items-center gap-1">
-              <Globe size={13} className="text-[#F59E0B]" />
+            <div className="flex items-center gap-1.5">
+              <Globe size={14} className="text-[#14B8A6]" />
               <span>{uniqueCountriesCount} Global Hubs Active</span>
             </div>
           </div>
@@ -144,7 +144,7 @@ export default function Footer() {
 
       {/* Main Footer Container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-14 pb-10 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 pb-12 border-b border-white/10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 pb-12 border-b border-slate-800">
           {/* Left Column: Brand, Value Proposition & Dynamic Newsletter */}
           <div className="lg:col-span-4 space-y-5">
             <Link
@@ -160,39 +160,36 @@ export default function Footer() {
               className="inline-flex items-center gap-2.5 group cursor-pointer"
               onClick={handleLogoClick}
             >
-              <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center p-1 ring-2 ring-[#F59E0B]/40 group-hover:ring-[#F59E0B] transition-all overflow-hidden shrink-0">
-                <img
-                  src={symbolLogo}
-                  alt="HireHub Logo"
-                  className="w-full h-full object-contain"
-                />
+              <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-[#142B4A] via-[#1E3A8A] to-[#2563EB] shadow-sm text-white font-extrabold text-base shrink-0 border border-blue-400/20 group-hover:scale-105 transition-transform duration-200">
+                <span className="tracking-tighter">H</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#14B8A6] ml-0.5" />
               </div>
               <div>
                 <span className="font-poppins text-2xl font-black tracking-tight text-white flex items-center gap-1">
-                  Hire<span className="text-[#F59E0B]">Hub</span>
+                  Hire<span className="text-[#38BDF8]">Hub</span>
                 </span>
-                <span className="text-[10px] tracking-widest uppercase font-semibold text-white/50 block -mt-1">
+                <span className="text-[10px] tracking-widest uppercase font-semibold text-slate-400 block -mt-1">
                   Global Talent Network
                 </span>
               </div>
             </Link>
 
-            <p className="text-sm text-white/70 leading-relaxed max-w-sm">
+            <p className="text-sm text-slate-400 leading-relaxed max-w-sm">
               Empowering global professionals and borderless companies to discover their next breakthrough career with role-based ATS intelligence and interactive worldwide exploration.
             </p>
 
             {/* Dynamic Job Alert Subscription Form */}
-            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+            <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 backdrop-blur-sm">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <Sparkles size={14} className="text-[#F59E0B]" />
+                  <Sparkles size={14} className="text-[#38BDF8]" />
                   Worldwide Job Alerts
                 </span>
                 <span className="text-[10px] text-emerald-400 font-semibold bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded-full">
                   Free Weekly
                 </span>
               </div>
-              <p className="text-[11px] text-white/60 mb-3">
+              <p className="text-[11px] text-slate-400 mb-3">
                 Get curated roles matching your profile delivered directly to your inbox.
               </p>
 
@@ -214,17 +211,17 @@ export default function Footer() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="Enter your email address…"
                       required
-                      className="flex-1 px-3.5 py-2 text-xs rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
+                      className="flex-1 px-3.5 py-2 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                     />
                     <button
                       type="submit"
-                      className="px-4 py-2 rounded-xl bg-[#F59E0B] text-[#1E0B29] font-bold text-xs hover:bg-[#F59E0B]/90 transition-all flex items-center gap-1 shrink-0 shadow-md"
+                      className="px-4 py-2 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-xs transition-all flex items-center gap-1 shrink-0 shadow-sm cursor-pointer"
                     >
                       <Send size={12} />
                       Join
                     </button>
                   </div>
-                  <div className="flex items-center justify-between text-[10px] text-white/40">
+                  <div className="flex items-center justify-between text-[10px] text-slate-500">
                     <span>Zero spam · Unsubscribe anytime</span>
                     <span>Curated weekly alerts</span>
                   </div>
@@ -237,7 +234,7 @@ export default function Footer() {
           <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-8">
             {/* Column 1: Find Careers */}
             <div>
-              <h3 className="font-poppins font-bold text-xs uppercase tracking-wider text-[#F59E0B] mb-4 flex items-center gap-1.5">
+              <h3 className="font-poppins font-bold text-xs uppercase tracking-wider text-[#38BDF8] mb-4 flex items-center gap-1.5">
                 <Briefcase size={14} /> Popular Careers
               </h3>
               <ul className="space-y-2.5 text-xs">
@@ -245,11 +242,11 @@ export default function Footer() {
                   <li key={item.label}>
                     <Link
                       to={item.href}
-                      className="text-white/70 hover:text-white transition-colors flex items-center group gap-1"
+                      className="text-slate-400 hover:text-white transition-colors flex items-center group gap-1"
                     >
                       <ChevronRight
                         size={11}
-                        className="text-[#F59E0B] opacity-0 group-hover:opacity-100 -ml-2 group-hover:ml-0 transition-all"
+                        className="text-[#2563EB] opacity-0 group-hover:opacity-100 -ml-2 group-hover:ml-0 transition-all"
                       />
                       <span>{item.label}</span>
                     </Link>
@@ -260,7 +257,7 @@ export default function Footer() {
 
             {/* Column 2: Career Tools */}
             <div>
-              <h3 className="font-poppins font-bold text-xs uppercase tracking-wider text-[#F59E0B] mb-4 flex items-center gap-1.5">
+              <h3 className="font-poppins font-bold text-xs uppercase tracking-wider text-[#38BDF8] mb-4 flex items-center gap-1.5">
                 <Sparkles size={14} /> AI Career Tools
               </h3>
               <ul className="space-y-2.5 text-xs">
@@ -268,13 +265,13 @@ export default function Footer() {
                   <li key={item.label}>
                     <Link
                       to={item.href}
-                      className="text-white/70 hover:text-white transition-colors flex items-center justify-between group"
+                      className="text-slate-400 hover:text-white transition-colors flex items-center justify-between group"
                     >
                       <span className="group-hover:translate-x-1 transition-transform">
                         {item.label}
                       </span>
                       {item.isNew && (
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#F59E0B] text-[#1E0B29]">
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#2563EB] text-white">
                           HOT
                         </span>
                       )}
@@ -286,7 +283,7 @@ export default function Footer() {
 
             {/* Column 3: Platform & Company */}
             <div>
-              <h3 className="font-poppins font-bold text-xs uppercase tracking-wider text-[#F59E0B] mb-4 flex items-center gap-1.5">
+              <h3 className="font-poppins font-bold text-xs uppercase tracking-wider text-[#38BDF8] mb-4 flex items-center gap-1.5">
                 <Globe size={14} /> Platform & Trust
               </h3>
               <ul className="space-y-2.5 text-xs">
@@ -294,7 +291,7 @@ export default function Footer() {
                   <li key={item.label}>
                     <Link
                       to={item.href}
-                      className="text-white/70 hover:text-white transition-colors flex items-center group gap-1"
+                      className="text-slate-400 hover:text-white transition-colors flex items-center group gap-1"
                     >
                       <span className="group-hover:translate-x-1 transition-transform">
                         {item.label}

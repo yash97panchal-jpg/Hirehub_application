@@ -153,13 +153,15 @@ export default function AdminDashboard() {
         >
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <div className="flex items-center gap-3 mb-1">
-                <Shield size={24} className="text-[var(--primary)]" />
-                <h1 className="font-poppins text-3xl font-bold text-[var(--foreground)]">
+              <div className="flex items-center gap-2.5 mb-1">
+                <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 text-[#2563EB] flex items-center justify-center">
+                  <Shield size={18} />
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-[var(--foreground)] tracking-tight">
                   Admin Control Center
                 </h1>
               </div>
-              <p className="text-[var(--muted-foreground)]">
+              <p className="text-xs sm:text-sm text-[var(--muted-foreground)]">
                 Enterprise moderation, company verification, and platform oversight.
               </p>
             </div>
