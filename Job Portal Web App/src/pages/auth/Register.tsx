@@ -218,7 +218,7 @@ export default function Register() {
   const handleGoogleAccountSelect = async (account: { email: string; name: string }) => {
     setIsGoogleLoading(true)
     try {
-      const res = await authService.signInWithGoogle(account)
+      const res = await authService.signInWithGoogle({ ...account, role })
       if (res && "user" in res && res.user) {
         login(res.user as any, (res as any).session?.access_token || "google-token")
         toast.success(`Welcome to HireHub, ${account.name || account.email}!`)
@@ -417,7 +417,7 @@ export default function Register() {
                 <Input
                   label={role === "recruiter" ? "Work Email Address" : "Email Address"}
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder={role === "recruiter" ? "recruiter@company.com" : "you@hirehub.app"}
                   error={errors.email?.message}
                   {...register("email")}
                 />

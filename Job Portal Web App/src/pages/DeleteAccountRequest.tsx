@@ -4,6 +4,7 @@ import { ArrowLeft, Trash2, AlertTriangle, ShieldCheck, CheckCircle2, Lock, Mail
 import { useNavigate, Link } from "react-router-dom"
 import Button from "../components/ui/Button"
 import Input from "../components/ui/Input"
+import CustomSelect from "../components/ui/CustomSelect"
 import { useAuthStore } from "../store/authStore"
 import { authService, moderationService } from "../lib/supabase"
 import toast from "react-hot-toast"
@@ -121,7 +122,7 @@ export default function DeleteAccountRequest() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  placeholder="you@hirehub.app"
                   required
                 />
 
@@ -129,17 +130,18 @@ export default function DeleteAccountRequest() {
                   <label className="block text-xs font-semibold text-[var(--foreground)] mb-1">
                     Primary Reason for Deletion (Optional)
                   </label>
-                  <select
+                  <CustomSelect
                     value={reason}
-                    onChange={(e) => setReason(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]"
-                  >
-                    <option value="Found a job through HireHub">Found a job through HireHub</option>
-                    <option value="Found a job elsewhere">Found a job elsewhere</option>
-                    <option value="Privacy concerns">Privacy concerns</option>
-                    <option value="Too many emails or notifications">Too many emails or notifications</option>
-                    <option value="Other">Other</option>
-                  </select>
+                    onChange={(val) => setReason(String(val))}
+                    options={[
+                      "Found a job through HireHub",
+                      "Found a job elsewhere",
+                      "Privacy concerns",
+                      "Too many emails or notifications",
+                      "Other",
+                    ]}
+                    size="md"
+                  />
                 </div>
 
                 <div className="p-4 rounded-2xl bg-red-500/5 dark:bg-red-950/20 border border-red-500/20">

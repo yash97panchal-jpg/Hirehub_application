@@ -21,20 +21,27 @@ import Badge from "../../components/ui/Badge"
 import Button from "../../components/ui/Button"
 import { useApplicationStore } from "../../store/applicationStore"
 import { useAuthStore } from "../../store/authStore"
+import { useNotificationStore } from "../../store/notificationStore"
 import { applicationService } from "../../lib/supabase"
 import ApplicationSuccessModal from "../../components/jobs/ApplicationSuccessModal"
 import { emailService } from "../../services/emailService"
 import { getCompanyRealLogo } from "../../data/companyLogos"
+import RoundSkillMatchBadge from "../../components/ui/RoundSkillMatchBadge"
+import ApplicationPipelineStepper from "../../components/dashboard/ApplicationPipelineStepper"
+import CustomSelect from "../../components/ui/CustomSelect"
+import { calculateSkillMatch } from "../../utils/skillMatcher"
 import type { Application, ApplicationStatus } from "../../types"
 import toast from "react-hot-toast"
 
 export default function ApplicationTracker() {
   const { applications: storeApplications, withdrawApplication } = useApplicationStore()
   const { user } = useAuthStore()
+  const { addNotification } = useNotificationStore()
 
   const [filterSource, setFilterSource] = useState<"all" | "easy" | "external">("all")
   const [filterStatus, setFilterStatus] = useState<string>("all")
   const [withdrawingId, setWithdrawingId] = useState<string | null>(null)
+  const [withdrawTarget, setWithdrawTarget] = useState<Application | null>(null)
   const [previewApp, setPreviewApp] = useState<Application | null>(null)
 
   // Filtered applications
@@ -53,16 +60,19 @@ export default function ApplicationTracker() {
   }, [storeApplications, filterSource, filterStatus])
 
   // Handle Seeker Withdrawing Application
-  const handleWithdraw = async (appId: string) => {
-    if (!window.confirm("Are you sure you want to withdraw this application? This action cannot be undone.")) {
-      return
-    }
-
-    setWithdrawingId(appId)
+  const confirmWithdraw = async (target: Application) => {
+    setWithdrawingId(target.id)
     try {
-      withdrawApplication(appId)
-      await applicationService.withdrawApplication(appId)
+      withdrawApplication(target.id)
+      await applicationService.withdrawApplication(target.id)
+      addNotification({
+        type: "application",
+        title: "Application Withdrawn",
+        message: `You successfully withdrew your application for ${target.job?.title || "the position"} at ${target.job?.company?.name || "the company"}.`,
+        link: `/jobs/${target.job?.id || target.jobId}`,
+      })
       toast.success("Application successfully withdrawn.")
+      setWithdrawTarget(null)
     } catch (err: any) {
       toast.error(err.message || "Failed to withdraw application.")
     } finally {
@@ -107,30 +117,34 @@ export default function ApplicationTracker() {
           </div>
 
           {/* Quick Filters */}
-          <div className="flex flex-wrap items-center gap-2">
-            <select
+          <div className="flex flex-wrap items-center gap-2.5">
+            <CustomSelect
               value={filterSource}
-              onChange={(e) => setFilterSource(e.target.value as any)}
-              className="px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--card)] text-xs font-semibold text-[var(--foreground)]"
-            >
-              <option value="all">All Sources</option>
-              <option value="easy">Easy Apply (In-App)</option>
-              <option value="external">External Website</option>
-            </select>
+              onChange={(val) => setFilterSource(val)}
+              options={[
+                { value: "all", label: "All Sources" },
+                { value: "easy", label: "Easy Apply (In-App)" },
+                { value: "external", label: "External Website" },
+              ]}
+              size="sm"
+              className="w-44"
+            />
 
-            <select
+            <CustomSelect
               value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--card)] text-xs font-semibold text-[var(--foreground)]"
-            >
-              <option value="all">All Stages</option>
-              <option value="Applied">Applied</option>
-              <option value="Viewed">Viewed</option>
-              <option value="Shortlisted">Shortlisted</option>
-              <option value="Interview">Interview</option>
-              <option value="Offered">Offered</option>
-              <option value="Withdrawn">Withdrawn</option>
-            </select>
+              onChange={(val) => setFilterStatus(String(val))}
+              options={[
+                { value: "all", label: "All Stages" },
+                { value: "Applied", label: "Applied" },
+                { value: "Viewed", label: "Viewed" },
+                { value: "Shortlisted", label: "Shortlisted" },
+                { value: "Interview", label: "Interview" },
+                { value: "Offered", label: "Offered" },
+                { value: "Withdrawn", label: "Withdrawn" },
+              ]}
+              size="sm"
+              className="w-36"
+            />
           </div>
         </div>
 
@@ -185,110 +199,142 @@ export default function ApplicationTracker() {
               {applications.map((app) => (
                 <div
                   key={app.id}
-                  className="p-5 sm:p-6 hover:bg-[var(--muted)]/20 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  className="p-5 sm:p-6 hover:bg-[var(--muted)]/15 transition-all space-y-4"
                 >
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-white dark:bg-slate-900 overflow-hidden shrink-0 flex items-center justify-center font-bold text-lg text-[var(--primary)] border border-[var(--border)] p-1 shadow-xs">
-                      {app.job?.company?.name ? (
-                        <img
-                          src={getCompanyRealLogo(app.job.company.name, app.job.company.website, app.job.company.logo)}
-                          alt={app.job.company.name}
-                          className="w-full h-full object-contain"
-                          onError={(e) => {
-                            e.currentTarget.src = getCompanyRealLogo(app.job?.company?.name || "Company", app.job?.company?.website);
-                          }}
-                        />
-                      ) : (
-                        app.job?.company?.name?.charAt(0) || "C"
-                      )}
-                    </div>
-
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Link
-                          to={`/jobs/${app.job?.id}`}
-                          className="font-poppins font-bold text-base text-[var(--foreground)] hover:text-[var(--primary)] hover:underline"
-                        >
-                          {app.job?.title || "Untitled Position"}
-                        </Link>
-                        {/* Source Label */}
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase flex items-center gap-1 ${
-                            app.source === "external"
-                              ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20"
-                              : "bg-[var(--primary)]/10 text-[var(--primary)] border border-[var(--primary)]/20"
-                          }`}
-                        >
-                          {app.source === "external" ? (
-                            <>
-                              <ExternalLink size={10} /> External ATS
-                            </>
-                          ) : (
-                            <>
-                              <Zap size={10} /> In-App Easy Apply
-                            </>
-                          )}
-                        </span>
+                  {/* Top Row: Company Info & Round Skill Match */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-start gap-4 min-w-0">
+                      <div className="w-13 h-13 rounded-2xl bg-white dark:bg-slate-900 overflow-hidden shrink-0 flex items-center justify-center font-bold text-lg text-[var(--primary)] border border-[var(--border)] p-1 shadow-xs">
+                        {app.job?.company?.name ? (
+                          <img
+                            src={getCompanyRealLogo(app.job.company.name, app.job.company.website, app.job.company.logo)}
+                            alt={app.job.company.name}
+                            className="w-full h-full object-contain"
+                            onError={(e) => {
+                              e.currentTarget.src = getCompanyRealLogo(app.job?.company?.name || "Company", app.job?.company?.website);
+                            }}
+                          />
+                        ) : (
+                          app.job?.company?.name?.charAt(0) || "C"
+                        )}
                       </div>
 
-                      <p className="text-xs text-[var(--muted-foreground)] flex items-center gap-2">
-                        <span>{app.job?.company?.name}</span>
-                        <span>·</span>
-                        <span className="flex items-center gap-1">
-                          <MapPin size={11} /> {app.job?.location}
-                        </span>
-                        <span>·</span>
-                        <span className="flex items-center gap-1">
-                          <Calendar size={11} />{" "}
-                          {app.appliedAt
-                            ? new Date(app.appliedAt).toLocaleDateString()
-                            : "Recently"}
-                        </span>
-                      </p>
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Link
+                            to={`/jobs/${app.job?.id}`}
+                            className="font-poppins font-bold text-base text-[var(--foreground)] hover:text-[var(--primary)] hover:underline truncate"
+                          >
+                            {app.job?.title || "Untitled Position"}
+                          </Link>
+                          {/* Source Label */}
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase flex items-center gap-1 ${
+                              app.source === "external"
+                                ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20"
+                                : "bg-[var(--primary)]/10 text-[var(--primary)] border border-[var(--primary)]/20"
+                            }`}
+                          >
+                            {app.source === "external" ? (
+                              <>
+                                <ExternalLink size={10} /> External ATS
+                              </>
+                            ) : (
+                              <>
+                                <Zap size={10} /> In-App Easy Apply
+                              </>
+                            )}
+                          </span>
+                        </div>
 
-                      {app.coverLetter && (
-                        <p className="text-xs text-[var(--muted-foreground)] italic line-clamp-1 pt-1">
-                          Note: "{app.coverLetter}"
-                        </p>
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-[var(--muted-foreground)]">
+                          <span className="font-semibold text-[var(--foreground)]">{app.job?.company?.name}</span>
+                          <span>·</span>
+                          <span className="flex items-center gap-1">
+                            <MapPin size={11} /> {app.job?.location || "Remote"}
+                          </span>
+                          {app.job?.type && (
+                            <>
+                              <span>·</span>
+                              <span className="capitalize">{app.job.type}</span>
+                            </>
+                          )}
+                          <span>·</span>
+                          <span className="flex items-center gap-1">
+                            <Calendar size={11} />{" "}
+                            {app.appliedAt
+                              ? new Date(app.appliedAt).toLocaleDateString()
+                              : "Recently"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Skill Match in Round Format & Status Badge */}
+                    <div className="flex items-center gap-3 self-start sm:self-center shrink-0">
+                      {app.job?.skills && app.job.skills.length > 0 && (
+                        <RoundSkillMatchBadge
+                          skillMatch={calculateSkillMatch(app.job.skills, undefined, user)}
+                          size="sm"
+                        />
                       )}
+                      <div className="text-right">
+                        {getStatusBadge(app.status)}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Stage & Action Controls */}
-                  <div className="flex items-center gap-3 self-end md:self-center shrink-0">
-                    <div className="text-right">
-                      {getStatusBadge(app.status)}
-                      <p className="text-[10px] text-[var(--muted-foreground)] mt-1">
-                        {app.status === "Withdrawn"
-                          ? "Application closed"
-                          : app.status === "Interview"
-                            ? "Action needed: check email"
-                            : "Live status updated"}
-                      </p>
+                  {/* 5-Stage Visual Progress Stepper */}
+                  <div className="p-3.5 sm:p-4 rounded-2xl bg-[var(--background)] border border-[var(--border)]/70">
+                    <ApplicationPipelineStepper status={app.status} appliedAt={app.appliedAt} />
+                  </div>
+
+                  {app.coverLetter && (
+                    <div className="p-3 rounded-xl bg-[var(--muted)]/30 border border-[var(--border)] text-xs text-[var(--muted-foreground)]">
+                      <span className="font-bold text-[var(--foreground)] mr-1">Cover Note:</span>
+                      <span className="italic">"{app.coverLetter}"</span>
                     </div>
+                  )}
 
-                    {/* View Confirmation Email / Details */}
-                    <button
-                      type="button"
-                      onClick={() => setPreviewApp(app)}
-                      className="p-2 rounded-xl text-emerald-500 hover:bg-emerald-500/10 border border-emerald-500/20 transition-colors"
-                      title="View Confirmation Email & Company Details"
-                    >
-                      <Mail size={15} />
-                    </button>
+                  {/* Stage & Action Controls */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[var(--border)]/50 text-xs">
+                    <span className="text-[11px] text-[var(--muted-foreground)] font-mono">
+                      Ref: #{app.id ? app.id.slice(0, 8).toUpperCase() : "APP-LIVE"}
+                    </span>
 
-                    {/* Withdraw button for in-app applications that aren't already closed */}
-                    {app.source !== "external" && app.status !== "Withdrawn" && app.status !== "Rejected" && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleWithdraw(app.id)}
-                        disabled={withdrawingId === app.id}
-                        className="text-xs text-red-500 hover:text-red-700 hover:border-red-300"
+                    <div className="flex items-center gap-2">
+                      {/* View Confirmation Email / Details */}
+                      <button
+                        type="button"
+                        onClick={() => setPreviewApp(app)}
+                        className="px-3 py-1.5 rounded-xl text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 font-semibold flex items-center gap-1.5 transition-colors"
+                        title="View Confirmation Email & Company Details"
                       >
-                        Withdraw
-                      </Button>
-                    )}
+                        <Mail size={13} />
+                        <span>Confirmation</span>
+                      </button>
+
+                      <Link
+                        to={`/jobs/${app.job?.id}`}
+                        className="px-3.5 py-1.5 rounded-xl bg-[var(--primary)] hover:bg-[var(--primary-hover)] font-bold text-white flex items-center gap-1.5 transition-colors shadow-xs"
+                      >
+                        <span>Role Details</span>
+                        <ArrowRight size={13} />
+                      </Link>
+
+                      {/* Withdraw button for submissions that aren't already closed */}
+                      {app.status !== "Withdrawn" && app.status !== "Rejected" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setWithdrawTarget(app)}
+                          disabled={withdrawingId === app.id}
+                          className="text-xs text-red-500 hover:text-red-700 hover:border-red-300"
+                        >
+                          Withdraw
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -296,6 +342,53 @@ export default function ApplicationTracker() {
           )}
         </div>
       </div>
+
+      {/* Modern Mobile-Optimized Withdraw Confirmation Modal */}
+      {withdrawTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
+          <div className="w-full max-w-md bg-[var(--card)] border border-[var(--border)] rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/25 flex items-center justify-center text-amber-500 mx-auto">
+              <AlertCircle size={26} />
+            </div>
+            <div className="text-center space-y-1.5">
+              <h3 className="font-poppins font-bold text-lg text-[var(--foreground)]">
+                Withdraw Application?
+              </h3>
+              <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                Are you sure you want to withdraw your application for{" "}
+                <strong className="text-[var(--foreground)]">
+                  {withdrawTarget.job?.title || "this position"}
+                </strong>{" "}
+                at{" "}
+                <strong className="text-[var(--foreground)]">
+                  {withdrawTarget.job?.company?.name || "the company"}
+                </strong>?
+              </p>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-300">
+              Your profile remains intact. You will be able to re-apply to this position at any time.
+            </div>
+            <div className="flex items-center gap-3 pt-2">
+              <Button
+                variant="outline"
+                className="flex-1 font-semibold"
+                onClick={() => setWithdrawTarget(null)}
+                disabled={Boolean(withdrawingId)}
+              >
+                Keep Active
+              </Button>
+              <Button
+                variant="primary"
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold border-red-600"
+                onClick={() => confirmWithdraw(withdrawTarget)}
+                disabled={Boolean(withdrawingId)}
+              >
+                {withdrawingId ? "Withdrawing..." : "Confirm Withdraw"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Confirmation & Email Preview Modal */}
       {previewApp && (

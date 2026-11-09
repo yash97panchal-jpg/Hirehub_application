@@ -11,6 +11,7 @@ import {
   Share2,
   BookmarkCheck,
   CheckCircle,
+  AlertCircle,
   Star,
   Building2,
   ArrowLeft,
@@ -31,7 +32,8 @@ import { useJobStore } from "../store/jobStore"
 import { useAuthStore } from "../store/authStore"
 import { useApplicationStore } from "../store/applicationStore"
 import { useSavedJobsStore } from "../store/savedJobsStore"
-import { externalApplyService } from "../lib/supabase"
+import { useNotificationStore } from "../store/notificationStore"
+import { externalApplyService, applicationService } from "../lib/supabase"
 import EasyApplyModal from "../components/jobs/EasyApplyModal"
 import ExternalApplyPromptModal from "../components/jobs/ExternalApplyPromptModal"
 import ApplicationSuccessModal from "../components/jobs/ApplicationSuccessModal"
@@ -48,12 +50,15 @@ export default function JobDetail() {
   const { jobs: storeJobs } = useJobStore()
   const navigate = useNavigate()
   const { isAuthenticated, user } = useAuthStore()
-  const { applications, addApplication } = useApplicationStore()
+  const { applications, addApplication, withdrawApplication } = useApplicationStore()
   const { isJobSaved, toggleSaveJob } = useSavedJobsStore()
+  const { addNotification } = useNotificationStore()
 
   const [isShareOpen, setIsShareOpen] = useState(false)
   const [isReportOpen, setIsReportOpen] = useState(false)
   const [isEasyApplyOpen, setIsEasyApplyOpen] = useState(false)
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false)
+  const [isWithdrawing, setIsWithdrawing] = useState(false)
   const [dispatchedEmail, setDispatchedEmail] = useState<SentEmailRecord | null>(null)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
 
@@ -63,9 +68,12 @@ export default function JobDetail() {
 
   const job = storeJobs.find((j) => j.id === id) || null
 
-  // Check if already applied
-  const existingApp = applications.find((a) => a.job?.id === job?.id)
-  const isAlreadyApplied = Boolean(existingApp)
+  // Check if already applied or withdrawn
+  const existingApp = applications.find(
+    (a) => a.job?.id === job?.id || a.jobId === job?.id
+  )
+  const isWithdrawn = Boolean(existingApp && existingApp.status === "Withdrawn")
+  const isAlreadyApplied = Boolean(existingApp && existingApp.status !== "Withdrawn")
 
   // Listen for window/tab refocus to prompt external apply follow-up
   useEffect(() => {
@@ -172,6 +180,28 @@ export default function JobDetail() {
     setPendingExternalClickId(null)
     setShowSuccessModal(true)
     toast.success("Application recorded & confirmation email dispatched!")
+  }
+
+  // User withdraws application from JobDetail
+  const handleWithdrawFromJobDetail = async () => {
+    if (!existingApp) return
+    setIsWithdrawing(true)
+    try {
+      withdrawApplication(existingApp.id)
+      await applicationService.withdrawApplication(existingApp.id)
+      addNotification({
+        type: "application",
+        title: "Application Withdrawn",
+        message: `You successfully withdrew your application for ${job.title} at ${job.company?.name}.`,
+        link: `/jobs/${job.id}`,
+      })
+      toast.success("Application successfully withdrawn.")
+      setShowWithdrawModal(false)
+    } catch (err: any) {
+      toast.error(err.message || "Failed to withdraw application.")
+    } finally {
+      setIsWithdrawing(false)
+    }
   }
 
   const similarJobs = storeJobs
@@ -281,7 +311,8 @@ export default function JobDetail() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2.5 shrink-0">
+                  <RoundSkillMatchBadge skillMatch={skillMatch} size="md" />
                   <button
                     onClick={() => setIsShareOpen(true)}
                     className="p-2.5 rounded-xl border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors"
@@ -392,10 +423,15 @@ export default function JobDetail() {
               )}
 
               <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                <h3 className="font-semibold text-[var(--foreground)]">
-                  Skills Required
-                </h3>
-                <RoundSkillMatchBadge skillMatch={skillMatch} size="sm" showLabel={true} />
+                <div>
+                  <h3 className="font-semibold text-[var(--foreground)]">
+                    Skills Required
+                  </h3>
+                  <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
+                    {skillMatch.matchedCount} of {job.skills.length} skills match your active profile resume
+                  </p>
+                </div>
+                <RoundSkillMatchBadge skillMatch={skillMatch} size="sm" />
               </div>
               <div className="flex flex-wrap gap-2 mb-6">
                 {job.skills.map((skill) => {
@@ -515,24 +551,47 @@ export default function JobDetail() {
 
               {/* Application Status or Apply Buttons by Mode */}
               {isAlreadyApplied ? (
-                <div className="text-center p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-                  <CheckCircle size={24} className="text-green-500 mx-auto mb-2" />
-                  <p className="font-semibold text-green-700 dark:text-green-400 text-sm">
-                    Application Submitted
-                  </p>
-                  <p className="text-xs text-green-600 dark:text-green-500 mt-1">
-                    Status: <span className="font-bold">{existingApp?.status || "Applied"}</span>
-                    {existingApp?.source === "external" && " (External)"}
-                  </p>
-                  <Link
-                    to="/dashboard/applications"
-                    className="inline-block mt-3 text-xs font-semibold text-[var(--primary)] hover:underline"
-                  >
-                    View in Application Tracker →
-                  </Link>
+                <div className="text-center p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 space-y-2">
+                  <CheckCircle size={24} className="text-green-500 mx-auto" />
+                  <div>
+                    <p className="font-semibold text-green-700 dark:text-green-400 text-sm">
+                      Application Submitted
+                    </p>
+                    <p className="text-xs text-green-600 dark:text-green-500 mt-0.5">
+                      Status: <span className="font-bold">{existingApp?.status || "Applied"}</span>
+                      {existingApp?.source === "external" && " (External)"}
+                    </p>
+                  </div>
+                  <div className="pt-2 flex flex-col gap-1.5">
+                    <Link
+                      to="/dashboard/applications"
+                      className="text-xs font-semibold text-[var(--primary)] hover:underline"
+                    >
+                      View in Application Tracker →
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => setShowWithdrawModal(true)}
+                      className="text-xs text-red-500 hover:text-red-700 hover:underline pt-1 transition-colors"
+                    >
+                      Withdraw Application
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-2.5">
+                  {isWithdrawn && (
+                    <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-center space-y-1">
+                      <div className="flex items-center justify-center gap-1.5 text-amber-700 dark:text-amber-300 text-xs font-bold">
+                        <AlertCircle size={14} />
+                        <span>Application Withdrawn</span>
+                      </div>
+                      <p className="text-[11px] text-[var(--muted-foreground)]">
+                        You previously withdrew this application. You can re-apply anytime below.
+                      </p>
+                    </div>
+                  )}
+
                   {/* Mode: Easy Apply */}
                   {(job.applyMode === "easy" || job.applyMode === "both") && (
                     <Button
@@ -548,7 +607,7 @@ export default function JobDetail() {
                         setIsEasyApplyOpen(true)
                       }}
                     >
-                      <Zap size={16} className="mr-1.5" /> Easy Apply (In-App)
+                      <Zap size={16} className="mr-1.5" /> {isWithdrawn ? "Re-apply (Easy Apply)" : "Easy Apply (In-App)"}
                     </Button>
                   )}
 
@@ -560,7 +619,7 @@ export default function JobDetail() {
                       className="w-full font-bold justify-center"
                       onClick={handleExternalApply}
                     >
-                      <ExternalLink size={16} className="mr-1.5" /> Apply on Company Site
+                      <ExternalLink size={16} className="mr-1.5" /> {isWithdrawn ? "Re-apply on Company Site" : "Apply on Company Site"}
                     </Button>
                   )}
                 </div>
@@ -713,6 +772,48 @@ export default function JobDetail() {
         jobTitle={job.title}
         companyName={job.company.name}
       />
+
+      {/* Modern Mobile-Optimized Withdraw Confirmation Modal */}
+      {showWithdrawModal && existingApp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
+          <div className="w-full max-w-md bg-[var(--card)] border border-[var(--border)] rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/25 flex items-center justify-center text-amber-500 mx-auto">
+              <AlertCircle size={26} />
+            </div>
+            <div className="text-center space-y-1.5">
+              <h3 className="font-poppins font-bold text-lg text-[var(--foreground)]">
+                Withdraw Application?
+              </h3>
+              <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                Are you sure you want to withdraw your application for{" "}
+                <strong className="text-[var(--foreground)]">{job.title}</strong> at{" "}
+                <strong className="text-[var(--foreground)]">{job.company?.name}</strong>?
+              </p>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-300">
+              The hiring team will be notified that your application was withdrawn. You can re-apply at any time.
+            </div>
+            <div className="flex items-center gap-3 pt-2">
+              <Button
+                variant="outline"
+                className="flex-1 font-semibold"
+                onClick={() => setShowWithdrawModal(false)}
+                disabled={isWithdrawing}
+              >
+                Keep Active
+              </Button>
+              <Button
+                variant="primary"
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold border-red-600"
+                onClick={handleWithdrawFromJobDetail}
+                disabled={isWithdrawing}
+              >
+                {isWithdrawing ? "Withdrawing..." : "Confirm Withdraw"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

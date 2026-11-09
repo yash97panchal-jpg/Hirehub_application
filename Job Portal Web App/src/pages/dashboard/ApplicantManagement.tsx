@@ -21,6 +21,7 @@ import {
 } from "lucide-react"
 import Button from "../../components/ui/Button"
 import Badge from "../../components/ui/Badge"
+import CustomSelect from "../../components/ui/CustomSelect"
 import { useAuthStore } from "../../store/authStore"
 import { useJobStore } from "../../store/jobStore"
 import { useApplicationStore } from "../../store/applicationStore"
@@ -35,6 +36,7 @@ const columns: { id: ApplicationStatus; title: string }[] = [
   { id: "Interview", title: "Interview" },
   { id: "Offered", title: "Offered" },
   { id: "Rejected", title: "Rejected" },
+  { id: "Withdrawn", title: "Withdrawn" },
 ]
 
 export default function ApplicantManagement() {
@@ -173,18 +175,16 @@ export default function ApplicantManagement() {
 
           <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
             {/* Job selector */}
-            <select
+            <CustomSelect
               value={selectedJobId}
-              onChange={(e) => setSelectedJobId(e.target.value)}
-              className="px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--card)] text-xs font-semibold text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]"
-            >
-              <option value="all">All Jobs ({jobs.length})</option>
-              {jobs.map((j) => (
-                <option key={j.id} value={j.id}>
-                  {j.title}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setSelectedJobId(String(val))}
+              options={[
+                { value: "all", label: `All Jobs (${jobs.length})` },
+                ...jobs.map((j) => ({ value: j.id, label: j.title })),
+              ]}
+              size="sm"
+              className="w-56"
+            />
 
             {/* Search Box */}
             <div className="relative flex-1 sm:w-60">
@@ -389,10 +389,10 @@ export default function ApplicantManagement() {
                 {/* Status Switcher */}
                 <div className="p-4 rounded-2xl bg-[var(--muted)]/30 border border-[var(--border)] flex items-center justify-between">
                   <span className="text-xs font-bold text-[var(--foreground)]">Current Stage:</span>
-                  <select
+                  <CustomSelect
                     value={activeModalApp.status}
-                    onChange={async (e) => {
-                      const newStatus = e.target.value as ApplicationStatus
+                    onChange={async (val) => {
+                      const newStatus = val as ApplicationStatus
                       await applicationService.updateStatus(activeModalApp.id, newStatus)
                       const updated = applications.map((a) =>
                         a.id === activeModalApp.id ? { ...a, status: newStatus } : a
@@ -401,14 +401,10 @@ export default function ApplicantManagement() {
                       setActiveModalApp({ ...activeModalApp, status: newStatus })
                       toast.success(`Candidate status changed to ${newStatus}`)
                     }}
-                    className="px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--card)] text-xs font-bold text-[var(--foreground)]"
-                  >
-                    {columns.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.title}
-                      </option>
-                    ))}
-                  </select>
+                    options={columns.map((c) => ({ value: c.id, label: c.title }))}
+                    size="sm"
+                    className="w-40"
+                  />
                 </div>
 
                 {/* Candidate Info */}

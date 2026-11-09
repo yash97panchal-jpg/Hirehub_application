@@ -49,7 +49,7 @@ const SAMPLE_RESUME = {
   personal: {
     name: "Alex Rivera",
     title: "Senior Full Stack & Frontend Engineer",
-    email: "alex.rivera@example.com",
+    email: "alex.rivera@hirehub.app",
     phone: "+1 (415) 890-2341",
     location: "San Francisco, CA (Open to Remote)",
     linkedin: "linkedin.com/in/alexrivera-dev",
@@ -60,7 +60,7 @@ const SAMPLE_RESUME = {
   experience: [
     {
       id: "exp-1",
-      company: "TechCorp Solutions",
+      company: "Stripe",
       role: "Senior Frontend Engineer",
       dates: "2022 - Present",
       location: "San Francisco, CA",
@@ -69,7 +69,7 @@ const SAMPLE_RESUME = {
     },
     {
       id: "exp-2",
-      company: "CloudScale Systems",
+      company: "Cloudflare",
       role: "Full Stack Software Engineer",
       dates: "2019 - 2022",
       location: "Austin, TX",
@@ -482,7 +482,7 @@ export default function ResumeBuilder() {
                       type="email"
                       value={personal.email}
                       onChange={(e) => setPersonal({ ...personal, email: e.target.value })}
-                      placeholder="alex@example.com"
+                      placeholder="alex@hirehub.app"
                     />
                     <Input
                       label="Phone Number"

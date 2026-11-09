@@ -16,6 +16,7 @@ import {
 } from "lucide-react"
 import Button from "../../components/ui/Button"
 import Badge from "../../components/ui/Badge"
+import CustomSelect from "../../components/ui/CustomSelect"
 import toast from "react-hot-toast"
 import { Link } from "react-router-dom"
 
@@ -187,16 +188,14 @@ export default function TalentSearch() {
             </div>
 
             <div className="flex items-center gap-2 sm:ml-auto">
-              <span className="font-semibold text-[var(--muted-foreground)]">Skill Filter:</span>
-              <select
+              <span className="font-semibold text-xs text-[var(--muted-foreground)]">Skill Filter:</span>
+              <CustomSelect
                 value={selectedSkill}
-                onChange={(e) => setSelectedSkill(e.target.value)}
-                className="bg-[var(--muted)] border border-[var(--border)] rounded-lg px-2.5 py-1 text-xs text-[var(--foreground)]"
-              >
-                {allSkills.map((sk) => (
-                  <option key={sk} value={sk}>{sk}</option>
-                ))}
-              </select>
+                onChange={(val) => setSelectedSkill(String(val))}
+                options={allSkills}
+                size="sm"
+                className="w-44"
+              />
             </div>
           </div>
         </div>

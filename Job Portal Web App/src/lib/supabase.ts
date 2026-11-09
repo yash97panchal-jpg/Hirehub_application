@@ -36,12 +36,12 @@ export const supabase: SupabaseClient | null = isSupabaseConfigured
 // LOCAL FALLBACK STORE (Ensures instant zero-config preview if env vars not set)
 // -----------------------------------------------------------------------------
 const STORAGE_KEYS = {
-  COMPANIES: "hirehub_supabase_companies_v4",
-  JOBS: "hirehub_supabase_jobs_v4",
-  APPLICATIONS: "hirehub_supabase_applications_v4",
-  CLICKS: "hirehub_supabase_clicks_v4",
-  REPORTS: "hirehub_supabase_reports_v4",
-  MEMBERS: "hirehub_supabase_members_v4",
+  COMPANIES: "hirehub_supabase_companies_v5",
+  JOBS: "hirehub_supabase_jobs_v5",
+  APPLICATIONS: "hirehub_supabase_applications_v5",
+  CLICKS: "hirehub_supabase_clicks_v5",
+  REPORTS: "hirehub_supabase_reports_v5",
+  MEMBERS: "hirehub_supabase_members_v5",
 }
 
 function getStored<T>(key: string, fallback: T): T {
@@ -82,7 +82,7 @@ function initializeFallbackData() {
       applyMode: i % 3 === 0 ? "both" : i % 2 === 0 ? "external" : "easy",
       externalApplyUrl:
         i % 2 === 0 || i % 3 === 0
-          ? j.company.website || "https://careers.example.com/apply"
+          ? j.company.website || "https://careers.google.com"
           : undefined,
       screeningQuestions:
         i % 2 === 0
@@ -203,12 +203,12 @@ export const authService = {
     return { user: mockUser, session: { access_token: "mock-token-" + Date.now() } }
   },
 
-  async signInWithGoogle(account?: { email: string; name?: string }) {
+  async signInWithGoogle(account?: { email: string; name?: string; role?: User["role"] }) {
     if (isSupabaseConfigured && supabase) {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: `${window.location.origin}/${account?.role === "recruiter" ? "recruiter" : "dashboard"}`,
           queryParams: {
             prompt: "select_account",
             ...(account?.email ? { login_hint: account.email } : {}),
@@ -221,12 +221,13 @@ export const authService = {
 
     // Local Mock Fallback
     const name = account?.name || (account?.email ? account.email.split("@")[0] : "Google User")
-    const email = account?.email || "google.user@example.com"
+    const email = account?.email || "candidate@hirehub.app"
+    const role = account?.role || "job_seeker"
     const mockUser: User = {
       id: "usr-google-" + Date.now(),
       name,
       email,
-      role: "job_seeker",
+      role,
       skills: ["Full Stack", "Cloud"],
       profileCompletion: 90,
       isVerified: true,
@@ -685,13 +686,19 @@ export const applicationService = {
 
     // Local Mock Fallback
     const stored = getStored<Application[]>(STORAGE_KEYS.APPLICATIONS, [])
-    const exists = stored.some((a) => a.job.id === application.jobId && a.applicant.id === application.userId)
-    if (exists) {
+    const activeExists = stored.find(
+      (a) => a.job.id === application.jobId && a.applicant.id === application.userId && a.status !== "Withdrawn"
+    )
+    if (activeExists) {
       throw new Error("You have already submitted an application for this position.")
     }
 
+    const withdrawnIndex = stored.findIndex(
+      (a) => a.job.id === application.jobId && a.applicant.id === application.userId && a.status === "Withdrawn"
+    )
+
     const newApp: Application = {
-      id: "app-" + Date.now(),
+      id: withdrawnIndex >= 0 ? stored[withdrawnIndex].id : "app-" + Date.now(),
       jobId: application.jobId,
       job: application.job,
       userId: application.userId,
@@ -705,7 +712,13 @@ export const applicationService = {
       updatedAt: new Date().toISOString(),
     }
 
-    setStored(STORAGE_KEYS.APPLICATIONS, [newApp, ...stored])
+    if (withdrawnIndex >= 0) {
+      const nextStored = [...stored]
+      nextStored[withdrawnIndex] = newApp
+      setStored(STORAGE_KEYS.APPLICATIONS, nextStored)
+    } else {
+      setStored(STORAGE_KEYS.APPLICATIONS, [newApp, ...stored])
+    }
     return newApp
   },
 
@@ -783,7 +796,7 @@ export const applicationService = {
     }
 
     const all = getStored<Application[]>(STORAGE_KEYS.APPLICATIONS, [])
-    const updated = all.map((a) => (a.id === applicationId ? { ...a, status, notes: notes ?? a.notes } : a))
+    const updated = all.map((a) => (a.id === applicationId ? { ...a, status, notes: notes ?? a.notes, updatedAt: new Date().toISOString() } : a))
     setStored(STORAGE_KEYS.APPLICATIONS, updated)
   },
 

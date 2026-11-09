@@ -38,6 +38,7 @@ import { Link } from "react-router-dom"
 import Badge from "../../components/ui/Badge"
 import Button from "../../components/ui/Button"
 import Input from "../../components/ui/Input"
+import CustomSelect from "../../components/ui/CustomSelect"
 import { mockStats } from "../../data/mockData"
 import { useJobStore } from "../../store/jobStore"
 import { useApplicationStore } from "../../store/applicationStore"
@@ -383,17 +384,19 @@ export default function AdminDashboard() {
                   />
                 </div>
 
-                <select
+                <CustomSelect
                   value={companyFilter}
-                  onChange={(e) => setCompanyFilter(e.target.value)}
-                  className="px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs font-medium text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]"
-                >
-                  <option value="all">All Statuses</option>
-                  <option value="pending">Pending</option>
-                  <option value="approved">Approved</option>
-                  <option value="rejected">Rejected</option>
-                  <option value="blocked">Blocked</option>
-                </select>
+                  onChange={(val) => setCompanyFilter(String(val))}
+                  options={[
+                    { value: "all", label: "All Statuses" },
+                    { value: "pending", label: "Pending" },
+                    { value: "approved", label: "Approved" },
+                    { value: "rejected", label: "Rejected" },
+                    { value: "blocked", label: "Blocked" },
+                  ]}
+                  size="sm"
+                  className="w-36"
+                />
               </div>
             </div>
 

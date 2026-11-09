@@ -117,6 +117,31 @@ describe("HireHub Application Rules & Multi-Apply Modes", () => {
     expect(withdrawn?.status).toBe("Withdrawn")
   })
 
+  it("allows a seeker to re-apply after withdrawing an application", async () => {
+    const app = await applicationService.submitApplication({
+      jobId: dummyJob.id,
+      userId: dummyUser.id,
+      resumeFile: "resumes/seeker-test-1/resume.pdf",
+      job: dummyJob,
+      applicant: dummyUser,
+    })
+
+    await applicationService.withdrawApplication(app.id)
+
+    // Reapplying should succeed and reset status to Applied
+    const reApp = await applicationService.submitApplication({
+      jobId: dummyJob.id,
+      userId: dummyUser.id,
+      resumeFile: "resumes/seeker-test-1/new-resume.pdf",
+      coverLetter: "Updated application with new portfolio",
+      job: dummyJob,
+      applicant: dummyUser,
+    })
+
+    expect(reApp.status).toBe("Applied")
+    expect(reApp.coverLetter).toBe("Updated application with new portfolio")
+  })
+
   it("validates resume upload size limits (max 5 MB)", async () => {
     // 6 MB dummy file
     const oversizedBlob = new Blob([new Uint8Array(6 * 1024 * 1024)], { type: "application/pdf" })

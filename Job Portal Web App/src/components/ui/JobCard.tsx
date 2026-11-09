@@ -124,10 +124,10 @@ export default function JobCard({ job, compact = false }: JobCardProps) {
       transition={{ duration: 0.3 }}
     >
       {/* Top row */}
-      <div className="flex items-start justify-between gap-3 mb-4">
+      <div className="flex items-start justify-between gap-3 mb-3">
         <Link
           to={`/companies/${job.company.slug || job.company.id || job.company.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
-          className="flex items-center gap-3 min-w-0"
+          className="flex items-center gap-3 min-w-0 flex-1"
         >
           <div className="w-12 h-12 rounded-xl overflow-hidden bg-white dark:bg-slate-900 shrink-0 ring-1 ring-[var(--border)] p-1 flex items-center justify-center shadow-xs">
             <img
@@ -149,42 +149,42 @@ export default function JobCard({ job, compact = false }: JobCardProps) {
             </div>
           </div>
         </Link>
-        <button
-          onClick={handleBookmarkClick}
-          className={`shrink-0 w-8 h-8 flex items-center justify-center rounded-lg transition-all ${
-            isSaved
-              ? "bg-[var(--primary)]/15 text-[var(--primary)]"
-              : "hover:bg-[var(--muted)] text-[var(--muted-foreground)] hover:text-[var(--primary)]"
-          }`}
-          aria-label={isSaved ? "Unsave job" : "Save job"}
-          title={isSaved ? "Remove from saved jobs" : "Save job for later"}
-        >
-          {isSaved ? (
-            <BookmarkCheck size={16} className="text-[var(--primary)] fill-[var(--primary)]/20" />
-          ) : (
-            <Bookmark
-              size={16}
-              className="group-hover:text-[var(--primary)] transition-colors"
-            />
-          )}
-        </button>
+
+        {/* Skill Match Round Badge & Bookmark Button */}
+        <div className="flex items-center gap-2 shrink-0">
+          <RoundSkillMatchBadge skillMatch={skillMatch} size="sm" />
+          <button
+            onClick={handleBookmarkClick}
+            className={`shrink-0 w-8 h-8 flex items-center justify-center rounded-lg transition-all ${
+              isSaved
+                ? "bg-[var(--primary)]/15 text-[var(--primary)]"
+                : "hover:bg-[var(--muted)] text-[var(--muted-foreground)] hover:text-[var(--primary)]"
+            }`}
+            aria-label={isSaved ? "Unsave job" : "Save job"}
+            title={isSaved ? "Remove from saved jobs" : "Save job for later"}
+          >
+            {isSaved ? (
+              <BookmarkCheck size={16} className="text-[var(--primary)] fill-[var(--primary)]/20" />
+            ) : (
+              <Bookmark
+                size={16}
+                className="group-hover:text-[var(--primary)] transition-colors"
+              />
+            )}
+          </button>
+        </div>
       </div>
 
-      {/* Badges & Round Skill Match */}
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-        <div className="flex flex-wrap gap-1.5 items-center">
-          <Badge variant={typeColors[job.type] as any}>{job.type}</Badge>
-          {job.isFeatured && (
-            <Badge variant="accent">
-              <Zap size={10} className="mr-0.5" />
-              Featured
-            </Badge>
-          )}
-          {job.isUrgent && <Badge variant="error">Urgent</Badge>}
-        </div>
-
-        {/* Round Circular Skill Match Badge */}
-        <RoundSkillMatchBadge skillMatch={skillMatch} size="sm" showLabel={true} />
+      {/* Badges */}
+      <div className="flex flex-wrap gap-1.5 items-center mb-3">
+        <Badge variant={typeColors[job.type] as any}>{job.type}</Badge>
+        {job.isFeatured && (
+          <Badge variant="accent">
+            <Zap size={10} className="mr-0.5" />
+            Featured
+          </Badge>
+        )}
+        {job.isUrgent && <Badge variant="error">Urgent</Badge>}
       </div>
 
       {/* Title */}

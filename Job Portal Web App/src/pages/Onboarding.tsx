@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useNavigate } from "react-router-dom"
 import Button from "../components/ui/Button"
 import Input from "../components/ui/Input"
+import CustomSelect from "../components/ui/CustomSelect"
 import toast from "react-hot-toast"
 
 export default function Onboarding() {
@@ -204,22 +205,17 @@ export default function Onboarding() {
                   <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
                     Interested Job Type
                   </label>
-                  <select
-                    className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)] focus:border-[var(--primary)]"
+                  <CustomSelect
                     value={preferences.jobType}
-                    onChange={(e) =>
+                    onChange={(val) =>
                       setPreferences({
                         ...preferences,
-                        jobType: e.target.value,
+                        jobType: String(val),
                       })
                     }
-                  >
-                    <option>Full-time</option>
-                    <option>Part-time</option>
-                    <option>Contract</option>
-                    <option>Internship</option>
-                    <option>Freelance</option>
-                  </select>
+                    options={["Full-time", "Part-time", "Contract", "Internship", "Freelance"]}
+                    size="lg"
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[var(--foreground)] mb-1">

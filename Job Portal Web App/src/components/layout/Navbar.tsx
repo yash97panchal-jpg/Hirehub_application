@@ -35,9 +35,27 @@ import { useAuthStore } from "../../store/authStore"
 import { useSavedJobsStore } from "../../store/savedJobsStore"
 import { useMessageStore } from "../../store/messageStore"
 import { useJobStore } from "../../store/jobStore"
-import { mockNotifications } from "../../data/mockData"
+import { useNotificationStore } from "../../store/notificationStore"
 import { cn } from "../../utils/cn"
 import symbolLogo from "../../imports/symbol_only.jpeg"
+
+function formatNotificationTime(isoString: string): string {
+  try {
+    const date = new Date(isoString)
+    const now = new Date()
+    const diffSec = Math.floor((now.getTime() - date.getTime()) / 1000)
+    if (diffSec < 60) return "Just now"
+    const diffMin = Math.floor(diffSec / 60)
+    if (diffMin < 60) return `${diffMin}m ago`
+    const diffHour = Math.floor(diffMin / 60)
+    if (diffHour < 24) return `${diffHour}h ago`
+    const diffDay = Math.floor(diffHour / 24)
+    if (diffDay < 7) return `${diffDay}d ago`
+    return date.toLocaleDateString(undefined, { month: "short", day: "numeric" })
+  } catch {
+    return "Recently"
+  }
+}
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuthStore()
@@ -106,7 +124,8 @@ export default function Navbar() {
 
   const { conversations } = useMessageStore()
   const unreadMsgCount = conversations.reduce((acc, c) => acc + (c.unreadCount || 0), 0)
-  const unreadCount = mockNotifications.filter((n) => !n.isRead).length
+  const { notifications, markAsRead, markAllAsRead, unreadCount } = useNotificationStore()
+  const unreadNotifCount = unreadCount()
 
   // Keyboard shortcut listener: Press "/" to focus or navigate to Jobs Search
   useEffect(() => {
@@ -378,7 +397,7 @@ export default function Navbar() {
                     aria-label="Notifications"
                   >
                     <Bell size={18} />
-                    {unreadCount > 0 && (
+                    {unreadNotifCount > 0 && (
                       <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-[var(--card)]" />
                     )}
                   </button>
@@ -389,44 +408,86 @@ export default function Navbar() {
                         initial="hidden"
                         animate="visible"
                         exit="exit"
-                        className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-1.5rem)] rounded-2xl bg-[var(--card)] border border-[var(--border)] shadow-[var(--shadow-elevated)] overflow-hidden z-50"
+                        className="fixed inset-x-3 sm:inset-x-auto sm:right-0 top-16 sm:top-full sm:mt-2 sm:w-80 max-w-[calc(100vw-1.5rem)] rounded-2xl bg-[var(--card)] border border-[var(--border)] shadow-[var(--shadow-elevated)] overflow-hidden z-50"
                       >
-                        <div className="p-4 flex items-center justify-between border-b border-[var(--border)]">
-                          <h3 className="font-semibold text-sm text-[var(--foreground)]">
-                            Notifications
-                          </h3>
-                          {unreadCount > 0 && (
-                            <span className="text-xs bg-[var(--primary)] text-white px-2 py-0.5 rounded-full">
-                              {unreadCount} new
-                            </span>
+                        <div className="p-3.5 sm:p-4 flex items-center justify-between border-b border-[var(--border)] bg-[var(--muted)]/40">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-sm text-[var(--foreground)]">
+                              Notifications
+                            </h3>
+                            {unreadNotifCount > 0 && (
+                              <span className="text-[10px] bg-[var(--primary)] text-white font-bold px-2 py-0.5 rounded-full">
+                                {unreadNotifCount} new
+                              </span>
+                            )}
+                          </div>
+                          {unreadNotifCount > 0 && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                markAllAsRead()
+                              }}
+                              className="text-[11px] text-[var(--primary)] hover:underline font-semibold"
+                            >
+                              Mark all read
+                            </button>
                           )}
                         </div>
                         <div className="divide-y divide-[var(--border)] max-h-72 overflow-y-auto">
-                          {mockNotifications.map((n) => (
-                            <div
-                              key={n.id}
-                              className={cn(
-                                "p-4 hover:bg-[var(--muted)] transition-colors cursor-pointer",
-                                !n.isRead && "bg-[var(--muted)] ",
-                              )}
-                            >
-                              <p className="text-sm font-medium text-[var(--foreground)]">
-                                {n.title}
-                              </p>
-                              <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
-                                {n.message}
-                              </p>
-                              <p className="text-xs text-[var(--muted-foreground)] mt-1">
-                                {new Date(n.createdAt).toLocaleDateString()}
-                              </p>
+                          {notifications.length === 0 ? (
+                            <div className="p-8 text-center text-xs text-[var(--muted-foreground)]">
+                              No notifications yet
                             </div>
-                          ))}
+                          ) : (
+                            notifications.slice(0, 6).map((n) => (
+                              <div
+                                key={n.id}
+                                onClick={() => {
+                                  markAsRead(n.id)
+                                  setNotifOpen(false)
+                                  if (n.link) navigate(n.link)
+                                }}
+                                className={cn(
+                                  "p-3.5 hover:bg-[var(--muted)] transition-colors cursor-pointer flex items-start gap-3",
+                                  !n.isRead && "bg-[var(--primary)]/5 dark:bg-[var(--primary)]/10"
+                                )}
+                              >
+                                <div className="mt-0.5 shrink-0">
+                                  {n.type === "application" ? (
+                                    <Briefcase size={15} className="text-[var(--primary)]" />
+                                  ) : n.type === "message" ? (
+                                    <MessageSquare size={15} className="text-emerald-500" />
+                                  ) : (
+                                    <Bell size={15} className="text-[var(--primary)]" />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between gap-1">
+                                    <p className={cn("text-xs text-[var(--foreground)] truncate", !n.isRead ? "font-bold" : "font-medium")}>
+                                      {n.title}
+                                    </p>
+                                    {!n.isRead && (
+                                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary)] shrink-0" />
+                                    )}
+                                  </div>
+                                  <p className="text-[11px] text-[var(--muted-foreground)] line-clamp-2 mt-0.5 leading-snug">
+                                    {n.message}
+                                  </p>
+                                  <p className="text-[10px] text-[var(--muted-foreground)] mt-1 font-medium">
+                                    {formatNotificationTime(n.createdAt)}
+                                  </p>
+                                </div>
+                              </div>
+                            ))
+                          )}
                         </div>
                         <Link
                           to="/notifications"
-                          className="block p-3 text-center text-sm font-semibold text-[var(--primary)] hover:bg-[var(--muted)] transition-colors"
+                          onClick={() => setNotifOpen(false)}
+                          className="block p-3 text-center text-xs font-bold text-[var(--primary)] hover:bg-[var(--muted)] transition-colors border-t border-[var(--border)]"
                         >
-                          View all notifications
+                          View all notifications →
                         </Link>
                       </motion.div>
                     )}
@@ -613,6 +674,23 @@ export default function Navbar() {
                       <Settings size={12} /> Settings
                     </Link>
                   </div>
+
+                  {/* Mobile Notifications Link */}
+                  <Link
+                    to="/notifications"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[var(--primary)] transition-colors bg-[var(--primary)]/5 dark:bg-[var(--primary)]/10 border border-[var(--primary)]/15 mb-1"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Bell size={17} className="text-[var(--primary)]" />
+                      <span>Notifications</span>
+                    </div>
+                    {unreadNotifCount > 0 && (
+                      <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-[var(--primary)] text-white">
+                        {unreadNotifCount} new
+                      </span>
+                    )}
+                  </Link>
 
                   {[
                     { label: "Find Jobs", to: "/jobs", icon: Briefcase },

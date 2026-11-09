@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react"
+import { createPortal } from "react-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { X, Plus, ArrowRight, UserCheck } from "lucide-react"
 
@@ -16,6 +17,21 @@ interface SavedAccount {
   avatarBg: string
 }
 
+const DEFAULT_ACCOUNTS: SavedAccount[] = [
+  {
+    name: "Alex Johnson",
+    email: "alex.johnson.dev@gmail.com",
+    avatarLetter: "A",
+    avatarBg: "bg-blue-600",
+  },
+  {
+    name: "Sarah Miller",
+    email: "sarah.miller.work@gmail.com",
+    avatarLetter: "S",
+    avatarBg: "bg-emerald-600",
+  },
+]
+
 export default function GoogleAccountModal({
   isOpen,
   onClose,
@@ -26,35 +42,28 @@ export default function GoogleAccountModal({
   const [customEmail, setCustomEmail] = useState("")
   const [customName, setCustomName] = useState("")
   const [error, setError] = useState("")
-  const [accounts, setAccounts] = useState<SavedAccount[]>([
-    {
-      name: "Alex Johnson",
-      email: "alex.johnson.dev@gmail.com",
-      avatarLetter: "A",
-      avatarBg: "bg-blue-600",
-    },
-    {
-      name: "Sarah Miller",
-      email: "sarah.miller.work@gmail.com",
-      avatarLetter: "S",
-      avatarBg: "bg-emerald-600",
-    },
-  ])
+  const [accounts, setAccounts] = useState<SavedAccount[]>(DEFAULT_ACCOUNTS)
 
+  // Reset state and load stored accounts when modal opens
   useEffect(() => {
     if (isOpen) {
+      setIsCustomMode(false)
+      setError("")
+      setCustomEmail("")
+      setCustomName("")
+
       try {
         const stored = localStorage.getItem("hirehub_custom_google_accounts")
         if (stored) {
           const parsed: SavedAccount[] = JSON.parse(stored)
           if (Array.isArray(parsed) && parsed.length > 0) {
             setAccounts((prev) => {
-              const emails = new Set(prev.map((a) => a.email))
+              const emails = new Set(prev.map((a) => a.email.toLowerCase()))
               const merged = [...prev]
               for (const acc of parsed) {
-                if (!emails.has(acc.email)) {
+                if (!emails.has(acc.email.toLowerCase())) {
                   merged.push(acc)
-                  emails.add(acc.email)
+                  emails.add(acc.email.toLowerCase())
                 }
               }
               return merged
@@ -64,8 +73,25 @@ export default function GoogleAccountModal({
       } catch (err) {
         console.warn("Could not read custom accounts from storage:", err)
       }
+
+      // Prevent background scrolling while modal is open
+      const originalOverflow = document.body.style.overflow
+      document.body.style.overflow = "hidden"
+      return () => {
+        document.body.style.overflow = originalOverflow
+      }
     }
   }, [isOpen])
+
+  // Handle ESC key to close
+  useEffect(() => {
+    if (!isOpen) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose()
+    }
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [isOpen, onClose])
 
   const handleSelect = (acc: { email: string; name: string }) => {
     onSelectAccount(acc)
@@ -77,7 +103,7 @@ export default function GoogleAccountModal({
     setError("")
 
     const cleanEmail = customEmail.trim()
-    if (!cleanEmail || !cleanEmail.includes("@")) {
+    if (!cleanEmail || !cleanEmail.includes("@") || !cleanEmail.includes(".")) {
       setError("Please enter a valid Google email address.")
       return
     }
@@ -105,15 +131,22 @@ export default function GoogleAccountModal({
     onClose()
   }
 
-  return (
+  if (typeof document === "undefined") return null
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100000] flex items-center justify-center p-3 sm:p-4 bg-black/65 backdrop-blur-sm overflow-y-auto">
+        <div
+          className="fixed inset-0 z-[999999] flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm overflow-y-auto"
+          onClick={onClose}
+        >
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 12 }}
+            initial={{ opacity: 0, scale: 0.95, y: 15 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 8 }}
-            className="w-full max-w-md bg-white dark:bg-[#1E112A] text-slate-900 dark:text-white rounded-3xl border border-slate-200 dark:border-white/10 shadow-2xl overflow-hidden p-5 sm:p-7 my-auto"
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ duration: 0.2 }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md bg-white dark:bg-[#1E112A] text-slate-900 dark:text-white rounded-3xl border border-slate-200 dark:border-white/10 shadow-2xl overflow-hidden p-5 sm:p-7 my-auto relative"
           >
             {/* Header with Google Logo */}
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-white/10 mb-5">
@@ -138,9 +171,9 @@ export default function GoogleAccountModal({
                 </svg>
                 <div>
                   <h3 className="font-poppins font-bold text-base sm:text-lg leading-tight">
-                    {mode === "create_account" ? "Create Account with Google" : "Log In with Google"}
+                    {mode === "create_account" ? "Sign up with Google" : "Sign in with Google"}
                   </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                     Choose an account to continue to HireHub
                   </p>
                 </div>
@@ -150,6 +183,7 @@ export default function GoogleAccountModal({
                 type="button"
                 onClick={onClose}
                 className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors shrink-0"
+                aria-label="Close Google sign-in modal"
               >
                 <X size={18} />
               </button>
@@ -181,7 +215,7 @@ export default function GoogleAccountModal({
                           </p>
                         </div>
                       </div>
-                      <ArrowRight size={16} className="text-slate-400 group-hover:text-blue-600 shrink-0 ml-2" />
+                      <ArrowRight size={16} className="text-slate-400 group-hover:text-blue-600 shrink-0 ml-2 transition-transform group-hover:translate-x-0.5" />
                     </button>
                   ))}
                 </div>
@@ -198,7 +232,7 @@ export default function GoogleAccountModal({
                   <div>
                     <p className="font-semibold text-sm">Use another Google account</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Enter your own Google email or ID
+                      Sign in with your personal or work Gmail
                     </p>
                   </div>
                 </button>
@@ -208,7 +242,7 @@ export default function GoogleAccountModal({
               <form onSubmit={handleCustomSubmit} className="space-y-4">
                 <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300 bg-blue-50 dark:bg-blue-950/30 p-2.5 rounded-xl border border-blue-200 dark:border-blue-900/50">
                   <UserCheck size={16} className="text-blue-500 shrink-0" />
-                  <span>Enter the Google ID or email address you want to use:</span>
+                  <span>Enter the Google email address you want to sign in with:</span>
                 </div>
 
                 {error && (
@@ -219,14 +253,14 @@ export default function GoogleAccountModal({
 
                 <div>
                   <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">
-                    Google Email / ID
+                    Google Email Address
                   </label>
                   <input
                     type="email"
                     required
                     value={customEmail}
                     onChange={(e) => setCustomEmail(e.target.value)}
-                    placeholder="yourname@gmail.com"
+                    placeholder="name@gmail.com"
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-white/20 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     autoFocus
                   />
@@ -234,13 +268,13 @@ export default function GoogleAccountModal({
 
                 <div>
                   <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">
-                    Your Name (Optional)
+                    Full Name (Optional)
                   </label>
                   <input
                     type="text"
                     value={customName}
                     onChange={(e) => setCustomName(e.target.value)}
-                    placeholder="e.g. Alex Johnson"
+                    placeholder="e.g. John Doe"
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-white/20 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -251,7 +285,7 @@ export default function GoogleAccountModal({
                     onClick={() => setIsCustomMode(false)}
                     className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-white/20 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
                   >
-                    Back
+                    Back to Accounts
                   </button>
                   <button
                     type="submit"
@@ -265,12 +299,13 @@ export default function GoogleAccountModal({
 
             <div className="mt-5 pt-3.5 border-t border-slate-100 dark:border-white/10 text-center">
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                To continue, Google will verify your account and share your email address with HireHub.
+                To continue, Google will share your name, email address, language preference, and profile picture with HireHub.
               </p>
             </div>
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   )
 }

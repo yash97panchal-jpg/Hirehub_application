@@ -94,17 +94,32 @@ export const useApplicationStore = create<ApplicationState>()(
       applications: initialApplications,
       setApplications: (applications) => set({ applications }),
       addApplication: (application) =>
-        set((state) => ({ applications: [application, ...state.applications] })),
+        set((state) => {
+          const targetJobId = application.job?.id || application.jobId
+          const existingIndex = state.applications.findIndex(
+            (a) => a.id === application.id || ((a.job?.id || a.jobId) === targetJobId)
+          )
+          if (existingIndex >= 0) {
+            const updated = [...state.applications]
+            updated[existingIndex] = {
+              ...application,
+              status: "Applied",
+              updatedAt: new Date().toISOString(),
+            }
+            return { applications: updated }
+          }
+          return { applications: [application, ...state.applications] }
+        }),
       updateApplicationStatus: (id, status, notes) =>
         set((state) => ({
           applications: state.applications.map((a) =>
-            a.id === id ? { ...a, status, notes: notes !== undefined ? notes : a.notes } : a
+            a.id === id ? { ...a, status, notes: notes !== undefined ? notes : a.notes, updatedAt: new Date().toISOString() } : a
           ),
         })),
       withdrawApplication: (id) =>
         set((state) => ({
           applications: state.applications.map((a) =>
-            a.id === id ? { ...a, status: "Withdrawn" as ApplicationStatus } : a
+            a.id === id ? { ...a, status: "Withdrawn" as ApplicationStatus, updatedAt: new Date().toISOString() } : a
           ),
         })),
       getApplicationsByJobId: (jobId) =>

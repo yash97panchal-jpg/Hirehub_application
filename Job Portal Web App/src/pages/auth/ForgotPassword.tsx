@@ -276,7 +276,7 @@ export default function ForgotPassword() {
                 <Input
                   label="Registered Email Address"
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder="you@hirehub.app"
                   error={requestErrors.email?.message}
                   iconRight={<Mail size={16} className="text-[var(--muted-foreground)]" />}
                   {...registerRequest("email")}

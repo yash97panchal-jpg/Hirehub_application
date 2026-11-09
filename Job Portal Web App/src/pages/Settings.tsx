@@ -33,6 +33,7 @@ import {
 import { useNavigate } from "react-router-dom"
 import Button from "../components/ui/Button"
 import Badge from "../components/ui/Badge"
+import CustomSelect from "../components/ui/CustomSelect"
 import { useAuthStore } from "../store/authStore"
 import { useThemeStore } from "../store/themeStore"
 import { useSavedJobsStore } from "../store/savedJobsStore"
@@ -77,7 +78,7 @@ const defaultPreferences: PreferencesState = {
   browserNotifs: true,
   visibility: "public",
   hideCurrentCompany: true,
-  currentCompany: "TechCorp Solutions",
+  currentCompany: "Microsoft",
   twoFactorEnabled: false,
 }
 
@@ -92,7 +93,7 @@ export default function Settings() {
   // User Profile Form State
   const [profileForm, setProfileForm] = useState({
     name: user?.name || "Alex Johnson",
-    email: user?.email || "alex.johnson@example.com",
+    email: user?.email || "alex.johnson@hirehub.app",
     headline: user?.headline || "Senior Frontend & Full Stack Developer",
     phone: user?.phone || "+1 (555) 349-2041",
     location: user?.location || "San Francisco, CA",
@@ -640,21 +641,22 @@ export default function Settings() {
                             Minimum Expected Salary (Annual)
                           </label>
                           <div className="flex gap-2">
-                            <select
+                            <CustomSelect
                               value={prefs.salaryCurrency}
-                              onChange={(e) =>
-                                setPrefs({ ...prefs, salaryCurrency: e.target.value })
+                              onChange={(val) =>
+                                setPrefs({ ...prefs, salaryCurrency: String(val) })
                               }
-                              className="px-3 py-2.5 bg-[var(--background)] border border-[var(--border)] rounded-xl text-sm text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                            >
-                              <option value="USD">USD ($)</option>
-                              <option value="EUR">EUR (€)</option>
-                              <option value="GBP">GBP (£)</option>
-                              <option value="INR">INR (₹)</option>
-                              <option value="CAD">CAD (CA$)</option>
-                              <option value="AUD">AUD (AU$)</option>
-                              <option value="SGD">SGD (S$)</option>
-                            </select>
+                              options={[
+                                { value: "USD", label: "USD ($)" },
+                                { value: "EUR", label: "EUR (€)" },
+                                { value: "GBP", label: "GBP (£)" },
+                                { value: "INR", label: "INR (₹)" },
+                                { value: "CAD", label: "CAD (CA$)" },
+                                { value: "AUD", label: "AUD (AU$)" },
+                                { value: "SGD", label: "SGD (S$)" },
+                              ]}
+                              className="w-32 shrink-0"
+                            />
                             <input
                               type="number"
                               step="5000"

@@ -18,6 +18,7 @@ import { useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
 import Button from "../../components/ui/Button"
 import Input from "../../components/ui/Input"
+import CustomSelect from "../../components/ui/CustomSelect"
 import { useJobStore } from "../../store/jobStore"
 import { useAuthStore } from "../../store/authStore"
 import { jobService, companyService } from "../../lib/supabase"
@@ -144,12 +145,12 @@ export default function PostJob() {
         .filter(Boolean)
 
       const defaultCompany = {
-        id: user?.companyId || "comp-meta",
-        name: user?.name ? `${user.name}'s Company` : "TechCorp Labs",
-        slug: "techcorp-labs",
-        logo: getCompanyRealLogo(user?.name ? `${user.name}'s Company` : "TechCorp Labs"),
-        banner: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=300&fit=crop&auto=format",
-        about: "Leading technology innovation laboratory building high-performance systems.",
+        id: user?.companyId || "comp-stripe",
+        name: user?.name ? `${user.name}'s Company` : "Stripe",
+        slug: user?.name ? "user-company" : "stripe",
+        logo: getCompanyRealLogo(user?.name ? `${user.name}'s Company` : "Stripe", "https://stripe.com"),
+        banner: "https://images.unsplash.com/photo-1556742049-0a67c5574f73?w=1200&h=300&fit=crop&auto=format",
+        about: "Leading global technology infrastructure and enterprise software engineering.",
         industry: "Technology",
         size: "50-200",
         location: formData.location || "San Francisco, CA",
@@ -290,50 +291,36 @@ export default function PostJob() {
                   <label className="block text-xs font-semibold text-[var(--foreground)] mb-1">
                     Employment Type
                   </label>
-                  <select
-                    className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]"
+                  <CustomSelect
                     value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-                  >
-                    <option>Full-time</option>
-                    <option>Part-time</option>
-                    <option>Contract</option>
-                    <option>Internship</option>
-                    <option>Freelance</option>
-                  </select>
+                    onChange={(val) => setFormData({ ...formData, type: val as any })}
+                    options={["Full-time", "Part-time", "Contract", "Internship", "Freelance"]}
+                    size="sm"
+                  />
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-[var(--foreground)] mb-1">
                     Workplace Setup
                   </label>
-                  <select
-                    className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]"
+                  <CustomSelect
                     value={formData.remoteType}
-                    onChange={(e) => setFormData({ ...formData, remoteType: e.target.value as any })}
-                  >
-                    <option>Remote</option>
-                    <option>Hybrid</option>
-                    <option>On-site</option>
-                  </select>
+                    onChange={(val) => setFormData({ ...formData, remoteType: val as any })}
+                    options={["Remote", "Hybrid", "On-site"]}
+                    size="sm"
+                  />
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-[var(--foreground)] mb-1">
                     Category
                   </label>
-                  <select
-                    className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]"
+                  <CustomSelect
                     value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  >
-                    <option>Engineering</option>
-                    <option>Design</option>
-                    <option>Product</option>
-                    <option>Marketing</option>
-                    <option>Finance</option>
-                    <option>Operations</option>
-                  </select>
+                    onChange={(val) => setFormData({ ...formData, category: String(val) })}
+                    options={["Engineering", "Design", "Product", "Marketing", "Finance", "Operations", "Data Science", "HR"]}
+                    size="sm"
+                  />
                 </div>
               </div>
 
@@ -501,16 +488,17 @@ export default function PostJob() {
                           className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--card)] text-xs text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]"
                         />
                         <div className="flex items-center gap-4 text-xs">
-                          <label className="flex items-center gap-1.5 cursor-pointer">
-                            <select
+                          <div className="w-32">
+                            <CustomSelect
                               value={q.type}
-                              onChange={(e) => updateQuestion(q.id, { type: e.target.value as any })}
-                              className="px-2 py-1 rounded-lg border border-[var(--border)] bg-[var(--card)] text-xs text-[var(--foreground)]"
-                            >
-                              <option value="text">Free Text</option>
-                              <option value="yes_no">Yes / No</option>
-                            </select>
-                          </label>
+                              onChange={(val) => updateQuestion(q.id, { type: val as any })}
+                              options={[
+                                { value: "text", label: "Free Text" },
+                                { value: "yes_no", label: "Yes / No" },
+                              ]}
+                              size="sm"
+                            />
+                          </div>
                           <label className="flex items-center gap-1.5 cursor-pointer text-[var(--foreground)]">
                             <input
                               type="checkbox"
@@ -638,14 +626,16 @@ export default function PostJob() {
                     Published openings are immediately discoverable on the marketplace.
                   </p>
                 </div>
-                <select
+                <CustomSelect
                   value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                  className="px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs font-bold text-[var(--foreground)]"
-                >
-                  <option value="published">Publish to Marketplace</option>
-                  <option value="draft">Save as Draft</option>
-                </select>
+                  onChange={(val) => setFormData({ ...formData, status: val as any })}
+                  options={[
+                    { value: "published", label: "Publish to Marketplace" },
+                    { value: "draft", label: "Save as Draft" },
+                  ]}
+                  size="sm"
+                  className="w-48 shrink-0"
+                />
               </div>
             </div>
           )}

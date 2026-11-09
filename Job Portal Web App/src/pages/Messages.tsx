@@ -24,6 +24,7 @@ import {
 } from "lucide-react"
 import Button from "../components/ui/Button"
 import Badge from "../components/ui/Badge"
+import CustomSelect from "../components/ui/CustomSelect"
 import { useMessageStore, type ChatMessage } from "../store/messageStore"
 import { useAuthStore } from "../store/authStore"
 import toast from "react-hot-toast"
@@ -412,15 +413,16 @@ END:VCALENDAR`
                 <label className="text-xs font-semibold text-[var(--foreground)] block mb-1">
                   Video Platform
                 </label>
-                <select
+                <CustomSelect
                   value={scheduleData.platform}
-                  onChange={(e) => setScheduleData({ ...scheduleData, platform: e.target.value })}
-                  className="w-full bg-[var(--muted)]/50 border border-[var(--border)] rounded-xl px-3 py-2 text-xs text-[var(--foreground)]"
-                >
-                  <option value="Google Meet">Google Meet (Auto-generated link)</option>
-                  <option value="Zoom">Zoom Video Meeting</option>
-                  <option value="HireHub In-App Room">HireHub In-App Meeting Room</option>
-                </select>
+                  onChange={(val) => setScheduleData({ ...scheduleData, platform: String(val) })}
+                  options={[
+                    { value: "Google Meet", label: "Google Meet (Auto-generated link)" },
+                    { value: "Zoom", label: "Zoom Video Meeting" },
+                    { value: "HireHub In-App Room", label: "HireHub In-App Meeting Room" },
+                  ]}
+                  size="sm"
+                />
               </div>
 
               <div className="flex justify-end gap-2 pt-2">
@@ -460,7 +462,7 @@ END:VCALENDAR`
                 <p className="mt-4 font-semibold text-sm">{activeConversation?.participantName}</p>
                 <p className="text-xs text-neutral-400">Recruiter Stream (Waiting for connection)</p>
                 <div className="absolute bottom-3 left-3 bg-black/50 px-2 py-1 rounded text-[11px]">
-                  TechCorp Interviewer
+                  {activeConversation?.participantCompany ? `${activeConversation.participantCompany} Recruiter` : "Lead Technical Interviewer"}
                 </div>
               </div>
 

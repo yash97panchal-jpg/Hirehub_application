@@ -19,6 +19,7 @@ import toast from "react-hot-toast"
 import Button from "../../components/ui/Button"
 import Input from "../../components/ui/Input"
 import Badge from "../../components/ui/Badge"
+import CustomSelect from "../../components/ui/CustomSelect"
 import { useAuthStore } from "../../store/authStore"
 import { companyService } from "../../lib/supabase"
 import { getCompanyRealLogo } from "../../data/companyLogos"
@@ -30,16 +31,16 @@ export default function CompanyProfile() {
 
   const [company, setCompany] = useState<Company | null>(null)
   const [formData, setFormData] = useState({
-    name: "TechCorp Labs",
-    slug: "techcorp-labs",
-    industry: "Software Engineering & Cloud",
+    name: "Stripe",
+    slug: "stripe",
+    industry: "Fintech & Financial Infrastructure",
     location: "San Francisco, CA",
-    address: "100 Market St, Suite 400",
-    website: "https://techcorp.example.com",
-    about: "We engineer resilient distributed systems, developer platforms, and enterprise AI.",
-    size: "50-200 employees",
-    logo: getCompanyRealLogo("TechCorp Labs", "https://github.com"),
-    banner: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=300&fit=crop&auto=format",
+    address: "354 Oyster Point Blvd, South San Francisco, CA 94080",
+    website: "https://stripe.com",
+    about: "Financial infrastructure for the internet. Millions of companies use Stripe's APIs to accept payments, grow revenue, and manage financial operations.",
+    size: "5000-10000",
+    logo: getCompanyRealLogo("Stripe", "https://stripe.com"),
+    banner: "https://images.unsplash.com/photo-1556742049-0a67c5574f73?w=1200&h=300&fit=crop&auto=format",
   })
 
   // Teammate Invitation State
@@ -47,7 +48,7 @@ export default function CompanyProfile() {
   const [inviteRole, setInviteRole] = useState<"recruiter" | "member">("recruiter")
   const [isInviting, setIsInviting] = useState(false)
   const [teamMembers, setTeamMembers] = useState([
-    { email: user?.email || "recruiter@techcorp.com", role: "owner", status: "active" },
+    { email: user?.email || "recruiter@stripe.com", role: "owner", status: "active" },
   ])
 
   useEffect(() => {
@@ -61,7 +62,7 @@ export default function CompanyProfile() {
           industry: companies[0].industry || "Technology",
           location: companies[0].location || "San Francisco, CA",
           address: companies[0].address || "100 Market St",
-          website: companies[0].website || "https://example.com",
+          website: companies[0].website || "https://stripe.com",
           about: companies[0].description || companies[0].about || "",
           size: companies[0].size || "50-200 employees",
           logo: companies[0].logo || "",
@@ -300,14 +301,16 @@ export default function CompanyProfile() {
               placeholder="teammate@yourcompany.com"
               className="flex-1 px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]"
             />
-            <select
+            <CustomSelect
               value={inviteRole}
-              onChange={(e) => setInviteRole(e.target.value as any)}
-              className="px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs font-semibold text-[var(--foreground)]"
-            >
-              <option value="recruiter">Recruiter (Post jobs & review)</option>
-              <option value="member">Hiring Member (Review only)</option>
-            </select>
+              onChange={(val) => setInviteRole(val)}
+              options={[
+                { value: "recruiter", label: "Recruiter (Post jobs & review)" },
+                { value: "member", label: "Hiring Member (Review only)" },
+              ]}
+              size="sm"
+              className="w-56 shrink-0"
+            />
             <Button type="submit" variant="primary" size="sm" isLoading={isInviting}>
               <UserPlus size={14} className="mr-1.5" /> Send Invite
             </Button>

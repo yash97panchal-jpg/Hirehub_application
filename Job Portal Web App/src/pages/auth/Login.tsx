@@ -87,7 +87,8 @@ export default function Login() {
   const handleGoogleAccountSelect = async (account: { email: string; name: string }) => {
     setIsGoogleLoading(true)
     try {
-      const res = await authService.signInWithGoogle(account)
+      const selectedRole = activeRole === "recruiter" ? "recruiter" : "job_seeker"
+      const res = await authService.signInWithGoogle({ ...account, role: selectedRole })
       if (res && "user" in res && res.user) {
         login(res.user as any, (res as any).session?.access_token || "google-token")
         toast.success(`Logged in as ${account.email}!`)
@@ -278,7 +279,7 @@ export default function Login() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder={activeRole === "recruiter" ? "recruiter@company.com" : "you@example.com"}
+              placeholder={activeRole === "recruiter" ? "recruiter@company.com" : "you@hirehub.app"}
               required
             />
 

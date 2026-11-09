@@ -13,12 +13,14 @@ import {
   Globe,
   ChevronLeft,
   ChevronRight,
+  Check,
 } from "lucide-react"
 import JobCard from "../components/ui/JobCard"
 import Badge from "../components/ui/Badge"
 import Button from "../components/ui/Button"
 import RoleSearchInput from "../components/ui/RoleSearchInput"
 import LocationSearchInput from "../components/ui/LocationSearchInput"
+import CustomSelect from "../components/ui/CustomSelect"
 import { useJobStore } from "../store/jobStore"
 import type { Job, JobType, ExperienceLevel } from "../types"
 import { matchLocationQuery } from "../data/locationCatalog"
@@ -45,6 +47,33 @@ const dateOptions = [
   { label: "Last 24 hours", value: "1" },
   { label: "Last 7 days", value: "7" },
   { label: "Last 30 days", value: "30" },
+]
+
+const categoryOptions = [
+  { value: "", label: "All Categories" },
+  { value: "engineering", label: "Engineering" },
+  { value: "design", label: "Design" },
+  { value: "marketing", label: "Marketing" },
+  { value: "sales", label: "Sales" },
+  { value: "product", label: "Product" },
+  { value: "finance", label: "Finance" },
+  { value: "hr", label: "HR" },
+  { value: "data science", label: "Data Science" },
+  { value: "operations", label: "Operations" },
+  { value: "legal", label: "Legal" },
+]
+
+const sortOptions = [
+  { value: "relevance", label: "Relevance" },
+  { value: "newest", label: "Newest Added" },
+  { value: "salary", label: "Highest Salary" },
+]
+
+const pageSizeOptions = [
+  { value: 8, label: "8 per page" },
+  { value: 10, label: "10 per page" },
+  { value: 15, label: "15 per page" },
+  { value: 20, label: "20 per page" },
 ]
 
 export default function Jobs() {
@@ -287,6 +316,143 @@ export default function Jobs() {
     (category ? 1 : 0) +
     (companyParam ? 1 : 0)
 
+  const renderFilterBody = () => (
+    <>
+      {/* Category */}
+      <div className="mb-5">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)] mb-2">
+          Category
+        </h3>
+        <CustomSelect
+          value={category}
+          onChange={(val) => setCategory(String(val))}
+          options={categoryOptions}
+          placeholder="All Categories"
+          icon={<Briefcase size={14} />}
+        />
+      </div>
+
+      {/* Job Type */}
+      <div className="mb-5">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)] mb-2.5">
+          Job Type
+        </h3>
+        <div className="flex flex-wrap gap-2">
+          {jobTypes.map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => toggleType(t)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border cursor-pointer ${
+                selectedTypes.includes(t)
+                  ? "bg-[var(--primary)] text-white border-[var(--primary)] shadow-xs"
+                  : "bg-[var(--background)] text-[var(--foreground)] border-[var(--border)] hover:border-[var(--primary)] hover:bg-[var(--primary)]/5"
+              }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Experience Level */}
+      <div className="mb-5">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)] mb-2.5">
+          Experience Level
+        </h3>
+        <div className="space-y-1">
+          {experienceLevels.map((e) => {
+            const isChecked = selectedExp.includes(e)
+            return (
+              <button
+                key={e}
+                type="button"
+                onClick={() => toggleExp(e)}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all text-left cursor-pointer group ${
+                  isChecked
+                    ? "bg-[var(--primary)]/10 text-[var(--primary)] font-semibold"
+                    : "text-[var(--foreground)] hover:bg-[var(--muted)]/50"
+                }`}
+              >
+                <span className="text-xs font-medium">{e}</span>
+                <div
+                  className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${
+                    isChecked
+                      ? "bg-[var(--primary)] border-[var(--primary)] text-white shadow-xs"
+                      : "border-[var(--border)] bg-[var(--background)] group-hover:border-[var(--primary)]"
+                  }`}
+                >
+                  {isChecked && <Check size={11} strokeWidth={3} />}
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Min Salary */}
+      <div className="mb-5">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+            Min Salary
+          </h3>
+          <span className="text-xs font-bold text-[var(--primary)] px-2 py-0.5 rounded-md bg-[var(--primary)]/10">
+            {salaryMin > 0 ? `$${(salaryMin / 1000).toFixed(0)}k+/yr` : "Any"}
+          </span>
+        </div>
+        <input
+          type="range"
+          min="0"
+          max="200000"
+          step="10000"
+          value={salaryMin}
+          onChange={(e) => setSalaryMin(Number(e.target.value))}
+          className="w-full accent-[var(--primary)] cursor-pointer"
+        />
+        <div className="flex justify-between text-[11px] text-[var(--muted-foreground)] mt-1">
+          <span>$0</span>
+          <span>$100k</span>
+          <span>$200k+</span>
+        </div>
+      </div>
+
+      {/* Date Posted */}
+      <div>
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)] mb-2.5">
+          Date Posted
+        </h3>
+        <div className="space-y-1">
+          {dateOptions.map((opt) => {
+            const isSelected = datePosted === opt.value
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setDatePosted(opt.value)}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all text-left cursor-pointer group ${
+                  isSelected
+                    ? "bg-[var(--primary)]/10 text-[var(--primary)] font-semibold"
+                    : "text-[var(--foreground)] hover:bg-[var(--muted)]/50"
+                }`}
+              >
+                <span className="text-xs font-medium">{opt.label}</span>
+                <div
+                  className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
+                    isSelected
+                      ? "border-[var(--primary)] bg-[var(--primary)]/15"
+                      : "border-[var(--border)] bg-[var(--background)] group-hover:border-[var(--primary)]"
+                  }`}
+                >
+                  {isSelected && <div className="w-2 h-2 rounded-full bg-[var(--primary)]" />}
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+    </>
+  )
+
   return (
     <div className="min-h-screen bg-[var(--background)] pt-20 w-full max-w-full overflow-x-hidden">
       {/* Search Header Bar */}
@@ -357,12 +523,8 @@ export default function Jobs() {
       {/* LIST VIEW */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
-            {/* Sidebar Filters */}
-            <aside
-              className={`lg:w-72 shrink-0 ${
-                filtersOpen ? "block" : "hidden lg:block"
-              }`}
-            >
+            {/* Desktop Sidebar Filters */}
+            <aside className="lg:w-72 shrink-0 hidden lg:block">
               <div className="bg-[var(--card)] rounded-2xl border border-[var(--border)] p-5 sticky top-24 shadow-[var(--shadow-card)]">
                 <div className="flex items-center justify-between mb-5">
                   <h2 className="font-poppins font-semibold text-[var(--foreground)]">
@@ -371,135 +533,70 @@ export default function Jobs() {
                   {activeFilterCount > 0 && (
                     <button
                       onClick={clearAll}
-                      className="text-xs text-[var(--primary)] font-semibold hover:underline flex items-center gap-1"
+                      className="text-xs text-[var(--primary)] font-semibold hover:underline flex items-center gap-1 cursor-pointer"
                     >
                       <X size={12} /> Clear all ({activeFilterCount})
                     </button>
                   )}
                 </div>
+                {renderFilterBody()}
+              </div>
+            </aside>
 
-                {/* Category */}
-                <div className="mb-5">
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)] mb-3">
-                    Category
-                  </h3>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] capitalize"
-                  >
-                    <option value="">All Categories</option>
-                    <option value="engineering">Engineering</option>
-                    <option value="design">Design</option>
-                    <option value="marketing">Marketing</option>
-                    <option value="sales">Sales</option>
-                    <option value="product">Product</option>
-                    <option value="finance">Finance</option>
-                    <option value="hr">HR</option>
-                    <option value="data science">Data Science</option>
-                  </select>
-                </div>
-
-                {/* Job Type */}
-                <div className="mb-5">
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)] mb-3">
-                    Job Type
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {jobTypes.map((t) => (
+            {/* Mobile Slide-Up Filter Modal / Drawer */}
+            {filtersOpen && (
+              <div className="fixed inset-0 z-50 lg:hidden flex flex-col justify-end">
+                <div
+                  className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
+                  onClick={() => setFiltersOpen(false)}
+                />
+                <div className="relative z-10 bg-[var(--card)] border-t border-[var(--border)] rounded-t-3xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-in slide-in-from-bottom-6">
+                  <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)] shrink-0">
+                    <div className="flex items-center gap-2">
+                      <SlidersHorizontal size={18} className="text-[var(--primary)]" />
+                      <h2 className="font-poppins font-bold text-base text-[var(--foreground)]">
+                        Filters
+                      </h2>
+                      {activeFilterCount > 0 && (
+                        <span className="w-5 h-5 rounded-full bg-[var(--primary)] text-white text-xs font-bold flex items-center justify-center">
+                          {activeFilterCount}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {activeFilterCount > 0 && (
+                        <button
+                          onClick={clearAll}
+                          className="text-xs text-[var(--primary)] font-semibold hover:underline mr-1 cursor-pointer"
+                        >
+                          Clear all
+                        </button>
+                      )}
                       <button
-                        key={t}
-                        onClick={() => toggleType(t)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
-                          selectedTypes.includes(t)
-                            ? "bg-[var(--primary)] text-white border-[var(--primary)]"
-                            : "bg-[var(--muted)] text-[var(--foreground)] border-transparent hover:border-[var(--primary)]"
-                        }`}
+                        onClick={() => setFiltersOpen(false)}
+                        className="p-1.5 rounded-full hover:bg-[var(--muted)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors cursor-pointer"
                       >
-                        {t}
+                        <X size={18} />
                       </button>
-                    ))}
+                    </div>
                   </div>
-                </div>
 
-                {/* Experience */}
-                <div className="mb-5">
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)] mb-3">
-                    Experience
-                  </h3>
-                  <div className="space-y-2">
-                    {experienceLevels.map((e) => (
-                      <label
-                        key={e}
-                        className="flex items-center gap-2.5 cursor-pointer group"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedExp.includes(e)}
-                          onChange={() => toggleExp(e)}
-                          className="w-4 h-4 rounded border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)]"
-                        />
-                        <span className="text-sm text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">
-                          {e}
-                        </span>
-                      </label>
-                    ))}
+                  <div className="p-5 overflow-y-auto space-y-2 flex-1">
+                    {renderFilterBody()}
                   </div>
-                </div>
 
-                {/* Min Salary */}
-                <div className="mb-5">
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)] mb-3">
-                    Min Salary
-                    {salaryMin > 0 && (
-                      <span className="ml-2 text-[var(--primary)] normal-case font-normal">
-                        ${(salaryMin / 1000).toFixed(0)}k+
-                      </span>
-                    )}
-                  </h3>
-                  <input
-                    type="range"
-                    min="0"
-                    max="200000"
-                    step="10000"
-                    value={salaryMin}
-                    onChange={(e) => setSalaryMin(Number(e.target.value))}
-                    className="w-full accent-[var(--primary)]"
-                  />
-                  <div className="flex justify-between text-xs text-[var(--muted-foreground)] mt-1">
-                    <span>$0</span>
-                    <span>$200k</span>
-                  </div>
-                </div>
-
-                {/* Date Posted */}
-                <div>
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)] mb-3">
-                    Date Posted
-                  </h3>
-                  <div className="space-y-2">
-                    {dateOptions.map((opt) => (
-                      <label
-                        key={opt.value}
-                        className="flex items-center gap-2.5 cursor-pointer group"
-                      >
-                        <input
-                          type="radio"
-                          name="datePosted"
-                          value={opt.value}
-                          checked={datePosted === opt.value}
-                          onChange={() => setDatePosted(opt.value)}
-                          className="w-4 h-4 text-[var(--primary)] border-[var(--border)] focus:ring-[var(--primary)]"
-                        />
-                        <span className="text-sm text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">
-                          {opt.label}
-                        </span>
-                      </label>
-                    ))}
+                  <div className="p-4 border-t border-[var(--border)] bg-[var(--card)] shrink-0">
+                    <Button
+                      variant="primary"
+                      className="w-full py-3 text-sm font-bold shadow-md"
+                      onClick={() => setFiltersOpen(false)}
+                    >
+                      Show {filtered.length} Jobs
+                    </Button>
                   </div>
                 </div>
               </div>
-            </aside>
+            )}
 
             {/* Job List Main Column */}
             <div className="flex-1 min-w-0">
@@ -544,18 +641,17 @@ export default function Jobs() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-[var(--muted-foreground)]">
+                  <span className="text-xs font-semibold text-[var(--muted-foreground)]">
                     Sort:
                   </span>
-                  <select
+                  <CustomSelect
                     value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as any)}
-                    className="text-sm bg-[var(--card)] border border-[var(--border)] rounded-lg px-3 py-1.5 text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
-                  >
-                    <option value="relevance">Relevance</option>
-                    <option value="newest">Newest</option>
-                    <option value="salary">Salary</option>
-                  </select>
+                    onChange={(val) => setSortBy(val)}
+                    options={sortOptions}
+                    size="sm"
+                    className="w-36"
+                    align="right"
+                  />
                 </div>
               </div>
 
@@ -639,19 +735,16 @@ export default function Jobs() {
                         <span className="text-[var(--border)]">|</span>
                         <div className="flex items-center gap-1.5">
                           <span>Per page:</span>
-                          <select
+                          <CustomSelect
                             value={pageSize}
-                            onChange={(e) => {
-                              setPageSize(Number(e.target.value))
+                            onChange={(val) => {
+                              setPageSize(Number(val))
                               setCurrentPage(1)
                             }}
-                            className="text-xs bg-[var(--card)] border border-[var(--border)] rounded-md px-2 py-1 text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] cursor-pointer"
-                          >
-                            <option value={8}>8</option>
-                            <option value={10}>10</option>
-                            <option value={15}>15</option>
-                            <option value={20}>20</option>
-                          </select>
+                            options={pageSizeOptions}
+                            size="sm"
+                            className="w-28"
+                          />
                         </div>
                       </div>
 

@@ -34,15 +34,18 @@ import {
 } from "lucide-react"
 import toast from "react-hot-toast"
 import { useAuthStore } from "../../store/authStore"
-import { mockNotifications } from "../../data/mockData"
 import { useJobStore } from "../../store/jobStore"
 import { useSavedJobsStore } from "../../store/savedJobsStore"
 import { useApplicationStore } from "../../store/applicationStore"
-import { isLocalhost } from "../../utils/env"
+import { useNotificationStore } from "../../store/notificationStore"
+import { applicationService } from "../../lib/supabase"
 import Badge from "../../components/ui/Badge"
 import Button from "../../components/ui/Button"
+import RoundSkillMatchBadge from "../../components/ui/RoundSkillMatchBadge"
+import ApplicationPipelineStepper from "../../components/dashboard/ApplicationPipelineStepper"
 import ProfileStrengthRing from "../../components/dashboard/ProfileStrengthRing"
 import { getCompanyRealLogo } from "../../data/companyLogos"
+import { calculateSkillMatch } from "../../utils/skillMatcher"
 import type { ApplicationStatus } from "../../types"
 
 type DashboardTab = "all" | "interview" | "shortlisted" | "recommended" | "saved"
@@ -68,11 +71,34 @@ export default function UserDashboard() {
   const { user } = useAuthStore()
   const { jobs: storeJobs } = useJobStore()
   const { savedJobIds, toggleSaveJob, isJobSaved } = useSavedJobsStore()
-  const { applications: storeApplications } = useApplicationStore()
+  const { applications: storeApplications, withdrawApplication } = useApplicationStore()
+  const { notifications, addNotification } = useNotificationStore()
 
   const [activeTab, setActiveTab] = useState<DashboardTab>("all")
   const [metricFilter, setMetricFilter] = useState<ApplicationStatus | "all">("all")
   const [candidateStatus, setCandidateStatus] = useState<"active" | "interviewing" | "open">("active")
+  const [withdrawTarget, setWithdrawTarget] = useState<any | null>(null)
+  const [withdrawingId, setWithdrawingId] = useState<string | null>(null)
+
+  const confirmWithdraw = async (target: any) => {
+    setWithdrawingId(target.id)
+    try {
+      withdrawApplication(target.id)
+      await applicationService.withdrawApplication(target.id)
+      addNotification({
+        type: "application",
+        title: "Application Withdrawn",
+        message: `You successfully withdrew your application for ${target.job?.title || "the role"} at ${target.job?.company?.name || "the company"}.`,
+        link: `/jobs/${target.job?.id || target.jobId}`,
+      })
+      toast.success("Application successfully withdrawn.")
+      setWithdrawTarget(null)
+    } catch (err: any) {
+      toast.error(err.message || "Failed to withdraw application.")
+    } finally {
+      setWithdrawingId(null)
+    }
+  }
 
   // Read uploaded resume from storage
   const [uploadedResume] = useState<{
@@ -492,10 +518,14 @@ export default function UserDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {skillMatchedJobs.slice(0, 6).map((job) => {
               const isApplied = allApplications.some(
-                (a) => a.job?.id === job.id || a.job?.title?.toLowerCase() === job.title.toLowerCase(),
+                (a) =>
+                  (a.job?.id === job.id || a.job?.title?.toLowerCase() === job.title.toLowerCase()) &&
+                  a.status !== "Withdrawn",
               )
               const existingApp = allApplications.find(
-                (a) => a.job?.id === job.id || a.job?.title?.toLowerCase() === job.title.toLowerCase(),
+                (a) =>
+                  (a.job?.id === job.id || a.job?.title?.toLowerCase() === job.title.toLowerCase()) &&
+                  a.status !== "Withdrawn",
               )
               const isSaved = isJobSaved(job.id)
 
@@ -533,19 +563,30 @@ export default function UserDashboard() {
                         </div>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => {
-                          toggleSaveJob(job.id)
-                          toast.success(isSaved ? "Removed from bookmarks" : "Saved to bookmarks!")
-                        }}
-                        className={`p-1.5 rounded-lg transition-colors ${
-                          isSaved ? "text-amber-500" : "text-[var(--muted-foreground)] hover:text-amber-500"
-                        }`}
-                        title={isSaved ? "Saved" : "Save role"}
-                      >
-                        <Bookmark size={15} fill={isSaved ? "currentColor" : "none"} />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <RoundSkillMatchBadge
+                          skillMatch={{
+                            matchPercent: job.matchPercent,
+                            matchedSkills: job.matchedSkills,
+                            matchedCount: job.matchedSkills.length,
+                            totalCount: job.skills.length,
+                          }}
+                          size="xs"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            toggleSaveJob(job.id)
+                            toast.success(isSaved ? "Removed from bookmarks" : "Saved to bookmarks!")
+                          }}
+                          className={`p-1.5 rounded-lg transition-colors ${
+                            isSaved ? "text-amber-500" : "text-[var(--muted-foreground)] hover:text-amber-500"
+                          }`}
+                          title={isSaved ? "Saved" : "Save role"}
+                        >
+                          <Bookmark size={15} fill={isSaved ? "currentColor" : "none"} />
+                        </button>
+                      </div>
                     </div>
 
                     {/* Job Title & Details */}
@@ -557,13 +598,10 @@ export default function UserDashboard() {
                         {job.title}
                       </Link>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-extrabold text-[11px] inline-flex items-center">
-                          <Zap size={11} className="mr-1 fill-emerald-500 text-emerald-500" />
-                          {job.matchPercent}% Match
-                        </span>
                         <span className="text-xs font-semibold text-[var(--foreground)]">
                           {job.salaryMin ? `$${(job.salaryMin / 1000).toFixed(0)}k+` : "Competitive"}
                         </span>
+                        <span className="text-xs text-[var(--muted-foreground)]">· {job.location || "Remote"}</span>
                       </div>
                     </div>
 
@@ -751,9 +789,9 @@ export default function UserDashboard() {
                 ) : (
                   <div className="space-y-4">
                     {displayedApplications.map((app) => {
-                      const stages = ["Applied", "Viewed", "Shortlisted", "Interview"]
-                      const currentStageIdx =
-                        stages.indexOf(app.status) >= 0 ? stages.indexOf(app.status) : 0
+                      const skillMatch = app.job?.skills
+                        ? calculateSkillMatch(app.job.skills, undefined, user)
+                        : null
 
                       return (
                         <div
@@ -803,57 +841,32 @@ export default function UserDashboard() {
                               </div>
                             </div>
 
-                            <div className="flex flex-col items-end gap-1 shrink-0">
-                              <Badge variant={statusVariant[app.status] || "default"} size="sm">
-                                {app.status}
-                              </Badge>
-                              <span className="text-[11px] text-[var(--muted-foreground)]">
-                                {app.appliedAt
-                                  ? `${Math.max(
-                                      0,
-                                      Math.floor(
-                                        (Date.now() - new Date(app.appliedAt).getTime()) /
-                                          86400000,
-                                      ),
-                                    )}d ago`
-                                  : "Recently"}
-                              </span>
+                            <div className="flex items-center gap-3 shrink-0">
+                              {skillMatch && (
+                                <RoundSkillMatchBadge skillMatch={skillMatch} size="sm" />
+                              )}
+                              <div className="flex flex-col items-end gap-1">
+                                <Badge variant={statusVariant[app.status] || "default"} size="sm">
+                                  {app.status}
+                                </Badge>
+                                <span className="text-[11px] text-[var(--muted-foreground)]">
+                                  {app.appliedAt
+                                    ? `${Math.max(
+                                        0,
+                                        Math.floor(
+                                          (Date.now() - new Date(app.appliedAt).getTime()) /
+                                            86400000,
+                                        ),
+                                      )}d ago`
+                                    : "Recently"}
+                                </span>
+                              </div>
                             </div>
                           </div>
 
-                          {/* 4-Stage Timeline Stepper */}
+                          {/* 5-Stage Timeline Stepper */}
                           <div className="p-3.5 rounded-2xl bg-[var(--background)] border border-[var(--border)]/70">
-                            <div className="grid grid-cols-4 gap-2 relative">
-                              {stages.map((stage, sIdx) => {
-                                const isPassed = sIdx <= currentStageIdx
-                                const isCurrent = sIdx === currentStageIdx
-
-                                return (
-                                  <div key={stage} className="text-center space-y-1 relative">
-                                    <div
-                                      className={`h-2 rounded-full transition-all ${
-                                        isPassed
-                                          ? isCurrent
-                                            ? "bg-amber-500 shadow-xs"
-                                            : "bg-emerald-500"
-                                          : "bg-slate-200 dark:bg-white/10"
-                                      }`}
-                                    />
-                                    <p
-                                      className={`text-[10px] font-bold ${
-                                        isPassed
-                                          ? isCurrent
-                                            ? "text-amber-600 dark:text-amber-400 font-extrabold"
-                                            : "text-emerald-600 dark:text-emerald-400"
-                                          : "text-[var(--muted-foreground)]"
-                                      }`}
-                                    >
-                                      {stage}
-                                    </p>
-                                  </div>
-                                )
-                              })}
-                            </div>
+                            <ApplicationPipelineStepper status={app.status} appliedAt={app.appliedAt} />
                           </div>
 
                           {/* Card Footer Actions */}
@@ -863,6 +876,15 @@ export default function UserDashboard() {
                             </span>
 
                             <div className="flex items-center gap-2">
+                              {app.status !== "Withdrawn" && app.status !== "Rejected" && (
+                                <button
+                                  type="button"
+                                  onClick={() => setWithdrawTarget(app)}
+                                  className="px-2.5 py-1.5 rounded-xl border border-red-500/20 text-red-500 hover:bg-red-500/10 font-semibold text-xs transition-colors"
+                                >
+                                  Withdraw
+                                </button>
+                              )}
                               <Link
                                 to="/messages"
                                 className="px-3.5 py-1.5 rounded-xl border border-[var(--border)] hover:bg-[var(--muted)] font-semibold text-[var(--foreground)] flex items-center gap-1.5 transition-colors"
@@ -922,20 +944,31 @@ export default function UserDashboard() {
                               )}
                             </div>
 
-                            <button
-                              type="button"
-                              onClick={() => {
-                                toggleSaveJob(job.id)
-                                toast.success(isSaved ? "Removed from saved" : "Job saved!")
-                              }}
-                              className={`p-2 rounded-xl transition-colors ${
-                                isSaved
-                                  ? "text-amber-500 bg-amber-500/10"
-                                  : "text-[var(--muted-foreground)] hover:bg-[var(--muted)]"
-                              }`}
-                            >
-                              <Bookmark size={16} fill={isSaved ? "currentColor" : "none"} />
-                            </button>
+                            <div className="flex items-center gap-2">
+                              <RoundSkillMatchBadge
+                                skillMatch={{
+                                  matchPercent: 96,
+                                  matchedSkills: job.skills.slice(0, 3),
+                                  matchedCount: Math.min(3, job.skills.length),
+                                  totalCount: job.skills.length,
+                                }}
+                                size="xs"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  toggleSaveJob(job.id)
+                                  toast.success(isSaved ? "Removed from saved" : "Job saved!")
+                                }}
+                                className={`p-2 rounded-xl transition-colors ${
+                                  isSaved
+                                    ? "text-amber-500 bg-amber-500/10"
+                                    : "text-[var(--muted-foreground)] hover:bg-[var(--muted)]"
+                                }`}
+                              >
+                                <Bookmark size={16} fill={isSaved ? "currentColor" : "none"} />
+                              </button>
+                            </div>
                           </div>
 
                           <div>
@@ -951,10 +984,7 @@ export default function UserDashboard() {
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-lg flex items-center gap-1">
-                              <Zap size={11} /> 96% Match
-                            </span>
-                            <span className="text-xs text-[var(--muted-foreground)]">
+                            <span className="text-xs font-semibold text-[var(--foreground)]">
                               ${job.salaryMin ? `${(job.salaryMin / 1000).toFixed(0)}k+` : "Competitive"}
                             </span>
                           </div>
@@ -1191,7 +1221,7 @@ export default function UserDashboard() {
 
             {/* Widget 4: Recent Alerts / Activity */}
             {(() => {
-              const notifs = isLocalhost() ? mockNotifications.slice(0, 3) : []
+              const notifs = notifications.slice(0, 3)
               if (notifs.length === 0) return null
 
               return (
@@ -1207,15 +1237,16 @@ export default function UserDashboard() {
 
                   <div className="space-y-2">
                     {notifs.map((n) => (
-                      <div
+                      <Link
                         key={n.id}
-                        className="p-3 rounded-2xl bg-[var(--background)] border border-[var(--border)]/70 text-xs space-y-1"
+                        to={n.link || "/notifications"}
+                        className="block p-3 rounded-2xl bg-[var(--background)] border border-[var(--border)]/70 hover:border-[var(--primary)]/50 transition-colors text-xs space-y-1"
                       >
                         <p className="font-bold text-[var(--foreground)]">{n.title}</p>
                         <p className="text-[11px] text-[var(--muted-foreground)] line-clamp-2">
                           {n.message}
                         </p>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 </div>
@@ -1224,6 +1255,53 @@ export default function UserDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Modern Mobile-Optimized Withdraw Confirmation Modal */}
+      {withdrawTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
+          <div className="w-full max-w-md bg-[var(--card)] border border-[var(--border)] rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/25 flex items-center justify-center text-amber-500 mx-auto">
+              <AlertCircle size={26} />
+            </div>
+            <div className="text-center space-y-1.5">
+              <h3 className="font-poppins font-bold text-lg text-[var(--foreground)]">
+                Withdraw Application?
+              </h3>
+              <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                Are you sure you want to withdraw your application for{" "}
+                <strong className="text-[var(--foreground)]">
+                  {withdrawTarget.job?.title || "this position"}
+                </strong>{" "}
+                at{" "}
+                <strong className="text-[var(--foreground)]">
+                  {withdrawTarget.job?.company?.name || "the company"}
+                </strong>?
+              </p>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-300">
+              The hiring team will be notified that your application was withdrawn. You can re-apply at any time.
+            </div>
+            <div className="flex items-center gap-3 pt-2">
+              <Button
+                variant="outline"
+                className="flex-1 font-semibold"
+                onClick={() => setWithdrawTarget(null)}
+                disabled={Boolean(withdrawingId)}
+              >
+                Keep Active
+              </Button>
+              <Button
+                variant="primary"
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold border-red-600"
+                onClick={() => confirmWithdraw(withdrawTarget)}
+                disabled={Boolean(withdrawingId)}
+              >
+                {withdrawingId ? "Withdrawing..." : "Confirm Withdraw"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

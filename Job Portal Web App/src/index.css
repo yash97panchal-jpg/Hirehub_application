@@ -242,6 +242,37 @@ h1, h2, h3, h4, h5, h6 {
   scrollbar-width: none !important;
 }
 
+/* Global Select & Option Theme Matching */
+select {
+  color-scheme: light dark;
+}
+
+.dark select,
+[data-theme="dark"] select {
+  color-scheme: dark !important;
+  background-color: var(--card);
+  color: var(--foreground);
+}
+
+.dark option,
+[data-theme="dark"] option {
+  background-color: #1a1625 !important;
+  color: #f1f5f9 !important;
+}
+
+.light select,
+[data-theme="light"] select {
+  color-scheme: light !important;
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+.light option,
+[data-theme="light"] option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
 /* Leaflet HireHub Custom Marker Styles */
 .hirehub-marker-container {
   display: flex;
