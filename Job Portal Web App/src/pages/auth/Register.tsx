@@ -25,6 +25,7 @@ import { useAuthStore } from "../../store/authStore"
 import { authService, companyService } from "../../lib/supabase"
 import { cn } from "../../utils/cn"
 import toast from "react-hot-toast"
+import symbolLogo from "../../imports/symbol_only.jpeg"
 import type { UserRole, User as UserType } from "../../types"
 
 const schema = z
@@ -257,10 +258,14 @@ export default function Register() {
         {/* Top Logo */}
         <div className="relative z-10">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#2563EB] to-[#14B8A6] flex items-center justify-center text-white shadow-xs">
-              <span className="font-extrabold text-sm tracking-tight">H</span>
+            <div className="w-10 h-10 rounded-full bg-white shadow-sm border border-slate-700/50 flex items-center justify-center p-1 overflow-hidden shrink-0">
+              <img
+                src={symbolLogo}
+                alt="HireHub Logo"
+                className="w-full h-full object-contain"
+              />
             </div>
-            <span className="text-lg font-bold text-white tracking-tight">Hire<span className="text-[#14B8A6]">Hub</span></span>
+            <span className="text-xl font-bold text-white tracking-tight">Hire<span className="text-[#38BDF8]">Hub</span></span>
           </div>
         </div>
 

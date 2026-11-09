@@ -229,9 +229,12 @@ export default function Navbar() {
             onClick={handleLogoClick}
             className="flex items-center gap-2.5 shrink-0 cursor-pointer group"
           >
-            <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-[#142B4A] via-[#1E3A8A] to-[#2563EB] shadow-sm text-white font-extrabold text-base shrink-0 border border-blue-400/20 group-hover:scale-105 transition-transform duration-200">
-              <span className="tracking-tighter">H</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-[#14B8A6] ml-0.5" />
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm border border-[var(--border)] shrink-0 overflow-hidden p-1">
+              <img
+                src={symbolLogo}
+                alt="HireHub Logo"
+                className="w-full h-full object-contain"
+              />
             </div>
             <span className="font-poppins font-extrabold text-xl text-[var(--foreground)] tracking-tight">
               Hire<span className="text-[#2563EB]">Hub</span>

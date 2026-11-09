@@ -160,9 +160,12 @@ export default function Footer() {
               className="inline-flex items-center gap-2.5 group cursor-pointer"
               onClick={handleLogoClick}
             >
-              <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-[#142B4A] via-[#1E3A8A] to-[#2563EB] shadow-sm text-white font-extrabold text-base shrink-0 border border-blue-400/20 group-hover:scale-105 transition-transform duration-200">
-                <span className="tracking-tighter">H</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-[#14B8A6] ml-0.5" />
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm border border-slate-700 shrink-0 overflow-hidden p-1">
+                <img
+                  src={symbolLogo}
+                  alt="HireHub Logo"
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div>
                 <span className="font-poppins text-2xl font-black tracking-tight text-white flex items-center gap-1">

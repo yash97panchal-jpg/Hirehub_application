@@ -133,8 +133,12 @@ export default function ForgotPassword() {
         <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-[#14B8A6]/20 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 text-center max-w-md">
-          <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-[#14B8A6] text-white shadow-lg mb-6 shrink-0 mx-auto">
-            <Lock size={24} />
+          <div className="flex items-center justify-center w-14 h-14 rounded-full bg-white shadow-lg border border-slate-700/50 mb-6 shrink-0 overflow-hidden mx-auto p-1.5">
+            <img
+              src={symbolLogo}
+              alt="HireHub Logo"
+              className="w-full h-full object-contain"
+            />
           </div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-[#14B8A6] font-semibold mb-3">
             <ShieldCheck size={14} /> Enterprise Account Security
