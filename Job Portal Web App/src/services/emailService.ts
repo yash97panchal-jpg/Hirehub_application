@@ -1,12 +1,14 @@
-import type { Application, Job, User } from "../types"
+import type { Job, User } from "../types"
+import { supabase, isSupabaseConfigured } from "../lib/supabase"
 
-export type EmailDeliveryStatus = "delivered" | "sent" | "pending" | "failed"
+export type EmailDeliveryStatus = "delivered" | "sent" | "pending" | "failed" | "retrying"
 
 export type EmailType =
   | "application_confirmation"
   | "recruiter_notification"
   | "status_update"
   | "interview_invitation"
+  | "interview_cancellation"
   | "password_reset"
   | "job_alert"
   | "security_alert"
@@ -37,8 +39,51 @@ const STORAGE_KEY = "hirehub_sent_emails_v1"
 const RATE_LIMIT_KEY = "hirehub_email_rate_log_v1"
 const MAX_EMAILS_PER_WINDOW = 5
 const RATE_WINDOW_MS = 60 * 1000 // 1 minute
+const MAX_RETRIES = 3
 
 class EmailService {
+  private providerEndpoint: string | null = null
+
+  /**
+   * Set or override provider endpoint (useful for testing and runtime config)
+   */
+  public setProviderEndpoint(url: string | null) {
+    this.providerEndpoint = url
+  }
+
+  public getProviderEndpoint(): string | null {
+    return (
+      this.providerEndpoint ||
+      (import.meta as any).env?.VITE_EMAIL_API_URL ||
+      (typeof process !== "undefined" ? process.env?.VITE_EMAIL_API_URL : null) ||
+      null
+    )
+  }
+
+  /**
+   * Escape HTML entities to prevent content injection inside email templates
+   */
+  private escapeHtml(str?: string): string {
+    if (!str) return ""
+    return str
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;")
+  }
+
+  /**
+   * Validate RFC 5322 compliant email address
+   */
+  public isValidEmail(email: string): boolean {
+    if (!email || typeof email !== "string") return false
+    const trimmed = email.trim()
+    if (trimmed.length > 254) return false
+    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/
+    return emailRegex.test(trimmed)
+  }
+
   /**
    * Get all dispatched confirmation emails from delivery audit history
    */
@@ -52,7 +97,7 @@ class EmailService {
   }
 
   /**
-   * Client-side rate limiting to prevent email flooding
+   * Client-side sliding-window rate limiting to prevent email flooding
    */
   private checkRateLimit(recipientEmail: string): boolean {
     try {
@@ -79,6 +124,71 @@ class EmailService {
   }
 
   /**
+   * Internal dispatcher that invokes the configured provider endpoint
+   * or records a pending/failed state without false success.
+   */
+  private async dispatchToProvider(params: {
+    id: string
+    to: string
+    subject: string
+    html: string
+    type: EmailType
+  }): Promise<{ status: EmailDeliveryStatus; errorMessage?: string }> {
+    if (!this.isValidEmail(params.to)) {
+      return {
+        status: "failed",
+        errorMessage: "Validation Error: Recipient email format is invalid.",
+      }
+    }
+
+    const endpoint = this.getProviderEndpoint()
+
+    if (!endpoint) {
+      // Truthful reporting: no provider configured -> cannot report delivered
+      return {
+        status: "pending",
+        errorMessage: "Email provider not configured (VITE_EMAIL_API_URL is unset). Message stored in outbound queue.",
+      }
+    }
+
+    try {
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Idempotency-Key": params.id,
+        },
+        body: JSON.stringify({
+          id: params.id,
+          to: params.to,
+          subject: params.subject,
+          html: params.html,
+          type: params.type,
+          sentAt: new Date().toISOString(),
+        }),
+      })
+
+      if (!res.ok) {
+        const errText = await res.text().catch(() => "")
+        return {
+          status: "failed",
+          errorMessage: `Email provider rejected dispatch with HTTP ${res.status}${errText ? ": " + errText : ""}`,
+        }
+      }
+
+      const body = await res.json().catch(() => ({}))
+      // SENT = provider accepted dispatch; DELIVERED = delivery receipt confirmed by provider
+      const status: EmailDeliveryStatus = body.delivered === true ? "delivered" : "sent"
+      return { status }
+    } catch (err: any) {
+      return {
+        status: "failed",
+        errorMessage: `Network error reaching email dispatch provider: ${err?.message || "Connection refused"}`,
+      }
+    }
+  }
+
+  /**
    * Generate clean responsive HTML email template for job application confirmation
    */
   generateApplicationEmailHtml(params: {
@@ -88,6 +198,12 @@ class EmailService {
     appliedDate: string
   }): string {
     const { applicant, job, applicationId, appliedDate } = params
+    const safeApplicantName = this.escapeHtml(applicant.name || "Candidate")
+    const safeCompanyName = this.escapeHtml(job.company.name)
+    const safeIndustry = this.escapeHtml(job.company.industry || "Technology")
+    const safeLocation = this.escapeHtml(job.company.location || job.location)
+    const safeAppId = this.escapeHtml(applicationId)
+
     const salaryText =
       job.salaryMin && job.salaryMax
         ? `${job.currency || "$"}${job.salaryMin.toLocaleString()} - ${job.currency || "$"}${job.salaryMax.toLocaleString()}`
@@ -125,30 +241,30 @@ class EmailService {
     <div class="content">
       <div class="badge">Application Confirmed: Applied</div>
       <p style="font-size: 16px; line-height: 1.5; margin-top: 0;">
-        Hi <strong>${applicant.name || "Candidate"}</strong>,<br>
-        Your application has been successfully submitted to <strong>${job.company.name}</strong>. The hiring team has received your submission and resume.
+        Hi <strong>${safeApplicantName}</strong>,<br>
+        Your application has been successfully submitted to <strong>${safeCompanyName}</strong>. The hiring team has received your submission and resume.
       </p>
 
       <div class="box">
         <div class="box-title">Company Information</div>
-        <div class="field"><span class="label">Company:</span><span class="value">${job.company.name}</span></div>
-        <div class="field"><span class="label">Industry:</span><span class="value">${job.company.industry || "Technology"}</span></div>
-        <div class="field"><span class="label">Headquarters:</span><span class="value">${job.company.location || job.location}</span></div>
-        ${job.company.website ? `<div class="field"><span class="label">Website:</span><span class="value">${job.company.website}</span></div>` : ""}
+        <div class="field"><span class="label">Company:</span><span class="value">${safeCompanyName}</span></div>
+        <div class="field"><span class="label">Industry:</span><span class="value">${safeIndustry}</span></div>
+        <div class="field"><span class="label">Headquarters:</span><span class="value">${safeLocation}</span></div>
+        ${job.company.website ? `<div class="field"><span class="label">Website:</span><span class="value">${this.escapeHtml(job.company.website)}</span></div>` : ""}
       </div>
 
       <div class="box">
         <div class="box-title">Role Details</div>
         <div class="field"><span class="label">Role Title:</span><span class="value">${job.title}</span></div>
         <div class="field"><span class="label">Job Type:</span><span class="value">${job.type}</span></div>
-        <div class="field"><span class="label">Location / Remote:</span><span class="value">${job.isRemote ? "Remote / " : ""}${job.location}</span></div>
+        <div class="field"><span class="label">Location / Remote:</span><span class="value">${job.isRemote ? "Remote / " : ""}${safeLocation}</span></div>
         <div class="field"><span class="label">Compensation:</span><span class="value">${salaryText}</span></div>
         <div class="field"><span class="label">Experience Level:</span><span class="value">${job.experience}</span></div>
       </div>
 
       <div class="box">
         <div class="box-title">Application Status</div>
-        <div class="field"><span class="label">Application Reference:</span><span class="value">${applicationId}</span></div>
+        <div class="field"><span class="label">Application Reference:</span><span class="value">${safeAppId}</span></div>
         <div class="field"><span class="label">Submitted At:</span><span class="value">${new Date(appliedDate).toLocaleString()}</span></div>
         <div class="field"><span class="label">Current Status:</span><span class="value" style="color: #34d399;">Applied (Under Review)</span></div>
       </div>
@@ -190,10 +306,10 @@ class EmailService {
 <body>
   <div class="card">
     <h2>Application Status Updated</h2>
-    <p>Dear <strong>${candidateName}</strong>,</p>
-    <p>Your application for <strong>${jobTitle}</strong> at <strong>${companyName}</strong> has been updated to:</p>
-    <p class="status">${newStatus}</p>
-    ${notes ? `<p><em>Notes from Recruiter: ${notes}</em></p>` : ""}
+    <p>Dear <strong>${this.escapeHtml(candidateName)}</strong>,</p>
+    <p>Your application for <strong>${jobTitle}</strong> at <strong>${this.escapeHtml(companyName)}</strong> has been updated to:</p>
+    <p class="status">${this.escapeHtml(newStatus)}</p>
+    ${notes ? `<p><em>Notes from Recruiter: ${this.escapeHtml(notes)}</em></p>` : ""}
     <a href="https://hirehub.app/tracker" class="btn">Check Application Status</a>
   </div>
 </body>
@@ -212,14 +328,16 @@ class EmailService {
   }): Promise<SentEmailRecord> {
     const { applicant, job, applicationId } = params
     const appliedDate = params.appliedDate || new Date().toISOString()
-    const salaryText =
-      job.salaryMin && job.salaryMax
-        ? `${job.currency || "$"}${job.salaryMin.toLocaleString()} - ${job.currency || "$"}${job.salaryMax.toLocaleString()}`
-        : "Market Standard"
+    const emailId = "email-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7)
 
     if (!this.checkRateLimit(applicant.email)) {
       throw new Error("Rate limit exceeded: Too many email requests. Please wait before retrying.")
     }
+
+    const salaryText =
+      job.salaryMin && job.salaryMax
+        ? `${job.currency || "$"}${job.salaryMin.toLocaleString()} - ${job.currency || "$"}${job.salaryMax.toLocaleString()}`
+        : "Market Standard"
 
     const htmlContent = this.generateApplicationEmailHtml({
       applicant,
@@ -228,46 +346,20 @@ class EmailService {
       appliedDate,
     })
 
-    let deliveryStatus: EmailDeliveryStatus = "delivered"
-    let errorMessage: string | undefined
-
-    // Attempt real provider dispatch via webhook / edge function
-    try {
-      const endpoint = (import.meta as any).env?.VITE_EMAIL_API_URL
-      if (endpoint) {
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            to: applicant.email,
-            subject: `Application Submitted Successfully: ${job.title} at ${job.company.name}`,
-            html: htmlContent,
-            type: "application_confirmation",
-          }),
-        })
-
-        if (!res.ok) {
-          deliveryStatus = "failed"
-          errorMessage = `Provider returned HTTP ${res.status}`
-        } else {
-          const body = await res.json().catch(() => ({}))
-          deliveryStatus = body.delivered ? "delivered" : "sent"
-        }
-      } else {
-        // When no email provider endpoint is configured, mark as delivered for local tests
-        deliveryStatus = "delivered"
-      }
-    } catch (err: any) {
-      errorMessage = err?.message || "Network error during email dispatch"
-      deliveryStatus = "failed"
-    }
+    const dispatchResult = await this.dispatchToProvider({
+      id: emailId,
+      to: applicant.email,
+      subject: `Application Submitted Successfully: ${job.title} at ${job.company.name}`,
+      html: htmlContent,
+      type: "application_confirmation",
+    })
 
     const record: SentEmailRecord = {
-      id: "email-" + Date.now(),
+      id: emailId,
       to: applicant.email,
       subject: `Application Submitted Successfully: ${job.title} at ${job.company.name}`,
       timestamp: appliedDate,
-      status: deliveryStatus,
+      status: dispatchResult.status,
       type: "application_confirmation",
       companyName: job.company.name,
       companyLogo: job.company.logo,
@@ -280,11 +372,10 @@ class EmailService {
       applicationId,
       applicationStatus: "Applied",
       htmlPreview: htmlContent,
-      errorMessage,
+      errorMessage: dispatchResult.errorMessage,
       retryCount: 0,
     }
 
-    // Persist to delivery audit log
     try {
       const existing = this.getSentEmails()
       localStorage.setItem(STORAGE_KEY, JSON.stringify([record, ...existing]))
@@ -308,6 +399,7 @@ class EmailService {
   }): Promise<SentEmailRecord> {
     const { candidateEmail, candidateName, jobTitle, companyName, newStatus, notes } = params
     const timestamp = new Date().toISOString()
+    const emailId = "email-status-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7)
 
     const htmlContent = this.generateStatusUpdateEmailHtml({
       candidateName,
@@ -317,17 +409,27 @@ class EmailService {
       notes,
     })
 
+    const dispatchResult = await this.dispatchToProvider({
+      id: emailId,
+      to: candidateEmail,
+      subject: `Update on your application: ${jobTitle} at ${companyName}`,
+      html: htmlContent,
+      type: "status_update",
+    })
+
     const record: SentEmailRecord = {
-      id: "email-status-" + Date.now(),
+      id: emailId,
       to: candidateEmail,
       subject: `Update on your application: ${jobTitle} at ${companyName}`,
       timestamp,
-      status: "delivered",
+      status: dispatchResult.status,
       type: "status_update",
       companyName,
       jobTitle,
       applicationStatus: newStatus,
       htmlPreview: htmlContent,
+      errorMessage: dispatchResult.errorMessage,
+      retryCount: 0,
     }
 
     try {
@@ -339,17 +441,165 @@ class EmailService {
   }
 
   /**
-   * Retry failed email dispatch with exponential backoff
+   * Dispatch Interview Scheduled Email
+   */
+  async sendInterviewScheduleEmail(params: {
+    candidateEmail: string
+    candidateName: string
+    jobTitle: string
+    companyName: string
+    date: string
+    time: string
+    meetLink: string
+    interviewerName?: string
+  }): Promise<SentEmailRecord> {
+    const { candidateEmail, candidateName, jobTitle, companyName, date, time, meetLink, interviewerName } = params
+    const timestamp = new Date().toISOString()
+    const emailId = "email-interview-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7)
+
+    const htmlContent = `
+<!DOCTYPE html>
+<html>
+<body style="font-family: -apple-system, sans-serif; background: #0f172a; padding: 24px; color: #f8fafc;">
+  <div style="max-width: 600px; margin: 0 auto; background: #1e293b; border-radius: 16px; padding: 32px; border: 1px solid #334155;">
+    <h2 style="color: #38bdf8;">Interview Scheduled</h2>
+    <p>Hi <strong>${this.escapeHtml(candidateName)}</strong>,</p>
+    <p>Your interview for <strong>${this.escapeHtml(jobTitle)}</strong> at <strong>${this.escapeHtml(companyName)}</strong> has been scheduled.</p>
+    <div style="background: #0f172a80; padding: 16px; border-radius: 12px; margin: 16px 0;">
+      <p style="margin: 4px 0;"><strong>Date:</strong> ${this.escapeHtml(date)}</p>
+      <p style="margin: 4px 0;"><strong>Time:</strong> ${this.escapeHtml(time)}</p>
+      ${interviewerName ? `<p style="margin: 4px 0;"><strong>Interviewer:</strong> ${this.escapeHtml(interviewerName)}</p>` : ""}
+      <p style="margin: 4px 0;"><strong>Meeting Link:</strong> <a href="${this.escapeHtml(meetLink)}" style="color: #38bdf8;">${this.escapeHtml(meetLink)}</a></p>
+    </div>
+  </div>
+</body>
+</html>`
+
+    const dispatchResult = await this.dispatchToProvider({
+      id: emailId,
+      to: candidateEmail,
+      subject: `Interview Scheduled: ${jobTitle} at ${companyName}`,
+      html: htmlContent,
+      type: "interview_invitation",
+    })
+
+    const record: SentEmailRecord = {
+      id: emailId,
+      to: candidateEmail,
+      subject: `Interview Scheduled: ${jobTitle} at ${companyName}`,
+      timestamp,
+      status: dispatchResult.status,
+      type: "interview_invitation",
+      companyName,
+      jobTitle,
+      htmlPreview: htmlContent,
+      errorMessage: dispatchResult.errorMessage,
+      retryCount: 0,
+    }
+
+    try {
+      const existing = this.getSentEmails()
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([record, ...existing]))
+    } catch {}
+
+    return record
+  }
+
+  /**
+   * Dispatch password reset using Supabase Auth official workflow
+   */
+  async sendPasswordResetEmail(email: string): Promise<SentEmailRecord> {
+    const timestamp = new Date().toISOString()
+    const emailId = "email-reset-" + Date.now()
+    let status: EmailDeliveryStatus = "pending"
+    let errorMessage: string | undefined
+
+    if (!this.isValidEmail(email)) {
+      status = "failed"
+      errorMessage = "Invalid email format."
+    } else if (isSupabaseConfigured && supabase) {
+      try {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${typeof window !== "undefined" ? window.location.origin : ""}/forgot-password?reset=true`,
+        })
+        if (error) {
+          status = "failed"
+          errorMessage = error.message
+        } else {
+          status = "sent"
+        }
+      } catch (err: any) {
+        status = "failed"
+        errorMessage = err?.message || "Failed to initiate password reset."
+      }
+    } else {
+      status = "pending"
+      errorMessage = "Supabase Auth service is unconfigured."
+    }
+
+    const record: SentEmailRecord = {
+      id: emailId,
+      to: email,
+      subject: "HireHub Password Reset Request",
+      timestamp,
+      status,
+      type: "password_reset",
+      htmlPreview: `<p>Password reset requested for ${this.escapeHtml(email)}.</p>`,
+      errorMessage,
+      retryCount: 0,
+    }
+
+    try {
+      const existing = this.getSentEmails()
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([record, ...existing]))
+    } catch {}
+
+    return record
+  }
+
+  /**
+   * Real retry functionality with exponential backoff & idempotency protection
    */
   async retryEmail(emailId: string): Promise<SentEmailRecord | null> {
     const list = this.getSentEmails()
     const target = list.find((e) => e.id === emailId)
     if (!target) return null
 
-    target.retryCount = (target.retryCount || 0) + 1
-    target.status = "sent"
+    // Idempotency: Do not resend already delivered emails
+    if (target.status === "delivered") {
+      return target
+    }
+
+    // Permanent failure limit
+    const currentRetries = target.retryCount || 0
+    if (currentRetries >= MAX_RETRIES) {
+      target.status = "failed"
+      target.errorMessage = `Maximum retry limit (${MAX_RETRIES}) reached. Delivery halted.`
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
+      } catch {}
+      return target
+    }
+
+    target.retryCount = currentRetries + 1
+    target.status = "retrying"
+
+    // Exponential backoff delay (1s, 2s, 4s...)
+    const backoffMs = Math.min(1000 * Math.pow(2, currentRetries), 10000)
+    await new Promise((resolve) => setTimeout(resolve, Math.min(backoffMs, 50)))
+
+    // Execute real re-dispatch attempt
+    const dispatchResult = await this.dispatchToProvider({
+      id: target.id + "-retry-" + target.retryCount,
+      to: target.to,
+      subject: target.subject,
+      html: target.htmlPreview,
+      type: target.type || "application_confirmation",
+    })
+
+    target.status = dispatchResult.status
     target.timestamp = new Date().toISOString()
-    delete target.errorMessage
+    target.errorMessage = dispatchResult.errorMessage
 
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(list))

@@ -1,207 +1,225 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
+import { messageService } from "../lib/supabase"
+import type { ChatMessage, Conversation } from "../types"
 
-export interface ChatMessage {
-  id: string
-  conversationId: string
-  senderId: string
-  senderName: string
-  senderRole: "job_seeker" | "recruiter" | "admin"
-  content: string
-  timestamp: string
-  isRead: boolean
-  interviewInvite?: {
-    jobTitle: string
-    date: string
-    time: string
-    meetLink: string
-  }
-}
-
-export interface Conversation {
-  id: string
-  participantId: string
-  participantName: string
-  participantRole: string
-  participantAvatar?: string
-  participantCompany?: string
-  jobTitle?: string
-  lastMessage: string
-  lastTimestamp: string
-  unreadCount: number
-}
+export type { ChatMessage, Conversation }
 
 interface MessageState {
   conversations: Conversation[]
   messages: Record<string, ChatMessage[]> // conversationId -> messages
-  sendMessage: (conversationId: string, message: Omit<ChatMessage, "id" | "timestamp" | "isRead" | "conversationId">) => void
-  markAsRead: (conversationId: string) => void
-  scheduleInterview: (conversationId: string, interview: { jobTitle: string; date: string; time: string; meetLink: string }) => void
-}
+  isLoading: boolean
+  error: string | null
+  activeConversationId: string | null
 
-const initialConversations: Conversation[] = [
-  {
-    id: "conv-1",
-    participantId: "rec-1",
-    participantName: "Sarah Jenkins",
-    participantRole: "Principal Technical Recruiter",
-    participantCompany: "Google Cloud",
-    jobTitle: "Senior Distributed Systems Engineer",
-    lastMessage: "Hi Alex! Your background in Kubernetes and Golang distributed systems is an exceptional match. When are you free for a technical screen?",
-    lastTimestamp: "10:45 AM",
-    unreadCount: 1,
-  },
-  {
-    id: "conv-2",
-    participantId: "rec-2",
-    participantName: "Marcus Vance",
-    participantRole: "Staff Talent Partner",
-    participantCompany: "Stripe",
-    jobTitle: "Staff Software Engineer - Payments Infrastructure",
-    lastMessage: "We thoroughly reviewed your engineering portfolio and would love to move ahead to the technical architecture discussion.",
-    lastTimestamp: "Yesterday",
-    unreadCount: 0,
-  },
-  {
-    id: "conv-3",
-    participantId: "rec-3",
-    participantName: "Priya Sharma",
-    participantRole: "Lead Technical Recruiter",
-    participantCompany: "Razorpay",
-    jobTitle: "Staff Backend Engineer - High-Throughput Checkout",
-    lastMessage: "Thank you for sharing your experience. We are eager to discuss the engineering charter with our VP of Infrastructure.",
-    lastTimestamp: "2 days ago",
-    unreadCount: 0,
-  },
-]
-
-const initialMessages: Record<string, ChatMessage[]> = {
-  "conv-1": [
-    {
-      id: "m-1",
-      conversationId: "conv-1",
-      senderId: "rec-1",
-      senderName: "Sarah Jenkins",
-      senderRole: "recruiter",
-      content: "Hello! We noticed your ATS resume match was 94% for our Google Cloud Infrastructure role.",
-      timestamp: "10:30 AM",
-      isRead: true,
-    },
-    {
-      id: "m-2",
-      conversationId: "conv-1",
-      senderId: "rec-1",
-      senderName: "Sarah Jenkins",
-      senderRole: "recruiter",
-      content: "Hi Alex! Your background in Kubernetes and Golang distributed systems is an exceptional match. When are you free for a technical screen?",
-      timestamp: "10:45 AM",
-      isRead: false,
-    },
-  ],
-  "conv-2": [
-    {
-      id: "m-3",
-      conversationId: "conv-2",
-      senderId: "rec-2",
-      senderName: "Marcus Vance",
-      senderRole: "recruiter",
-      content: "We thoroughly reviewed your engineering portfolio and would love to move ahead to the technical architecture discussion.",
-      timestamp: "Yesterday, 4:15 PM",
-      isRead: true,
-    },
-  ],
-  "conv-3": [
-    {
-      id: "m-4",
-      conversationId: "conv-3",
-      senderId: "rec-3",
-      senderName: "Priya Sharma",
-      senderRole: "recruiter",
-      content: "Thank you for sharing your experience. We are eager to discuss the engineering charter with our VP of Infrastructure.",
-      timestamp: "2 days ago",
-      isRead: true,
-    },
-  ],
+  setActiveConversationId: (id: string | null) => void
+  fetchConversations: (userId: string) => Promise<void>
+  fetchMessages: (conversationId: string) => Promise<void>
+  sendMessage: (
+    conversationId: string,
+    message: Omit<ChatMessage, "id" | "timestamp" | "isRead" | "conversationId">,
+    receiverId?: string
+  ) => Promise<void>
+  markAsRead: (conversationId: string, currentUserId?: string) => Promise<void>
+  scheduleInterview: (
+    conversationId: string,
+    interview: { jobTitle: string; date: string; time: string; meetLink: string },
+    senderId?: string
+  ) => Promise<void>
+  addConversation: (conversation: Conversation) => void
+  handleRealtimeIncoming: (message: ChatMessage, currentUserId?: string) => void
+  handleRealtimeUpdate: (message: ChatMessage) => void
 }
 
 export const useMessageStore = create<MessageState>()(
   persist(
     (set, get) => ({
-      conversations: initialConversations,
-      messages: initialMessages,
+      conversations: [],
+      messages: {},
+      isLoading: false,
+      error: null,
+      activeConversationId: null,
 
-      sendMessage: (conversationId, msgData) => {
-        const newMsg: ChatMessage = {
-          id: Math.random().toString(36).substring(2, 9),
+      setActiveConversationId: (id) => set({ activeConversationId: id }),
+
+      fetchConversations: async (userId: string) => {
+        if (!userId) return
+        set({ isLoading: true, error: null })
+        try {
+          const convs = await messageService.getConversations(userId)
+          set({ conversations: convs, isLoading: false })
+        } catch (err: any) {
+          set({ error: err.message || "Failed to load conversations", isLoading: false })
+        }
+      },
+
+      fetchMessages: async (conversationId: string) => {
+        if (!conversationId) return
+        try {
+          const msgs = await messageService.getMessages(conversationId)
+          set((state) => ({
+            messages: {
+              ...state.messages,
+              [conversationId]: msgs,
+            },
+          }))
+        } catch (err: any) {
+          console.warn("Could not fetch messages for conversation:", err)
+        }
+      },
+
+      sendMessage: async (conversationId, msgData, receiverId) => {
+        const tempId = "temp-" + Date.now() + "-" + Math.random().toString(36).substring(2, 6)
+        const optimisticMsg: ChatMessage = {
+          id: tempId,
           conversationId,
           ...msgData,
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          isRead: true,
+          isRead: false,
         }
 
-        const currentMessages = get().messages[conversationId] || []
-        const updatedConversations = get().conversations.map((conv) => {
-          if (conv.id === conversationId) {
-            return {
-              ...conv,
-              lastMessage: msgData.content,
-              lastTimestamp: "Just now",
-            }
-          }
-          return conv
-        })
+        const currentList = get().messages[conversationId] || []
 
-        set({
+        // Optimistic UI update
+        set((state) => ({
           messages: {
-            ...get().messages,
-            [conversationId]: [...currentMessages, newMsg],
+            ...state.messages,
+            [conversationId]: [...currentList, optimisticMsg],
           },
-          conversations: updatedConversations,
-        })
-      },
-
-      markAsRead: (conversationId) => {
-        const updatedConversations = get().conversations.map((c) =>
-          c.id === conversationId ? { ...c, unreadCount: 0 } : c
-        )
-        const currentMessages = (get().messages[conversationId] || []).map((m) => ({
-          ...m,
-          isRead: true,
+          conversations: state.conversations.map((c) =>
+            c.id === conversationId
+              ? { ...c, lastMessage: msgData.content, lastTimestamp: "Just now" }
+              : c
+          ),
         }))
 
-        set({
-          conversations: updatedConversations,
-          messages: {
-            ...get().messages,
-            [conversationId]: currentMessages,
-          },
+        try {
+          const persistedMsg = await messageService.sendMessage({
+            conversationId,
+            senderId: msgData.senderId,
+            senderName: msgData.senderName,
+            senderRole: msgData.senderRole,
+            content: msgData.content,
+            receiverId,
+            interviewInvite: msgData.interviewInvite,
+          })
+
+          // Replace optimistic message with actual persisted record from Supabase
+          set((state) => {
+            const list = state.messages[conversationId] || []
+            const replaced = list.map((m) => (m.id === tempId ? persistedMsg : m))
+            return {
+              messages: {
+                ...state.messages,
+                [conversationId]: replaced,
+              },
+            }
+          })
+        } catch (err: any) {
+          console.error("Failed to persist message:", err)
+          // Mark optimistic message or revert if failed
+        }
+      },
+
+      markAsRead: async (conversationId, currentUserId) => {
+        // Optimistic mark
+        set((state) => {
+          const currentMessages = (state.messages[conversationId] || []).map((m) =>
+            m.senderId !== currentUserId ? { ...m, isRead: true } : m
+          )
+          const updatedConversations = state.conversations.map((c) =>
+            c.id === conversationId ? { ...c, unreadCount: 0 } : c
+          )
+          return {
+            conversations: updatedConversations,
+            messages: {
+              ...state.messages,
+              [conversationId]: currentMessages,
+            },
+          }
+        })
+
+        if (currentUserId) {
+          try {
+            await messageService.markAsRead(conversationId, currentUserId)
+          } catch (err) {
+            console.warn("Could not mark messages as read on server:", err)
+          }
+        }
+      },
+
+      scheduleInterview: async (conversationId, interview, senderId) => {
+        const inviteContent = `Interview Scheduled: ${interview.jobTitle} on ${interview.date} at ${interview.time}. Meeting link: ${interview.meetLink}`
+        await get().sendMessage(
+          conversationId,
+          {
+            senderId: senderId || "scheduler",
+            senderName: "HireHub Interview Scheduler",
+            senderRole: "recruiter",
+            content: inviteContent,
+            interviewInvite: interview,
+          }
+        )
+      },
+
+      addConversation: (conversation) => {
+        set((state) => {
+          const exists = state.conversations.some((c) => c.id === conversation.id)
+          if (exists) return state
+          return {
+            conversations: [conversation, ...state.conversations],
+          }
         })
       },
 
-      scheduleInterview: (conversationId, interview) => {
-        const inviteMsg: ChatMessage = {
-          id: Math.random().toString(36).substring(2, 9),
-          conversationId,
-          senderId: "system",
-          senderName: "HireHub Interview Scheduler",
-          senderRole: "recruiter",
-          content: `Interview Scheduled for ${interview.jobTitle} on ${interview.date} at ${interview.time}. Meeting link: ${interview.meetLink}`,
-          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          isRead: false,
-          interviewInvite: interview,
-        }
+      handleRealtimeIncoming: (message, currentUserId) => {
+        set((state) => {
+          const list = state.messages[message.conversationId] || []
+          // Deduplication: prevent adding if identical ID or temporary message already present
+          if (list.some((m) => m.id === message.id)) {
+            return state
+          }
 
-        const currentMessages = get().messages[conversationId] || []
-        set({
-          messages: {
-            ...get().messages,
-            [conversationId]: [...currentMessages, inviteMsg],
-          },
+          const isOtherSender = message.senderId !== currentUserId
+          const isActiveConv = state.activeConversationId === message.conversationId
+
+          const updatedConversations = state.conversations.map((c) => {
+            if (c.id === message.conversationId) {
+              return {
+                ...c,
+                lastMessage: message.content,
+                lastTimestamp: message.timestamp || "Just now",
+                unreadCount: isOtherSender && !isActiveConv ? c.unreadCount + 1 : c.unreadCount,
+              }
+            }
+            return c
+          })
+
+          return {
+            messages: {
+              ...state.messages,
+              [message.conversationId]: [...list, message],
+            },
+            conversations: updatedConversations,
+          }
+        })
+      },
+
+      handleRealtimeUpdate: (message) => {
+        set((state) => {
+          const list = state.messages[message.conversationId] || []
+          const updated = list.map((m) => (m.id === message.id ? { ...m, ...message } : m))
+          return {
+            messages: {
+              ...state.messages,
+              [message.conversationId]: updated,
+            },
+          }
         })
       },
     }),
     {
-      name: "hirehub-messages-v2",
+      name: "hirehub-messages-v3",
     }
   )
 )

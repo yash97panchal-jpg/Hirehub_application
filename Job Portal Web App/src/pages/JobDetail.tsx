@@ -172,7 +172,12 @@ export default function JobDetail() {
   // User confirmed they applied on external site
   const handleConfirmExternalApply = async () => {
     if (pendingExternalClickId) {
-      await externalApplyService.confirmApplication(pendingExternalClickId, "applied")
+      try {
+        await externalApplyService.confirmApplication(pendingExternalClickId, "applied", user?.id)
+      } catch (err: any) {
+        toast.error(err.message || "Failed to confirm external application status.")
+        return
+      }
     }
 
     if (user && job) {

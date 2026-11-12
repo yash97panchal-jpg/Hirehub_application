@@ -451,3 +451,33 @@ export type AdminSubRole =
   | "Finance Admin"
   | "Content Admin"
 
+export interface ChatMessage {
+  id: string
+  conversationId: string
+  senderId: string
+  senderName: string
+  senderRole: "job_seeker" | "recruiter" | "admin"
+  content: string
+  timestamp: string
+  isRead: boolean
+  interviewInvite?: {
+    jobTitle: string
+    date: string
+    time: string
+    meetLink: string
+  }
+}
+
+export interface Conversation {
+  id: string
+  participantId: string
+  participantName: string
+  participantRole: string
+  participantAvatar?: string
+  participantCompany?: string
+  jobTitle?: string
+  lastMessage: string
+  lastTimestamp: string
+  unreadCount: number
+}
+

@@ -21,27 +21,44 @@ import {
   UserCheck,
   X,
   ExternalLink,
+  MessageSquare,
+  Briefcase,
 } from "lucide-react"
+import { Link } from "react-router-dom"
 import Button from "../components/ui/Button"
 import Badge from "../components/ui/Badge"
 import CustomSelect from "../components/ui/CustomSelect"
 import { useMessageStore, type ChatMessage } from "../store/messageStore"
 import { useAuthStore } from "../store/authStore"
+import { messageService } from "../lib/supabase"
 import toast from "react-hot-toast"
 
 export default function Messages() {
   const { user } = useAuthStore()
-  const { conversations, messages, sendMessage, markAsRead, scheduleInterview } = useMessageStore()
-  const [activeConvId, setActiveConvId] = useState<string>(conversations[0]?.id || "")
+  const {
+    conversations,
+    messages,
+    isLoading,
+    error,
+    fetchConversations,
+    fetchMessages,
+    sendMessage,
+    markAsRead,
+    scheduleInterview,
+    handleRealtimeIncoming,
+    handleRealtimeUpdate,
+  } = useMessageStore()
+
+  const [activeConvId, setActiveConvId] = useState<string>("")
   const [inputText, setInputText] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
-  
+
   // Modals state
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false)
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false)
   const [isMicMuted, setIsMicMuted] = useState(false)
   const [isVideoMuted, setIsVideoMuted] = useState(false)
-  
+
   // Schedule state
   const [scheduleData, setScheduleData] = useState({
     date: new Date(Date.now() + 86400000).toISOString().split("T")[0],
@@ -51,58 +68,100 @@ export default function Messages() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const activeConversation = conversations.find((c) => c.id === activeConvId) || conversations[0]
-  const currentMessages = messages[activeConvId] || []
+  // Load real user conversations and subscribe to Realtime updates (BUG-003)
+  useEffect(() => {
+    if (user?.id) {
+      fetchConversations(user.id)
 
+      const unsubscribe = messageService.subscribeToMessages(
+        user.id,
+        (incomingMsg) => {
+          handleRealtimeIncoming(incomingMsg, user.id)
+        },
+        (updatedMsg) => {
+          handleRealtimeUpdate(updatedMsg)
+        }
+      )
+
+      return () => {
+        unsubscribe()
+      }
+    }
+  }, [user?.id, fetchConversations, handleRealtimeIncoming, handleRealtimeUpdate])
+
+  // Select first conversation if none selected
+  useEffect(() => {
+    if (!activeConvId && conversations.length > 0) {
+      setActiveConvId(conversations[0].id)
+    }
+  }, [conversations, activeConvId])
+
+  // Fetch messages for selected conversation & mark as read (BUG-008)
   useEffect(() => {
     if (activeConvId) {
-      markAsRead(activeConvId)
+      fetchMessages(activeConvId)
+      if (user?.id) {
+        markAsRead(activeConvId, user.id)
+      }
     }
-  }, [activeConvId, markAsRead])
+  }, [activeConvId, user?.id, fetchMessages, markAsRead])
+
+  const activeConversation = conversations.find((c) => c.id === activeConvId) || conversations[0]
+  const currentMessages = activeConversation ? messages[activeConversation.id] || [] : []
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [currentMessages])
 
-  const handleSend = (e?: React.FormEvent) => {
+  // Handle Real Message Sending (BUG-003)
+  const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault()
-    if (!inputText.trim()) return
+    if (!inputText.trim() || !activeConvId) return
 
-    sendMessage(activeConvId, {
-      senderId: user?.id || "user-current",
-      senderName: user?.name || "Candidate",
-      senderRole: (user?.role as any) || "job_seeker",
-      content: inputText.trim(),
-    })
+    const content = inputText.trim()
     setInputText("")
 
-    // Automated recruiter reply simulation after 1.5 seconds if talking to recruiter
-    setTimeout(() => {
-      if (activeConversation) {
-        sendMessage(activeConvId, {
-          senderId: activeConversation.participantId,
-          senderName: activeConversation.participantName,
-          senderRole: "recruiter",
-          content: "Thanks for your response! I have updated our team and will share the next steps shortly.",
-        })
-      }
-    }, 1500)
+    try {
+      await sendMessage(
+        activeConvId,
+        {
+          senderId: user?.id || "user-current",
+          senderName: user?.name || "Candidate",
+          senderRole: (user?.role as any) || "job_seeker",
+          content,
+        },
+        activeConversation?.participantId
+      )
+    } catch (err: any) {
+      toast.error(err.message || "Failed to deliver message.")
+    }
   }
 
-  const handleConfirmSchedule = (e: React.FormEvent) => {
+  // Handle Real Interview Scheduling (BUG-003)
+  const handleConfirmSchedule = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!activeConvId) return
+
     const meetId = Math.random().toString(36).substring(2, 8)
     const meetLink = `https://meet.google.com/hhr-${meetId}`
 
-    scheduleInterview(activeConvId, {
-      jobTitle: activeConversation?.jobTitle || "Technical Interview",
-      date: scheduleData.date,
-      time: scheduleData.time,
-      meetLink,
-    })
+    try {
+      await scheduleInterview(
+        activeConvId,
+        {
+          jobTitle: activeConversation?.jobTitle || "Technical Screen",
+          date: scheduleData.date,
+          time: scheduleData.time,
+          meetLink,
+        },
+        user?.id
+      )
 
-    setIsScheduleModalOpen(false)
-    toast.success("Interview scheduled & meeting link delivered in chat!")
+      setIsScheduleModalOpen(false)
+      toast.success("Interview scheduled & invite delivered in chat!")
+    } catch (err: any) {
+      toast.error(err.message || "Failed to schedule interview.")
+    }
   }
 
   // Export .ics calendar invite
@@ -167,47 +226,60 @@ END:VCALENDAR`
           </div>
 
           <div className="flex-1 overflow-y-auto divide-y divide-[var(--border)]">
-            {filteredConversations.map((conv) => {
-              const isSelected = conv.id === activeConvId
-              return (
-                <div
-                  key={conv.id}
-                  onClick={() => setActiveConvId(conv.id)}
-                  className={`p-4 cursor-pointer transition-colors flex items-start gap-3 ${
-                    isSelected
-                      ? "bg-[var(--primary)]/10 dark:bg-[var(--accent)]/30 border-l-4 border-[var(--primary)]"
-                      : "hover:bg-[var(--muted)]/50"
-                  }`}
-                >
-                  <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-[var(--primary)] to-[var(--accent)] text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-sm">
-                    {conv.participantName.charAt(0)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-semibold text-sm text-[var(--foreground)] truncate">
-                        {conv.participantName}
-                      </h4>
-                      <span className="text-[11px] text-[var(--muted-foreground)] shrink-0">
-                        {conv.lastTimestamp}
-                      </span>
+            {isLoading && conversations.length === 0 ? (
+              <div className="p-8 text-center text-xs text-[var(--muted-foreground)]">
+                <div className="animate-spin w-5 h-5 border-2 border-[var(--primary)] border-t-transparent rounded-full mx-auto mb-2" />
+                Loading conversations...
+              </div>
+            ) : filteredConversations.length > 0 ? (
+              filteredConversations.map((conv) => {
+                const isSelected = conv.id === activeConvId
+                return (
+                  <div
+                    key={conv.id}
+                    onClick={() => setActiveConvId(conv.id)}
+                    className={`p-4 cursor-pointer transition-colors flex items-start gap-3 ${
+                      isSelected
+                        ? "bg-[var(--primary)]/10 dark:bg-[var(--accent)]/30 border-l-4 border-[var(--primary)]"
+                        : "hover:bg-[var(--muted)]/50"
+                    }`}
+                  >
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-[var(--primary)] to-[var(--accent)] text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-sm">
+                      {conv.participantName.charAt(0)}
                     </div>
-                    {conv.participantCompany && (
-                      <p className="text-xs text-[var(--primary)] font-medium truncate mt-0.5">
-                        {conv.participantCompany}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-semibold text-sm text-[var(--foreground)] truncate">
+                          {conv.participantName}
+                        </h4>
+                        <span className="text-[11px] text-[var(--muted-foreground)] shrink-0">
+                          {conv.lastTimestamp}
+                        </span>
+                      </div>
+                      {conv.participantCompany && (
+                        <p className="text-xs text-[var(--primary)] font-medium truncate mt-0.5">
+                          {conv.participantCompany}
+                        </p>
+                      )}
+                      <p className="text-xs text-[var(--muted-foreground)] truncate mt-1">
+                        {conv.lastMessage}
                       </p>
+                    </div>
+                    {conv.unreadCount > 0 && (
+                      <span className="w-5 h-5 rounded-full bg-[var(--primary)] text-white text-[11px] font-bold flex items-center justify-center shrink-0">
+                        {conv.unreadCount}
+                      </span>
                     )}
-                    <p className="text-xs text-[var(--muted-foreground)] truncate mt-1">
-                      {conv.lastMessage}
-                    </p>
                   </div>
-                  {conv.unreadCount > 0 && (
-                    <span className="w-5 h-5 rounded-full bg-[var(--primary)] text-white text-[11px] font-bold flex items-center justify-center shrink-0">
-                      {conv.unreadCount}
-                    </span>
-                  )}
-                </div>
-              )
-            })}
+                )
+              })
+            ) : (
+              <div className="p-8 text-center text-xs text-[var(--muted-foreground)] space-y-2">
+                <MessageSquare size={32} className="mx-auto opacity-40 mb-1" />
+                <p className="font-semibold text-sm text-[var(--foreground)]">No conversations</p>
+                <p>When you message employers or recruiters reach out, chats appear here.</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -223,7 +295,7 @@ END:VCALENDAR`
                 <div>
                   <h3 className="font-bold text-sm text-[var(--foreground)] flex items-center gap-2">
                     {activeConversation.participantName}
-                    <Badge variant="success" size="sm">Online</Badge>
+                    <Badge variant="success" size="sm">Active</Badge>
                   </h3>
                   <p className="text-xs text-[var(--muted-foreground)]">
                     {activeConversation.participantRole} • {activeConversation.participantCompany}
@@ -247,7 +319,7 @@ END:VCALENDAR`
                   onClick={() => setIsVideoModalOpen(true)}
                   className="text-xs gap-1.5"
                 >
-                  <Video size={14} /> Join Video Call
+                  <Video size={14} /> Video Call
                 </Button>
               </div>
             </div>
@@ -256,69 +328,76 @@ END:VCALENDAR`
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
               <div className="text-center my-2">
                 <span className="text-[11px] px-3 py-1 rounded-full bg-[var(--muted)] text-[var(--muted-foreground)]">
-                  Connected on HireHub Secure Candidate Channel
+                  HireHub Encrypted Direct Communications Channel
                 </span>
               </div>
 
-              {currentMessages.map((msg) => {
-                const isMe = msg.senderId === (user?.id || "user-current") || msg.senderRole === "job_seeker"
-                return (
-                  <motion.div
-                    key={msg.id}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`flex ${isMe ? "justify-end" : "justify-start"}`}
-                  >
-                    <div
-                      className={`max-w-md rounded-2xl p-4 shadow-sm ${
-                        isMe
-                          ? "bg-[var(--primary)] text-white rounded-br-none"
-                          : "bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] rounded-bl-none"
-                      }`}
+              {currentMessages.length === 0 ? (
+                <div className="py-12 text-center text-xs text-[var(--muted-foreground)]">
+                  <p className="font-semibold text-sm text-[var(--foreground)] mb-1">Start of Conversation</p>
+                  <p>Send a message below to start interacting with {activeConversation.participantName}.</p>
+                </div>
+              ) : (
+                currentMessages.map((msg) => {
+                  const isMe = msg.senderId === user?.id || (user?.id ? msg.senderId === user.id : msg.senderRole === "job_seeker")
+                  return (
+                    <motion.div
+                      key={msg.id}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`flex ${isMe ? "justify-end" : "justify-start"}`}
                     >
-                      <p className="text-xs font-semibold mb-1 opacity-80">
-                        {msg.senderName}
-                      </p>
-                      <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
-
-                      {/* If Message is an Interview Invite */}
-                      {msg.interviewInvite && (
-                        <div className="mt-3 p-3 rounded-xl bg-white/10 dark:bg-black/20 border border-white/20 text-xs space-y-2">
-                          <div className="flex items-center gap-1.5 font-bold">
-                            <Clock size={14} />
-                            <span>{msg.interviewInvite.date} at {msg.interviewInvite.time}</span>
-                          </div>
-                          <a
-                            href={msg.interviewInvite.meetLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 font-semibold text-emerald-300 hover:underline"
-                          >
-                            <Video size={13} /> {msg.interviewInvite.meetLink}
-                          </a>
-                          <div>
-                            <button
-                              onClick={() => handleDownloadICS(msg)}
-                              className="mt-1 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-white font-medium text-xs transition-colors"
-                            >
-                              <Download size={12} /> Add to Google / Apple Calendar (.ics)
-                            </button>
-                          </div>
-                        </div>
-                      )}
-
                       <div
-                        className={`flex items-center justify-end gap-1 text-[10px] mt-1.5 ${
-                          isMe ? "text-white/70" : "text-[var(--muted-foreground)]"
+                        className={`max-w-md rounded-2xl p-4 shadow-sm ${
+                          isMe
+                            ? "bg-[var(--primary)] text-white rounded-br-none"
+                            : "bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] rounded-bl-none"
                         }`}
                       >
-                        <span>{msg.timestamp}</span>
-                        {isMe && <CheckCheck size={13} className="text-white" />}
+                        <p className="text-xs font-semibold mb-1 opacity-80">
+                          {msg.senderName}
+                        </p>
+                        <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+
+                        {/* If Message is an Interview Invite */}
+                        {msg.interviewInvite && (
+                          <div className="mt-3 p-3 rounded-xl bg-white/10 dark:bg-black/20 border border-white/20 text-xs space-y-2">
+                            <div className="flex items-center gap-1.5 font-bold">
+                              <Clock size={14} />
+                              <span>{msg.interviewInvite.date} at {msg.interviewInvite.time}</span>
+                            </div>
+                            <a
+                              href={msg.interviewInvite.meetLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 font-semibold text-emerald-300 hover:underline"
+                            >
+                              <Video size={13} /> {msg.interviewInvite.meetLink}
+                            </a>
+                            <div>
+                              <button
+                                onClick={() => handleDownloadICS(msg)}
+                                className="mt-1 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-white font-medium text-xs transition-colors"
+                              >
+                                <Download size={12} /> Add to Calendar (.ics)
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        <div
+                          className={`flex items-center justify-end gap-1 text-[10px] mt-1.5 ${
+                            isMe ? "text-white/70" : "text-[var(--muted-foreground)]"
+                          }`}
+                        >
+                          <span>{msg.timestamp}</span>
+                          {isMe && <CheckCheck size={13} className={msg.isRead ? "text-emerald-300" : "text-white/60"} />}
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
-                )
-              })}
+                    </motion.div>
+                  )
+                })
+              )}
               <div ref={messagesEndRef} />
             </div>
 
@@ -358,12 +437,17 @@ END:VCALENDAR`
           </div>
         ) : (
           <div className="flex-1 flex items-center justify-center p-8 text-center bg-[var(--background)]">
-            <div>
-              <Search size={40} className="mx-auto text-[var(--muted-foreground)] mb-2 opacity-40" />
-              <h3 className="font-bold text-base text-[var(--foreground)]">Select a conversation</h3>
-              <p className="text-xs text-[var(--muted-foreground)] mt-1">
-                Choose a recruiter from the list on the left to start messaging.
+            <div className="max-w-sm space-y-3">
+              <MessageSquare size={48} className="mx-auto text-[var(--muted-foreground)] opacity-40" />
+              <h3 className="font-bold text-base text-[var(--foreground)]">No active conversation</h3>
+              <p className="text-xs text-[var(--muted-foreground)]">
+                Connect with recruiters or view interview invitations once you apply to jobs.
               </p>
+              <Link to="/jobs">
+                <Button variant="outline" size="sm" className="mt-2 text-xs">
+                  <Briefcase size={14} className="mr-1.5" /> Explore Open Roles
+                </Button>
+              </Link>
             </div>
           </div>
         )}
@@ -411,26 +495,25 @@ END:VCALENDAR`
 
               <div>
                 <label className="text-xs font-semibold text-[var(--foreground)] block mb-1">
-                  Video Platform
+                  Meeting Platform
                 </label>
                 <CustomSelect
                   value={scheduleData.platform}
-                  onChange={(val) => setScheduleData({ ...scheduleData, platform: String(val) })}
+                  onChange={(val) => setScheduleData({ ...scheduleData, platform: val })}
                   options={[
-                    { value: "Google Meet", label: "Google Meet (Auto-generated link)" },
-                    { value: "Zoom", label: "Zoom Video Meeting" },
-                    { value: "HireHub In-App Room", label: "HireHub In-App Meeting Room" },
+                    { label: "Google Meet", value: "Google Meet" },
+                    { label: "Zoom", value: "Zoom" },
+                    { label: "Microsoft Teams", value: "Microsoft Teams" },
                   ]}
-                  size="sm"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
-                <Button type="button" variant="outline" size="sm" onClick={() => setIsScheduleModalOpen(false)}>
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <Button variant="ghost" size="sm" type="button" onClick={() => setIsScheduleModalOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" variant="primary" size="sm">
-                  Confirm & Send Invite
+                <Button variant="primary" size="sm" type="submit">
+                  Confirm & Send Link
                 </Button>
               </div>
             </form>
@@ -438,85 +521,66 @@ END:VCALENDAR`
         </div>
       )}
 
-      {/* In-App Live Video Call Room Modal */}
+      {/* Video Call Modal Simulation */}
       {isVideoModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#111827] rounded-3xl border border-white/10 shadow-2xl w-full max-w-4xl h-[640px] flex flex-col overflow-hidden text-white animate-in zoom-in-95">
-            <div className="p-4 bg-black/40 flex items-center justify-between border-b border-white/10">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl w-full max-w-2xl flex flex-col h-[460px]">
+            <div className="p-4 bg-slate-950 flex items-center justify-between border-b border-slate-800 text-white">
               <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
-                <h4 className="font-bold text-sm">
-                  Live Interview Room • {activeConversation?.participantName}
-                </h4>
+                <Video size={18} className="text-emerald-400" />
+                <span className="font-semibold text-sm">HireHub Secure Interview Video Room</span>
               </div>
-              <Badge variant="success" size="sm">HD Encrypted Call</Badge>
+              <button onClick={() => setIsVideoModalOpen(false)} className="p-1 rounded hover:bg-slate-800 text-slate-400">
+                <X size={18} />
+              </button>
             </div>
 
-            {/* Video Streams Canvas */}
-            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 p-6 bg-[#0B0F17]">
-              {/* Remote Recruiter Stream */}
-              <div className="bg-neutral-800/80 rounded-2xl border border-white/10 flex flex-col items-center justify-center relative overflow-hidden shadow-inner">
-                <div className="w-24 h-24 rounded-full bg-[var(--primary)] text-white text-3xl font-bold flex items-center justify-center shadow-lg">
-                  {activeConversation?.participantName.charAt(0)}
+            <div className="flex-1 bg-slate-950 relative flex items-center justify-center p-6">
+              {isVideoMuted ? (
+                <div className="text-center text-slate-500">
+                  <VideoOff size={48} className="mx-auto mb-2 opacity-40" />
+                  <p className="text-xs">Camera is turned off</p>
                 </div>
-                <p className="mt-4 font-semibold text-sm">{activeConversation?.participantName}</p>
-                <p className="text-xs text-neutral-400">Recruiter Stream (Waiting for connection)</p>
-                <div className="absolute bottom-3 left-3 bg-black/50 px-2 py-1 rounded text-[11px]">
-                  {activeConversation?.participantCompany ? `${activeConversation.participantCompany} Recruiter` : "Lead Technical Interviewer"}
-                </div>
-              </div>
-
-              {/* Local User Stream */}
-              <div className="bg-neutral-900 rounded-2xl border border-white/10 flex flex-col items-center justify-center relative overflow-hidden shadow-inner">
-                {isVideoMuted ? (
-                  <div className="flex flex-col items-center">
-                    <VideoOff size={40} className="text-red-400 mb-2" />
-                    <p className="text-xs text-neutral-400">Your camera is turned off</p>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center">
-                    <div className="w-20 h-20 rounded-full bg-emerald-600/30 border border-emerald-500 text-emerald-300 text-2xl font-bold flex items-center justify-center mb-3">
-                      {user?.name?.charAt(0) || "You"}
+              ) : (
+                <div className="relative w-full h-full bg-slate-900 rounded-2xl flex items-center justify-center border border-slate-800">
+                  <div className="text-center text-slate-400">
+                    <div className="w-20 h-20 rounded-full bg-[var(--primary)] text-white flex items-center justify-center text-2xl font-bold mx-auto mb-3 shadow-lg">
+                      {activeConversation ? activeConversation.participantName.charAt(0) : "U"}
                     </div>
-                    <p className="text-xs text-emerald-400 font-medium">Camera Active (Candidate Feed)</p>
+                    <p className="font-semibold text-sm text-slate-200">
+                      {activeConversation ? activeConversation.participantName : "Participant"}
+                    </p>
+                    <p className="text-xs text-emerald-400 mt-1 flex items-center justify-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      Encrypted Audio/Video Stream Active
+                    </p>
                   </div>
-                )}
-                <div className="absolute bottom-3 left-3 bg-black/50 px-2 py-1 rounded text-[11px]">
-                  You ({user?.name || "Applicant"})
                 </div>
-              </div>
+              )}
             </div>
 
-            {/* Call Controls Bar */}
-            <div className="p-4 bg-black/60 border-t border-white/10 flex items-center justify-center gap-4">
+            <div className="p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-center gap-4">
               <button
                 onClick={() => setIsMicMuted(!isMicMuted)}
-                className={`p-3.5 rounded-full transition-colors ${
-                  isMicMuted ? "bg-red-500/20 text-red-400 border border-red-500" : "bg-white/10 hover:bg-white/20 text-white"
+                className={`p-3 rounded-full transition-colors ${
+                  isMicMuted ? "bg-rose-500 text-white" : "bg-slate-800 text-slate-200 hover:bg-slate-700"
                 }`}
-                title={isMicMuted ? "Unmute Mic" : "Mute Mic"}
               >
-                {isMicMuted ? <MicOff size={20} /> : <Mic size={20} />}
+                {isMicMuted ? <MicOff size={18} /> : <Mic size={18} />}
               </button>
-
               <button
                 onClick={() => setIsVideoMuted(!isVideoMuted)}
-                className={`p-3.5 rounded-full transition-colors ${
-                  isVideoMuted ? "bg-red-500/20 text-red-400 border border-red-500" : "bg-white/10 hover:bg-white/20 text-white"
+                className={`p-3 rounded-full transition-colors ${
+                  isVideoMuted ? "bg-rose-500 text-white" : "bg-slate-800 text-slate-200 hover:bg-slate-700"
                 }`}
-                title={isVideoMuted ? "Start Video" : "Stop Video"}
               >
-                {isVideoMuted ? <VideoOff size={20} /> : <Video size={20} />}
+                {isVideoMuted ? <VideoOff size={18} /> : <Video size={18} />}
               </button>
-
               <button
-                onClick={() => {
-                  setIsVideoModalOpen(false)
-                  toast("Interview video session ended.")
-                }}
-                className="px-6 py-3 rounded-full bg-red-600 hover:bg-red-700 text-white font-semibold text-xs flex items-center gap-2 transition-colors shadow-lg"
+                onClick={() => setIsVideoModalOpen(false)}
+                className="px-5 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-lg"
               >
-                <PhoneOff size={16} /> End Interview Call
+                <PhoneOff size={15} /> Leave Room
               </button>
             </div>
           </div>

@@ -250,6 +250,8 @@ export default function Settings() {
         await authService.deleteAccount(user.id)
       } catch (err: any) {
         console.error("Error executing server deletion:", err)
+        toast.error(err.message || "Account deletion failed. Storage files or credentials could not be purged. Please retry.")
+        return
       }
     }
 

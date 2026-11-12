@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from "vitest"
+import { describe, it, expect, beforeEach, vi } from "vitest"
 import { emailService } from "../src/services/emailService"
-import { mockJobs, mockCompanies } from "../src/data/mockData"
+import { mockJobs } from "../src/data/mockData"
 import type { User } from "../src/types"
 
 const mockStorage: Record<string, string> = {}
@@ -13,9 +13,11 @@ global.localStorage = {
   key: () => null,
 } as any
 
-describe("Email Service & Application Confirmation", () => {
+describe("Email Service & Application Confirmation (BUG-004)", () => {
   beforeEach(() => {
     localStorage.clear()
+    emailService.setProviderEndpoint(null)
+    vi.restoreAllMocks()
   })
 
   const dummyApplicant: User = {
@@ -46,7 +48,7 @@ describe("Email Service & Application Confirmation", () => {
     expect(html).toContain("Applied (Under Review)")
   })
 
-  it("dispatches confirmation email and persists sent record", async () => {
+  it("accurately reports pending status when no email provider is configured (no false delivered status)", async () => {
     const job = mockJobs[0]
     const record = await emailService.sendApplicationConfirmation({
       applicant: dummyApplicant,
@@ -54,7 +56,9 @@ describe("Email Service & Application Confirmation", () => {
       applicationId: "app-test-888",
     })
 
-    expect(record.status).toBe("delivered")
+    // Must NOT report 'delivered' without a configured provider
+    expect(record.status).toBe("pending")
+    expect(record.errorMessage).toContain("Email provider not configured")
     expect(record.to).toBe("alex.morgan@example.com")
     expect(record.companyName).toBe(job.company.name)
     expect(record.jobTitle).toBe(job.title)
@@ -63,5 +67,95 @@ describe("Email Service & Application Confirmation", () => {
     const sentHistory = emailService.getSentEmails()
     expect(sentHistory.length).toBeGreaterThan(0)
     expect(sentHistory[0].applicationId).toBe("app-test-888")
+  })
+
+  it("reports 'sent' when provider accepts dispatch and 'delivered' when confirmed", async () => {
+    const job = mockJobs[0]
+    emailService.setProviderEndpoint("https://api.hirehub.app/send-email")
+
+    // Mock fetch for provider acceptance
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ sent: true, delivered: false }),
+    } as any)
+
+    const recordSent = await emailService.sendApplicationConfirmation({
+      applicant: dummyApplicant,
+      job,
+      applicationId: "app-test-sent-1",
+    })
+    expect(recordSent.status).toBe("sent")
+
+    // Mock fetch for confirmed delivery
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ sent: true, delivered: true }),
+    } as any)
+
+    const recordDelivered = await emailService.sendApplicationConfirmation({
+      applicant: dummyApplicant,
+      job,
+      applicationId: "app-test-deliv-1",
+    })
+    expect(recordDelivered.status).toBe("delivered")
+  })
+
+  it("handles provider failure and marks status as failed with error details", async () => {
+    const job = mockJobs[0]
+    emailService.setProviderEndpoint("https://api.hirehub.app/send-email")
+
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 503,
+      text: async () => "Service Unavailable",
+    } as any)
+
+    const record = await emailService.sendApplicationConfirmation({
+      applicant: dummyApplicant,
+      job,
+      applicationId: "app-test-fail-1",
+    })
+
+    expect(record.status).toBe("failed")
+    expect(record.errorMessage).toContain("503")
+  })
+
+  it("prevents duplicate delivery on retry if email is already marked delivered", async () => {
+    const job = mockJobs[0]
+    const record = await emailService.sendApplicationConfirmation({
+      applicant: dummyApplicant,
+      job,
+      applicationId: "app-test-dup-1",
+    })
+
+    // Simulate record marked delivered
+    const list = emailService.getSentEmails()
+    list[0].status = "delivered"
+    localStorage.setItem("hirehub_sent_emails_v1", JSON.stringify(list))
+
+    const retried = await emailService.retryEmail(record.id)
+    expect(retried?.status).toBe("delivered")
+    expect(retried?.retryCount || 0).toBe(0) // No resend dispatched
+  })
+
+  it("enforces max retry limit (3 retries) and records permanent failure", async () => {
+    const job = mockJobs[0]
+    const record = await emailService.sendApplicationConfirmation({
+      applicant: dummyApplicant,
+      job,
+      applicationId: "app-test-retry-max",
+    })
+
+    // Simulate 3 prior retries
+    const list = emailService.getSentEmails()
+    list[0].retryCount = 3
+    list[0].status = "failed"
+    localStorage.setItem("hirehub_sent_emails_v1", JSON.stringify(list))
+
+    const result = await emailService.retryEmail(record.id)
+    expect(result?.status).toBe("failed")
+    expect(result?.errorMessage).toContain("Maximum retry limit (3) reached")
   })
 })

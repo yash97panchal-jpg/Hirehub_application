@@ -20,6 +20,8 @@ import type {
   AdminAuditLog,
   PlatformAnnouncement,
   UserRole,
+  ChatMessage,
+  Conversation,
 } from "../types"
 import { mockCompanies, mockJobs } from "../data/mockData"
 import { getCompanyRealLogo } from "../data/companyLogos"
@@ -66,6 +68,8 @@ const STORAGE_KEYS = {
   ANNOUNCEMENTS: "hirehub_supabase_announcements_v5",
   TAXONOMIES: "hirehub_supabase_taxonomies_v5",
   USERS: "hirehub_supabase_users_v5",
+  MESSAGES: "hirehub_supabase_messages_v5",
+  CONVERSATIONS: "hirehub_supabase_conversations_v5",
 }
 
 function getStored<T>(key: string, fallback: T): T {
@@ -743,23 +747,17 @@ export const authService = {
 
   async deleteAccount(userId: string) {
     if (isSupabaseConfigured && supabase) {
-      try {
-        // Execute server-side administrative deletion RPC to purge storage files,
-        // applications, profile row, and auth.users credentials permanently
-        const { data, error } = await supabase.rpc("delete_user_account")
-        if (!error) {
-          await supabase.auth.signOut()
-          return data || { success: true }
-        }
-      } catch (rpcErr) {
-        console.warn("RPC delete_user_account not ready; falling back to profile cascade delete:", rpcErr)
+      // Execute server-side administrative deletion RPC to purge storage files,
+      // applications, profile row, and auth.users credentials permanently
+      const { data, error } = await supabase.rpc("delete_user_account")
+      if (error) {
+        throw new Error(error.message || "Account deletion failed. Storage or user credentials could not be purged.")
       }
-
-      // Cascade deletes profile, applications, saved jobs via foreign keys
-      const { error } = await supabase.from("profiles").delete().eq("id", userId)
-      if (error) throw error
+      if (data && typeof data === "object" && (data as any).success === false) {
+        throw new Error((data as any).message || (data as any).error || "Storage cleanup failed during account deletion.")
+      }
       await supabase.auth.signOut()
-      return { success: true }
+      return data || { success: true }
     }
 
     // Local Mock Fallback: Clear local authentication state
@@ -1664,6 +1662,14 @@ export const applicationService = {
       changedAt: updatedAt,
     }
 
+    // BUG-001: Job Seeker cannot self-promote application status
+    if (changedByUserId && targetApp) {
+      const isCandidate = targetApp.userId === changedByUserId || targetApp.applicant?.id === changedByUserId
+      if (isCandidate && status !== "Withdrawn") {
+        throw new Error(`Security Violation: Candidates are strictly forbidden from setting application status to "${status}".`)
+      }
+    }
+
     if (isSupabaseConfigured && supabase) {
       const payload: any = { status, updated_at: updatedAt }
       if (notes !== undefined) payload.notes = notes
@@ -1762,6 +1768,23 @@ export const applicationService = {
     // Security check: candidate can only withdraw own application
     if (userId && target && target.userId && target.userId !== userId && target.applicant?.id !== userId) {
       throw new Error("Unauthorized: Candidates can only withdraw their own applications.")
+    }
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.rpc("withdraw_application", { app_id: applicationId })
+        if (!error && (data as any)?.success) {
+          const updated = all.map((a) =>
+            a.id === applicationId || a.applicationCode === applicationId
+              ? { ...a, status: "Withdrawn" as const, updatedAt }
+              : a
+          )
+          setStored(STORAGE_KEYS.APPLICATIONS, updated)
+          return
+        }
+      } catch (rpcErr) {
+        // Fall back to updateStatus if RPC function not found in environment
+      }
     }
 
     await this.updateStatus(
@@ -1869,23 +1892,65 @@ export const applicationService = {
 }
 
 // -----------------------------------------------------------------------------
-// EXTERNAL APPLY TRACKING SERVICE
+// EXTERNAL APPLY TRACKING SERVICE (BUG-007)
 // -----------------------------------------------------------------------------
 export const externalApplyService = {
   async logClick(jobId: string, userId?: string): Promise<string> {
-    const clickId = "click-" + Date.now()
+    if (!jobId || typeof jobId !== "string" || jobId.trim() === "") {
+      throw new Error("Validation Error: Invalid or missing job ID for click tracking.")
+    }
+
+    const clickId = "click-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7)
+
     if (isSupabaseConfigured && supabase) {
-      const { data } = await supabase
+      // 1. Verify job exists
+      const { data: job, error: jobErr } = await supabase
+        .from("jobs")
+        .select("id")
+        .eq("id", jobId)
+        .maybeSingle()
+
+      if (jobErr) {
+        throw new Error("Database error verifying job for external apply: " + jobErr.message)
+      }
+      if (!job) {
+        throw new Error(`Job not found: No job record matching ID "${jobId}". External apply tracking aborted.`)
+      }
+
+      // 2. Prevent rapid duplicate clicks (within 3 seconds) for authenticated users
+      if (userId) {
+        const threeSecAgo = new Date(Date.now() - 3000).toISOString()
+        const { data: recentClick } = await supabase
+          .from("external_apply_clicks")
+          .select("id")
+          .eq("job_id", jobId)
+          .eq("user_id", userId)
+          .gt("clicked_at", threeSecAgo)
+          .maybeSingle()
+
+        if (recentClick) {
+          return recentClick.id
+        }
+      }
+
+      // 3. Insert tracking record and check errors
+      const { data, error } = await supabase
         .from("external_apply_clicks")
         .insert({
           job_id: jobId,
           user_id: userId || null,
         })
-        .select()
+        .select("id")
         .single()
-      return data?.id || clickId
+
+      if (error) {
+        throw new Error("Failed to record external application click: " + error.message)
+      }
+
+      return data.id
     }
 
+    // Local Fallback Storage
     const clicks = getStored<ExternalApplyClick[]>(STORAGE_KEYS.CLICKS, [])
     clicks.push({
       id: clickId,
@@ -1897,18 +1962,64 @@ export const externalApplyService = {
     return clickId
   },
 
-  async confirmApplication(clickId: string, status: "applied" | "not_applied"): Promise<void> {
+  async confirmApplication(
+    clickId: string,
+    status: "applied" | "not_applied",
+    userId?: string
+  ): Promise<{ success: boolean; clickId: string; status: string }> {
+    if (!clickId || typeof clickId !== "string" || clickId.trim() === "") {
+      throw new Error("Validation Error: Invalid tracking click ID.")
+    }
+    if (status !== "applied" && status !== "not_applied") {
+      throw new Error("Validation Error: Status must be either 'applied' or 'not_applied'.")
+    }
+
     if (isSupabaseConfigured && supabase) {
-      await supabase
+      // 1. Verify click record exists
+      const { data: clickRecord, error: fetchErr } = await supabase
+        .from("external_apply_clicks")
+        .select("id, user_id, job_id, user_confirmed")
+        .eq("id", clickId)
+        .maybeSingle()
+
+      if (fetchErr) {
+        throw new Error("Database error retrieving click record: " + fetchErr.message)
+      }
+      if (!clickRecord) {
+        throw new Error(`Tracking record not found: No click event matching ID "${clickId}".`)
+      }
+
+      // 2. Ownership verification if click had an authenticated user
+      if (clickRecord.user_id && userId && clickRecord.user_id !== userId) {
+        throw new Error("Authorization Violation: You cannot confirm an application record belonging to another user.")
+      }
+
+      // 3. Update status and verify response
+      const { error: updateErr } = await supabase
         .from("external_apply_clicks")
         .update({ user_confirmed: status })
         .eq("id", clickId)
-      return
+
+      if (updateErr) {
+        throw new Error("Failed to confirm external application status: " + updateErr.message)
+      }
+
+      return { success: true, clickId, status }
     }
 
+    // Local Fallback Storage
     const clicks = getStored<ExternalApplyClick[]>(STORAGE_KEYS.CLICKS, [])
+    const target = clicks.find((c) => c.id === clickId)
+    if (!target) {
+      throw new Error(`Tracking record not found for click ID "${clickId}".`)
+    }
+    if (target.userId && userId && target.userId !== userId) {
+      throw new Error("Authorization Violation: You cannot confirm an application record belonging to another user.")
+    }
+
     const updated = clicks.map((c) => (c.id === clickId ? { ...c, userConfirmed: status } : c))
     setStored(STORAGE_KEYS.CLICKS, updated)
+    return { success: true, clickId, status }
   },
 
   async getClicksForJob(jobId: string): Promise<number> {
@@ -2009,7 +2120,7 @@ export const storageService = {
     return URL.createObjectURL(file)
   },
 
-  async uploadCompanyLogo(file: File, companySlug: string): Promise<string> {
+  async uploadCompanyLogo(file: File, companySlug: string, userId?: string): Promise<string> {
     this.validateFile(file, {
       maxSize: 2 * 1024 * 1024, // 2 MB
       allowedTypes: ["image/png", "image/jpeg", "image/webp", "image/svg+xml"],
@@ -2021,6 +2132,39 @@ export const storageService = {
     const filePath = `${cleanSlug}/${Date.now()}.${fileExt}`
 
     if (isSupabaseConfigured && supabase) {
+      // BUG-005 Authorization Check: verify ownership or recruiter membership
+      if (userId) {
+        const { data: comp } = await supabase
+          .from("companies")
+          .select("id, created_by")
+          .or(`id.eq.${companySlug},slug.eq.${companySlug}`)
+          .maybeSingle()
+
+        if (comp) {
+          const isOwner = comp.created_by === userId
+          if (!isOwner) {
+            const { data: member } = await supabase
+              .from("company_members")
+              .select("id")
+              .eq("company_id", comp.id)
+              .eq("user_id", userId)
+              .maybeSingle()
+
+            if (!member) {
+              const { data: profile } = await supabase
+                .from("profiles")
+                .select("role")
+                .eq("id", userId)
+                .maybeSingle()
+
+              if (profile?.role !== "admin") {
+                throw new Error("Security Violation: Only authorized company owners or recruiters can upload company logos.")
+              }
+            }
+          }
+        }
+      }
+
       const { data, error } = await supabase.storage.from("company-logos").upload(filePath, file, {
         cacheControl: "86400",
         upsert: true,
@@ -2047,17 +2191,20 @@ export const storageService = {
 }
 
 // -----------------------------------------------------------------------------
-// TRUST, SAFETY & MODERATION SERVICE
+// TRUST, SAFETY & MODERATION SERVICE (BUG-002)
 // -----------------------------------------------------------------------------
 export const moderationService = {
   async reportJob(jobId: string, reason: string, details?: string, userId?: string): Promise<void> {
+    if (!jobId || !reason) throw new Error("Validation Error: Job ID and report reason are required.")
     if (isSupabaseConfigured && supabase) {
-      await supabase.from("job_reports").insert({
+      const { error } = await supabase.from("job_reports").insert({
         job_id: jobId,
         reason,
-        details,
+        details: details || null,
         user_id: userId || null,
+        status: "pending",
       })
+      if (error) throw error
       return
     }
 
@@ -2074,12 +2221,16 @@ export const moderationService = {
     setStored(STORAGE_KEYS.REPORTS, reports)
   },
 
-  async getReports(): Promise<JobReport[]> {
+  async getReports(userId?: string): Promise<JobReport[]> {
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase
-        .from("job_reports")
-        .select("*")
-        .order("created_at", { ascending: false })
+      let query = supabase.from("job_reports").select("*").order("created_at", { ascending: false })
+      if (userId) {
+        const { data: prof } = await supabase.from("profiles").select("role").eq("id", userId).maybeSingle()
+        if (prof?.role !== "admin") {
+          query = query.eq("user_id", userId)
+        }
+      }
+      const { data, error } = await query
       if (error) throw error
       return data || []
     }
@@ -2087,9 +2238,32 @@ export const moderationService = {
     return getStored<JobReport[]>(STORAGE_KEYS.REPORTS, [])
   },
 
-  async updateReportStatus(reportId: string, status: "pending" | "reviewed" | "dismissed"): Promise<void> {
+  async updateReportStatus(
+    reportId: string,
+    status: "pending" | "reviewed" | "dismissed",
+    adminUserId?: string
+  ): Promise<void> {
+    if (!reportId) throw new Error("Validation Error: Report ID is required.")
+
+    if (adminUserId) {
+      if (isSupabaseConfigured && supabase) {
+        const { data: prof } = await supabase.from("profiles").select("role").eq("id", adminUserId).maybeSingle()
+        if (prof?.role !== "admin") {
+          throw new Error("Security Violation: Only platform administrators can moderate job reports.")
+        }
+      } else {
+        const users = getStored<any[]>(STORAGE_KEYS.USERS, [])
+        const u = users.find((x) => x.id === adminUserId)
+        const isUserAdmin = u ? u.role === "admin" : adminUserId.toLowerCase().includes("admin")
+        if (!isUserAdmin) {
+          throw new Error("Security Violation: Only platform administrators can moderate job reports.")
+        }
+      }
+    }
+
     if (isSupabaseConfigured && supabase) {
-      await supabase.from("job_reports").update({ status }).eq("id", reportId)
+      const { error } = await supabase.from("job_reports").update({ status }).eq("id", reportId)
+      if (error) throw error
       return
     }
 
@@ -3025,6 +3199,447 @@ export const adminService = {
     })
 
     return alerts
+  },
+}
+
+// -----------------------------------------------------------------------------
+// MESSAGING SERVICE (BUG-003 & BUG-008: Real Supabase Persistence & Realtime)
+// -----------------------------------------------------------------------------
+export const messageService = {
+  async getConversations(userId: string): Promise<Conversation[]> {
+    if (!userId) return []
+
+    if (isSupabaseConfigured && supabase) {
+      const { data: convRows, error: convErr } = await supabase
+        .from("conversations")
+        .select("*")
+        .or(`participant_one.eq.${userId},participant_two.eq.${userId}`)
+        .order("last_message_at", { ascending: false })
+
+      if (convErr) {
+        console.warn("Failed to fetch conversations from Supabase:", convErr)
+        return []
+      }
+
+      if (!convRows || convRows.length === 0) {
+        return []
+      }
+
+      const otherParticipantIds = convRows.map((c: any) =>
+        c.participant_one === userId ? c.participant_two : c.participant_one
+      )
+
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, name, role, avatar")
+        .in("id", otherParticipantIds)
+
+      const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]))
+
+      const { data: companyMembers } = await supabase
+        .from("company_members")
+        .select("user_id, companies(name, logo)")
+        .in("user_id", otherParticipantIds)
+
+      const companyMap = new Map()
+      if (companyMembers) {
+        companyMembers.forEach((cm: any) => {
+          if (cm.companies) {
+            companyMap.set(cm.user_id, cm.companies.name)
+          }
+        })
+      }
+
+      const { data: unreadCounts } = await supabase
+        .from("messages")
+        .select("conversation_id, id")
+        .eq("receiver_id", userId)
+        .eq("is_read", false)
+
+      const unreadMap = new Map<string, number>()
+      if (unreadCounts) {
+        unreadCounts.forEach((m: any) => {
+          unreadMap.set(m.conversation_id, (unreadMap.get(m.conversation_id) || 0) + 1)
+        })
+      }
+
+      return convRows.map((c: any) => {
+        const otherId = c.participant_one === userId ? c.participant_two : c.participant_one
+        const prof = profileMap.get(otherId)
+        const compName = companyMap.get(otherId) || "HireHub Employer"
+        const unread = unreadMap.get(c.id) || 0
+
+        return {
+          id: c.id,
+          participantId: otherId,
+          participantName: prof?.name || "HireHub Member",
+          participantRole:
+            prof?.role === "recruiter"
+              ? "Technical Recruiter"
+              : prof?.role === "admin"
+                ? "Platform Administrator"
+                : "Candidate",
+          participantAvatar: prof?.avatar,
+          participantCompany: compName,
+          jobTitle: c.job_id ? "Career Discussion" : undefined,
+          lastMessage: c.last_message || "Conversation started",
+          lastTimestamp: c.last_message_at
+            ? new Date(c.last_message_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            : "Just now",
+          unreadCount: unread,
+        }
+      })
+    }
+
+    const stored = getStored<Conversation[]>(STORAGE_KEYS.CONVERSATIONS, [])
+    return stored
+  },
+
+  async getMessages(conversationId: string): Promise<ChatMessage[]> {
+    if (!conversationId) return []
+
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("conversation_id", conversationId)
+        .order("created_at", { ascending: true })
+
+      if (error) {
+        console.warn("Failed to fetch messages from Supabase:", error)
+        return []
+      }
+
+      const senderIds = Array.from(new Set((data || []).map((m: any) => m.sender_id)))
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, name, role")
+        .in("id", senderIds)
+
+      const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]))
+
+      return (data || []).map((m: any) => {
+        const prof = profileMap.get(m.sender_id)
+        return {
+          id: m.id,
+          conversationId: m.conversation_id,
+          senderId: m.sender_id,
+          senderName: prof?.name || "Participant",
+          senderRole: (prof?.role as any) || "job_seeker",
+          content: m.content,
+          timestamp: m.created_at
+            ? new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            : "Just now",
+          isRead: Boolean(m.is_read),
+          interviewInvite: m.interview_invite || undefined,
+        }
+      })
+    }
+
+    const stored = getStored<Record<string, ChatMessage[]>>(STORAGE_KEYS.MESSAGES, {})
+    return stored[conversationId] || []
+  },
+
+  async sendMessage(params: {
+    conversationId: string
+    senderId: string
+    senderName: string
+    senderRole: "job_seeker" | "recruiter" | "admin"
+    content: string
+    receiverId?: string
+    interviewInvite?: {
+      jobTitle: string
+      date: string
+      time: string
+      meetLink: string
+    }
+  }): Promise<ChatMessage> {
+    const { conversationId, senderId, senderName, senderRole, content, interviewInvite } = params
+    let receiverId = params.receiverId
+
+    if (isSupabaseConfigured && supabase) {
+      if (!receiverId) {
+        const { data: conv } = await supabase
+          .from("conversations")
+          .select("participant_one, participant_two")
+          .eq("id", conversationId)
+          .maybeSingle()
+
+        if (conv) {
+          receiverId = conv.participant_one === senderId ? conv.participant_two : conv.participant_one
+        }
+      }
+
+      if (!receiverId) {
+        throw new Error("Unable to identify message recipient.")
+      }
+
+      const { data: inserted, error: insertErr } = await supabase
+        .from("messages")
+        .insert({
+          conversation_id: conversationId,
+          sender_id: senderId,
+          receiver_id: receiverId,
+          content,
+          interview_invite: interviewInvite || null,
+          is_read: false,
+        })
+        .select()
+        .single()
+
+      if (insertErr) {
+        throw new Error("Failed to send message: " + insertErr.message)
+      }
+
+      await supabase
+        .from("conversations")
+        .update({
+          last_message: content,
+          last_message_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", conversationId)
+
+      return {
+        id: inserted.id,
+        conversationId,
+        senderId,
+        senderName,
+        senderRole,
+        content,
+        timestamp: new Date(inserted.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        isRead: false,
+        interviewInvite,
+      }
+    }
+
+    // Local Fallback Storage
+    const msgId = "m-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7)
+    const newMsg: ChatMessage = {
+      id: msgId,
+      conversationId,
+      senderId,
+      senderName,
+      senderRole,
+      content,
+      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      isRead: false,
+      interviewInvite,
+    }
+
+    const stored = getStored<Record<string, ChatMessage[]>>(STORAGE_KEYS.MESSAGES, {})
+    const existing = stored[conversationId] || []
+    stored[conversationId] = [...existing, newMsg]
+    setStored(STORAGE_KEYS.MESSAGES, stored)
+
+    const convs = getStored<Conversation[]>(STORAGE_KEYS.CONVERSATIONS, [])
+    const updatedConvs = convs.map((c) =>
+      c.id === conversationId ? { ...c, lastMessage: content, lastTimestamp: "Just now" } : c
+    )
+    setStored(STORAGE_KEYS.CONVERSATIONS, updatedConvs)
+
+    return newMsg
+  },
+
+  async markAsRead(conversationId: string, currentUserId: string): Promise<void> {
+    if (!conversationId || !currentUserId) return
+
+    if (isSupabaseConfigured && supabase) {
+      // BUG-008: Receiver updates is_read on incoming messages
+      const { error } = await supabase
+        .from("messages")
+        .update({ is_read: true })
+        .eq("conversation_id", conversationId)
+        .eq("receiver_id", currentUserId)
+        .eq("is_read", false)
+
+      if (error) {
+        console.warn("Failed to mark messages as read:", error)
+      }
+      return
+    }
+
+    // Local Fallback
+    const stored = getStored<Record<string, ChatMessage[]>>(STORAGE_KEYS.MESSAGES, {})
+    if (stored[conversationId]) {
+      stored[conversationId] = stored[conversationId].map((m) =>
+        m.senderId !== currentUserId ? { ...m, isRead: true } : m
+      )
+      setStored(STORAGE_KEYS.MESSAGES, stored)
+    }
+
+    const convs = getStored<Conversation[]>(STORAGE_KEYS.CONVERSATIONS, [])
+    const updated = convs.map((c) => (c.id === conversationId ? { ...c, unreadCount: 0 } : c))
+    setStored(STORAGE_KEYS.CONVERSATIONS, updated)
+  },
+
+  async getOrCreateConversation(params: {
+    currentUserId: string
+    participantId: string
+    jobId?: string
+    jobTitle?: string
+    companyName?: string
+  }): Promise<Conversation> {
+    const { currentUserId, participantId, jobId, jobTitle, companyName } = params
+    if (!currentUserId || !participantId) {
+      throw new Error("Both participants are required to start a conversation.")
+    }
+
+    if (isSupabaseConfigured && supabase) {
+      const { data: existing } = await supabase
+        .from("conversations")
+        .select("*")
+        .or(
+          `and(participant_one.eq.${currentUserId},participant_two.eq.${participantId}),and(participant_one.eq.${participantId},participant_two.eq.${currentUserId})`
+        )
+        .maybeSingle()
+
+      if (existing) {
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("id, name, role, avatar")
+          .eq("id", participantId)
+          .maybeSingle()
+
+        return {
+          id: existing.id,
+          participantId,
+          participantName: prof?.name || "HireHub User",
+          participantRole: prof?.role === "recruiter" ? "Recruiter" : "Candidate",
+          participantAvatar: prof?.avatar,
+          participantCompany: companyName,
+          jobTitle: jobTitle,
+          lastMessage: existing.last_message || "Conversation started",
+          lastTimestamp: existing.last_message_at
+            ? new Date(existing.last_message_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            : "Just now",
+          unreadCount: 0,
+        }
+      }
+
+      const { data: created, error } = await supabase
+        .from("conversations")
+        .insert({
+          participant_one: currentUserId,
+          participant_two: participantId,
+          job_id: jobId || null,
+          last_message: "Conversation started",
+          last_message_at: new Date().toISOString(),
+        })
+        .select()
+        .single()
+
+      if (error) {
+        throw new Error("Failed to create conversation: " + error.message)
+      }
+
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("id, name, role, avatar")
+        .eq("id", participantId)
+        .maybeSingle()
+
+      return {
+        id: created.id,
+        participantId,
+        participantName: prof?.name || "HireHub User",
+        participantRole: prof?.role === "recruiter" ? "Recruiter" : "Candidate",
+        participantAvatar: prof?.avatar,
+        participantCompany: companyName,
+        jobTitle: jobTitle,
+        lastMessage: "Conversation started",
+        lastTimestamp: "Just now",
+        unreadCount: 0,
+      }
+    }
+
+    // Local Fallback Storage
+    const convs = getStored<Conversation[]>(STORAGE_KEYS.CONVERSATIONS, [])
+    const found = convs.find((c) => c.participantId === participantId)
+    if (found) return found
+
+    const newConv: Conversation = {
+      id: "conv-" + Date.now(),
+      participantId,
+      participantName: "Employer Representative",
+      participantRole: "Recruiter",
+      participantCompany: companyName,
+      jobTitle: jobTitle,
+      lastMessage: "Conversation started",
+      lastTimestamp: "Just now",
+      unreadCount: 0,
+    }
+    setStored(STORAGE_KEYS.CONVERSATIONS, [newConv, ...convs])
+    return newConv
+  },
+
+  subscribeToMessages(
+    userId: string,
+    onNewMessage: (msg: ChatMessage) => void,
+    onMessageUpdate: (msg: ChatMessage) => void
+  ): () => void {
+    if (!isSupabaseConfigured || !supabase || !userId) {
+      return () => {}
+    }
+
+    const channelName = `realtime-messages-${userId}-${Date.now()}`
+    const channel = supabase
+      .channel(channelName)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+        },
+        async (payload: any) => {
+          const row = payload.new
+          if (row.sender_id === userId || row.receiver_id === userId) {
+            const chatMsg: ChatMessage = {
+              id: row.id,
+              conversationId: row.conversation_id,
+              senderId: row.sender_id,
+              senderName: row.sender_id === userId ? "You" : "Participant",
+              senderRole: "job_seeker",
+              content: row.content,
+              timestamp: new Date(row.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+              isRead: Boolean(row.is_read),
+              interviewInvite: row.interview_invite || undefined,
+            }
+            onNewMessage(chatMsg)
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+        },
+        async (payload: any) => {
+          const row = payload.new
+          if (row.sender_id === userId || row.receiver_id === userId) {
+            const chatMsg: ChatMessage = {
+              id: row.id,
+              conversationId: row.conversation_id,
+              senderId: row.sender_id,
+              senderName: row.sender_id === userId ? "You" : "Participant",
+              senderRole: "job_seeker",
+              content: row.content,
+              timestamp: new Date(row.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+              isRead: Boolean(row.is_read),
+              interviewInvite: row.interview_invite || undefined,
+            }
+            onMessageUpdate(chatMsg)
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase?.removeChannel(channel)
+    }
   },
 }
 

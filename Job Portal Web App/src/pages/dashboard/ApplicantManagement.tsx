@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   Search,
@@ -44,7 +45,8 @@ import { useAuthStore } from "../../store/authStore"
 import { useJobStore } from "../../store/jobStore"
 import { useApplicationStore } from "../../store/applicationStore"
 import { useNotificationStore } from "../../store/notificationStore"
-import { applicationService, storageService, interviewService } from "../../lib/supabase"
+import { useMessageStore } from "../../store/messageStore"
+import { applicationService, storageService, interviewService, messageService } from "../../lib/supabase"
 import type { Application, ApplicationStatus, InterviewRound, InterviewSchedule } from "../../types"
 import toast from "react-hot-toast"
 
@@ -68,6 +70,7 @@ export default function ApplicantManagement() {
   const { jobs } = useJobStore()
   const { applications, setApplications } = useApplicationStore()
   const { addNotification } = useNotificationStore()
+  const navigate = useNavigate()
 
   // Layout View mode: Kanban vs Table
   const [viewMode, setViewMode] = useState<"kanban" | "table">("kanban")
@@ -1092,14 +1095,14 @@ export default function ApplicantManagement() {
                 </div>
 
                 {/* Quick Action Buttons Toolbar */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <Button
                     variant="primary"
                     onClick={() => setIsScheduleModalOpen(true)}
                     className="w-full text-xs font-bold"
                   >
                     <Calendar size={15} className="mr-1.5" />
-                    Schedule Interview Round
+                    Schedule Interview
                   </Button>
                   <Button
                     variant="outline"
@@ -1107,7 +1110,33 @@ export default function ApplicantManagement() {
                     className="w-full text-xs font-bold text-purple-600 dark:text-purple-400 border-purple-500/30"
                   >
                     <Award size={15} className="mr-1.5" />
-                    Submit Interview Scorecard
+                    Submit Scorecard
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={async () => {
+                      const candidateId = activeModalApp.userId || activeModalApp.applicant?.id
+                      if (user?.id && candidateId) {
+                        try {
+                          const conv = await messageService.getOrCreateConversation({
+                            currentUserId: user.id,
+                            participantId: candidateId,
+                            jobId: activeModalApp.jobId || activeModalApp.job?.id,
+                            jobTitle: activeModalApp.job?.title || "Application",
+                            companyName: activeModalApp.job?.company?.name || "HireHub Employer",
+                          })
+                          useMessageStore.getState().addConversation(conv)
+                          useMessageStore.getState().setActiveConversationId(conv.id)
+                          navigate("/messages")
+                        } catch (err: any) {
+                          toast.error(err.message || "Failed to initiate conversation.")
+                        }
+                      }
+                    }}
+                    className="w-full text-xs font-bold text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                  >
+                    <MessageSquare size={15} className="mr-1.5" />
+                    Message Candidate
                   </Button>
                 </div>
 
