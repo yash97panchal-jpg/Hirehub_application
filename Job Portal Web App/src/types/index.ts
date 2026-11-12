@@ -460,6 +460,7 @@ export interface ChatMessage {
   content: string
   timestamp: string
   isRead: boolean
+  status?: "sending" | "sent" | "failed"
   interviewInvite?: {
     jobTitle: string
     date: string

@@ -747,14 +747,44 @@ export const authService = {
 
   async deleteAccount(userId: string) {
     if (isSupabaseConfigured && supabase) {
-      // Execute server-side administrative deletion RPC to purge storage files,
-      // applications, profile row, and auth.users credentials permanently
+      // BUG-012: Safe deletion workflow using official Supabase Storage API for physical files
+      let storageCleanupError: Error | null = null
+
+      try {
+        // Step 1: Remove user files from private storage buckets using Storage API
+        const buckets = ["resumes", "avatars"]
+        for (const bucket of buckets) {
+          try {
+            const { data: fileList, error: listErr } = await supabase.storage.from(bucket).list(userId)
+            if (!listErr && fileList && fileList.length > 0) {
+              const paths = fileList.map((f: any) => `${userId}/${f.name}`)
+              const { error: removeErr } = await supabase.storage.from(bucket).remove(paths)
+              if (removeErr) {
+                storageCleanupError = new Error(`Storage API error purging ${bucket}: ${removeErr.message}`)
+                break
+              }
+            }
+          } catch (stErr: any) {
+            storageCleanupError = stErr
+            break
+          }
+        }
+      } catch (err: any) {
+        storageCleanupError = err
+      }
+
+      // If physical storage cleanup failed, halt and do not report complete deletion
+      if (storageCleanupError) {
+        throw new Error(`Storage cleanup failed during account deletion: ${storageCleanupError.message}. Deletion halted.`)
+      }
+
+      // Step 2: Execute server-side transactional deletion RPC to purge relational records and credentials
       const { data, error } = await supabase.rpc("delete_user_account")
       if (error) {
-        throw new Error(error.message || "Account deletion failed. Storage or user credentials could not be purged.")
+        throw new Error(error.message || "Account deletion failed. Database user credentials could not be purged.")
       }
       if (data && typeof data === "object" && (data as any).success === false) {
-        throw new Error((data as any).message || (data as any).error || "Storage cleanup failed during account deletion.")
+        throw new Error((data as any).message || (data as any).error || "Account deletion failed during data purge.")
       }
       await supabase.auth.signOut()
       return data || { success: true }
@@ -765,6 +795,10 @@ export const authService = {
       localStorage.removeItem("HireHub-auth")
     } catch {}
     return { success: true }
+  },
+
+  async retryAccountDeletion(userId: string) {
+    return this.deleteAccount(userId)
   },
 }
 
@@ -2121,18 +2155,22 @@ export const storageService = {
   },
 
   async uploadCompanyLogo(file: File, companySlug: string, userId?: string): Promise<string> {
+    // BUG-016: Disallow SVG uploads to prevent XSS script injection vulnerabilities
     this.validateFile(file, {
       maxSize: 2 * 1024 * 1024, // 2 MB
-      allowedTypes: ["image/png", "image/jpeg", "image/webp", "image/svg+xml"],
-      allowedExtensions: ["png", "jpg", "jpeg", "webp", "svg"],
+      allowedTypes: ["image/png", "image/jpeg", "image/webp"],
+      allowedExtensions: ["png", "jpg", "jpeg", "webp"],
     })
 
     const fileExt = (file.name.split(".").pop() || "png").toLowerCase()
+    if (fileExt === "svg" || file.type === "image/svg+xml") {
+      throw new Error("Validation Error: SVG files are disallowed to prevent security vulnerabilities.")
+    }
     const cleanSlug = companySlug.toLowerCase().replace(/[^a-z0-9_-]/g, "-")
     const filePath = `${cleanSlug}/${Date.now()}.${fileExt}`
 
     if (isSupabaseConfigured && supabase) {
-      // BUG-005 Authorization Check: verify ownership or recruiter membership
+      // BUG-016 Authorization Check: verify ownership or recruiter role membership
       if (userId) {
         const { data: comp } = await supabase
           .from("companies")
@@ -2145,12 +2183,14 @@ export const storageService = {
           if (!isOwner) {
             const { data: member } = await supabase
               .from("company_members")
-              .select("id")
+              .select("id, role")
               .eq("company_id", comp.id)
               .eq("user_id", userId)
               .maybeSingle()
 
-            if (!member) {
+            const isAuthorizedRole = member && (member.role === "owner" || member.role === "recruiter")
+
+            if (!isAuthorizedRole) {
               const { data: profile } = await supabase
                 .from("profiles")
                 .select("role")
@@ -3218,7 +3258,7 @@ export const messageService = {
 
       if (convErr) {
         console.warn("Failed to fetch conversations from Supabase:", convErr)
-        return []
+        throw new Error("Failed to fetch conversations: " + convErr.message)
       }
 
       if (!convRows || convRows.length === 0) {
@@ -3307,7 +3347,7 @@ export const messageService = {
 
       if (error) {
         console.warn("Failed to fetch messages from Supabase:", error)
-        return []
+        throw new Error("Failed to fetch messages: " + error.message)
       }
 
       const senderIds = Array.from(new Set((data || []).map((m: any) => m.sender_id)))
@@ -3409,6 +3449,7 @@ export const messageService = {
         content,
         timestamp: new Date(inserted.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         isRead: false,
+        status: "sent",
         interviewInvite,
       }
     }
@@ -3424,6 +3465,7 @@ export const messageService = {
       content,
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       isRead: false,
+      status: "sent",
       interviewInvite,
     }
 
@@ -3455,6 +3497,7 @@ export const messageService = {
 
       if (error) {
         console.warn("Failed to mark messages as read:", error)
+        throw new Error("Failed to mark messages as read: " + error.message)
       }
       return
     }

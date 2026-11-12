@@ -17,7 +17,7 @@ interface MessageState {
   fetchMessages: (conversationId: string) => Promise<void>
   sendMessage: (
     conversationId: string,
-    message: Omit<ChatMessage, "id" | "timestamp" | "isRead" | "conversationId">,
+    message: Omit<ChatMessage, "id" | "timestamp" | "isRead" | "conversationId" | "status">,
     receiverId?: string
   ) => Promise<void>
   markAsRead: (conversationId: string, currentUserId?: string) => Promise<void>
@@ -29,6 +29,7 @@ interface MessageState {
   addConversation: (conversation: Conversation) => void
   handleRealtimeIncoming: (message: ChatMessage, currentUserId?: string) => void
   handleRealtimeUpdate: (message: ChatMessage) => void
+  reset: () => void
 }
 
 export const useMessageStore = create<MessageState>()(
@@ -62,9 +63,11 @@ export const useMessageStore = create<MessageState>()(
               ...state.messages,
               [conversationId]: msgs,
             },
+            error: null,
           }))
         } catch (err: any) {
           console.warn("Could not fetch messages for conversation:", err)
+          set({ error: err?.message || "Failed to load messages from server." })
         }
       },
 
@@ -76,11 +79,12 @@ export const useMessageStore = create<MessageState>()(
           ...msgData,
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
           isRead: false,
+          status: "sending",
         }
 
         const currentList = get().messages[conversationId] || []
 
-        // Optimistic UI update
+        // Optimistic UI update with sending status
         set((state) => ({
           messages: {
             ...state.messages,
@@ -91,6 +95,7 @@ export const useMessageStore = create<MessageState>()(
               ? { ...c, lastMessage: msgData.content, lastTimestamp: "Just now" }
               : c
           ),
+          error: null,
         }))
 
         try {
@@ -104,10 +109,12 @@ export const useMessageStore = create<MessageState>()(
             interviewInvite: msgData.interviewInvite,
           })
 
-          // Replace optimistic message with actual persisted record from Supabase
+          // Replace optimistic message with actual persisted record from Supabase (status: sent)
           set((state) => {
             const list = state.messages[conversationId] || []
-            const replaced = list.map((m) => (m.id === tempId ? persistedMsg : m))
+            const replaced = list.map((m) =>
+              m.id === tempId ? { ...persistedMsg, status: "sent" as const } : m
+            )
             return {
               messages: {
                 ...state.messages,
@@ -117,11 +124,29 @@ export const useMessageStore = create<MessageState>()(
           })
         } catch (err: any) {
           console.error("Failed to persist message:", err)
-          // Mark optimistic message or revert if failed
+          // Mark message as failed in UI state instead of false success
+          set((state) => {
+            const list = state.messages[conversationId] || []
+            const failedList = list.map((m) =>
+              m.id === tempId ? { ...m, status: "failed" as const } : m
+            )
+            return {
+              messages: {
+                ...state.messages,
+                [conversationId]: failedList,
+              },
+              error: err?.message || "Failed to send message.",
+            }
+          })
+          throw err
         }
       },
 
       markAsRead: async (conversationId, currentUserId) => {
+        const prevState = get()
+        const prevMessages = prevState.messages[conversationId] || []
+        const prevConversations = prevState.conversations
+
         // Optimistic mark
         set((state) => {
           const currentMessages = (state.messages[conversationId] || []).map((m) =>
@@ -142,8 +167,18 @@ export const useMessageStore = create<MessageState>()(
         if (currentUserId) {
           try {
             await messageService.markAsRead(conversationId, currentUserId)
-          } catch (err) {
+          } catch (err: any) {
             console.warn("Could not mark messages as read on server:", err)
+            // BUG-015: Rollback optimistic state on server failure
+            set((state) => ({
+              conversations: prevConversations,
+              messages: {
+                ...state.messages,
+                [conversationId]: prevMessages,
+              },
+              error: err?.message || "Failed to mark messages as read.",
+            }))
+            throw err
           }
         }
       },
@@ -198,7 +233,7 @@ export const useMessageStore = create<MessageState>()(
           return {
             messages: {
               ...state.messages,
-              [message.conversationId]: [...list, message],
+              [message.conversationId]: [...list, { ...message, status: "sent" as const }],
             },
             conversations: updatedConversations,
           }
@@ -216,6 +251,19 @@ export const useMessageStore = create<MessageState>()(
             },
           }
         })
+      },
+
+      reset: () => {
+        set({
+          conversations: [],
+          messages: {},
+          isLoading: false,
+          error: null,
+          activeConversationId: null,
+        })
+        try {
+          localStorage.removeItem("hirehub-messages-v3")
+        } catch {}
       },
     }),
     {

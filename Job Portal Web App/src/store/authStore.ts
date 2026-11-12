@@ -2,6 +2,7 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import type { User, AuthState } from "../types"
 import { securityService } from "../services/securityService"
+import { useMessageStore } from "./messageStore"
 
 interface AuthStore extends AuthState {
   login: (user: User, token: string) => void
@@ -33,14 +34,18 @@ export const useAuthStore = create<AuthStore>()(
         })
       },
 
-      logout: () =>
+      logout: () => {
+        try {
+          useMessageStore.getState().reset()
+        } catch {}
         set({
           user: null,
           token: null,
           isAuthenticated: false,
           sessionCreatedAt: undefined,
           lastActiveAt: undefined,
-        }),
+        })
+      },
 
       updateUser: (userData) =>
         set((state) => ({

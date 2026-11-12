@@ -391,7 +391,15 @@ END:VCALENDAR`
                           }`}
                         >
                           <span>{msg.timestamp}</span>
-                          {isMe && <CheckCheck size={13} className={msg.isRead ? "text-emerald-300" : "text-white/60"} />}
+                          {isMe && (
+                            msg.status === "failed" ? (
+                              <span className="text-red-300 text-[10px] font-semibold ml-1">Failed to send</span>
+                            ) : msg.status === "sending" ? (
+                              <span className="text-white/60 text-[10px] ml-1 italic">Sending...</span>
+                            ) : (
+                              <CheckCheck size={13} className={msg.isRead ? "text-emerald-300" : "text-white/60"} />
+                            )
+                          )}
                         </div>
                       </div>
                     </motion.div>
