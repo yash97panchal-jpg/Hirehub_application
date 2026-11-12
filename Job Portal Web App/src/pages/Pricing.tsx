@@ -141,23 +141,23 @@ export default function Pricing() {
             <div className="flex items-center bg-[var(--muted)] p-1 rounded-2xl border border-[var(--border)]">
               <button
                 onClick={() => setBillingCycle("monthly")}
-                className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${
+                className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                   billingCycle === "monthly"
-                    ? "bg-[var(--card)] text-[var(--foreground)] shadow-sm"
-                    : "text-[var(--muted-foreground)]"
+                    ? "bg-[#101F3E] text-white dark:bg-[#F97316] dark:text-white shadow-xs"
+                    : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
                 }`}
               >
                 Monthly Billing
               </button>
               <button
                 onClick={() => setBillingCycle("yearly")}
-                className={`px-4 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 ${
+                className={`px-4 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
                   billingCycle === "yearly"
-                    ? "bg-[var(--card)] text-[var(--foreground)] shadow-sm"
-                    : "text-[var(--muted-foreground)]"
+                    ? "bg-[#101F3E] text-white dark:bg-[#F97316] dark:text-white shadow-xs"
+                    : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
                 }`}
               >
-                Yearly Billing <span className="text-[10px] text-emerald-500 font-extrabold">Save 20%</span>
+                Yearly Billing <span className={billingCycle === "yearly" ? "text-[10px] text-white/90 font-extrabold bg-white/20 px-1.5 py-0.5 rounded-full" : "text-[10px] text-emerald-500 font-extrabold"}>Save 20%</span>
               </button>
             </div>
 

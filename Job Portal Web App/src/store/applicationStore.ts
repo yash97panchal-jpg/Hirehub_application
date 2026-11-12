@@ -10,12 +10,32 @@ const swiggyJob = worldwideOpenPositions.find((j) => j.company.id === "comp-swig
 const initialApplications: Application[] = [
   {
     id: "app-seed-1",
+    applicationCode: "APP-20261108-0101",
+    applicationNumber: "APP-20261108-0101",
     jobId: googleJob?.id || "seed-1",
     job: googleJob,
-    status: "Interview",
+    status: "Interview Scheduled",
     resumeUrl: "/sample-resume.pdf",
     coverLetter: "Excited to contribute to high-scale infrastructure and frontier distributed AI clusters at Google.",
     source: "easy",
+    fullName: "Alex Morgan",
+    email: "candidate@hirehub.com",
+    mobileNumber: "+1 (555) 349-8821",
+    currentLocation: "San Francisco, CA",
+    highestEducation: "Master of Science in Computer Science",
+    highestQualification: "Master of Science in Computer Science",
+    totalExperience: "6 years",
+    workExperience: "6 years",
+    currentEmploymentStatus: "Employed",
+    expectedSalary: "$175,000 / yr",
+    noticePeriod: "2 weeks",
+    linkedinUrl: "https://linkedin.com/in/alex-morgan-dev",
+    portfolioUrl: "https://github.com/alexmorgan",
+    skills: ["React", "TypeScript", "Node.js", "Distributed Systems", "GraphQL"],
+    answers: {
+      "Years of Distributed Systems experience?": "6+ years",
+      "Comfortable with on-call rotation?": "Yes",
+    },
     appliedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
     applicant: {
@@ -33,12 +53,31 @@ const initialApplications: Application[] = [
   },
   {
     id: "app-seed-2",
+    applicationCode: "APP-20261106-0102",
+    applicationNumber: "APP-20261106-0102",
     jobId: stripeJob?.id || "seed-2",
     job: stripeJob,
     status: "Shortlisted",
     resumeUrl: "/sample-resume.pdf",
     coverLetter: "Strong background in payment state machines, idempotency, and high-volume transaction routing.",
     source: "easy",
+    fullName: "Alex Morgan",
+    email: "candidate@hirehub.com",
+    mobileNumber: "+1 (555) 349-8821",
+    currentLocation: "San Francisco, CA",
+    highestEducation: "Master of Science in Computer Science",
+    highestQualification: "Master of Science in Computer Science",
+    totalExperience: "6 years",
+    workExperience: "6 years",
+    currentEmploymentStatus: "Employed",
+    expectedSalary: "$170,000 / yr",
+    noticePeriod: "1 month",
+    linkedinUrl: "https://linkedin.com/in/alex-morgan-dev",
+    portfolioUrl: "https://github.com/alexmorgan",
+    skills: ["React", "TypeScript", "Node.js", "PostgreSQL", "Fintech"],
+    answers: {
+      "Experience with idempotent payment processing?": "Built high throughput ledger processing engines.",
+    },
     appliedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
     applicant: {
@@ -56,12 +95,28 @@ const initialApplications: Application[] = [
   },
   {
     id: "app-seed-3",
+    applicationCode: "APP-20261109-0103",
+    applicationNumber: "APP-20261109-0103",
     jobId: swiggyJob?.id || "seed-3",
     job: swiggyJob,
     status: "Applied",
     resumeUrl: "/sample-resume.pdf",
     coverLetter: "Passionate about low-latency geospatial dispatch intelligence and microservices.",
     source: "easy",
+    fullName: "Alex Morgan",
+    email: "candidate@hirehub.com",
+    mobileNumber: "+1 (555) 349-8821",
+    currentLocation: "San Francisco, CA",
+    highestEducation: "Master of Science in Computer Science",
+    highestQualification: "Master of Science in Computer Science",
+    totalExperience: "6 years",
+    workExperience: "6 years",
+    currentEmploymentStatus: "Employed",
+    expectedSalary: "$160,000 / yr",
+    noticePeriod: "Immediate",
+    linkedinUrl: "https://linkedin.com/in/alex-morgan-dev",
+    portfolioUrl: "https://github.com/alexmorgan",
+    skills: ["React", "TypeScript", "Kafka", "Redis"],
     appliedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
     applicant: {
@@ -86,6 +141,7 @@ interface ApplicationState {
   updateApplicationStatus: (id: string, status: ApplicationStatus, notes?: string) => void
   withdrawApplication: (id: string) => void
   getApplicationsByJobId: (jobId: string) => Application[]
+  refreshApplications: () => void
 }
 
 export const useApplicationStore = create<ApplicationState>()(
@@ -93,6 +149,17 @@ export const useApplicationStore = create<ApplicationState>()(
     (set, get) => ({
       applications: initialApplications,
       setApplications: (applications) => set({ applications }),
+      refreshApplications: () => {
+        try {
+          const raw = localStorage.getItem("hirehub_applications_v3")
+          if (raw) {
+            const parsed = JSON.parse(raw)
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              set({ applications: parsed })
+            }
+          }
+        } catch {}
+      },
       addApplication: (application) =>
         set((state) => {
           const targetJobId = application.job?.id || application.jobId

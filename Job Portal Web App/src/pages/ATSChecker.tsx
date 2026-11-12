@@ -357,8 +357,8 @@ Tools: Git, VS Code, REST API`)
                       }}
                       className={`px-3.5 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 border cursor-pointer ${
                         isSelected
-                          ? "bg-[#101F3E] text-white border-[#101F3E] dark:bg-[#F97316] dark:border-[#F97316] shadow-xs font-semibold"
-                          : "bg-[var(--background)] text-[var(--foreground)] border-[var(--border)] hover:border-[#F97316]"
+                          ? "bg-[#F97316] text-white border-[#F97316] shadow-xs font-semibold"
+                          : "bg-white dark:bg-[#101F3E] text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:border-[#F97316] hover:text-[#F97316]"
                       }`}
                     >
                       <span>{profile.title}</span>
@@ -370,8 +370,8 @@ Tools: Git, VS Code, REST API`)
                   onClick={() => setIsCustomRole(true)}
                   className={`px-3.5 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 border cursor-pointer ${
                     isCustomRole
-                      ? "bg-[#101F3E] text-white border-[#101F3E] dark:bg-[#F97316] dark:border-[#F97316] font-semibold"
-                      : "bg-[var(--background)] text-[var(--foreground)] border-[var(--border)] hover:border-[#F97316]"
+                      ? "bg-[#F97316] text-white border-[#F97316] shadow-xs font-semibold"
+                      : "bg-white dark:bg-[#101F3E] text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:border-[#F97316] hover:text-[#F97316]"
                   }`}
                 >
                   <Edit3 size={13} /> Custom Role…

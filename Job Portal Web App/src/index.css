@@ -11,6 +11,8 @@
   --color-primary-deep: var(--primary-deep);
   --color-secondary: var(--secondary);
   --color-secondary-hover: var(--secondary-hover);
+  --color-navy: var(--navy);
+  --color-navy-hover: var(--navy-hover);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-background: var(--background);
@@ -33,14 +35,16 @@
 }
 
 :root {
-  /* 30% Structural Authority: Deep Symbol Navy */
-  --primary: #101F3E;
-  --primary-hover: #0B162C;
-  --primary-deep: #081020;
+  /* Brand Action Primary: Symbol Vibrant Orange */
+  --primary: #F97316;
+  --primary-hover: #EA580C;
+  --primary-deep: #C2410C;
 
-  /* 30% Secondary & Neutral Structure */
-  --secondary: #1E293B;
-  --secondary-hover: #0F172A;
+  /* 30% Structural Authority: Deep Symbol Navy */
+  --secondary: #101F3E;
+  --secondary-hover: #182C58;
+  --navy: #101F3E;
+  --navy-hover: #182C58;
 
   /* 10% High-Impact Accent: Symbol Vibrant Orange */
   --accent: #F97316;
@@ -74,8 +78,10 @@
   --primary-hover: #FB923C;
   --primary-deep: #EA580C;
 
-  --secondary: #334155;
-  --secondary-hover: #475569;
+  --secondary: #1E3563;
+  --secondary-hover: #26437C;
+  --navy: #101F3E;
+  --navy-hover: #182C58;
 
   --accent: #F97316;
   --accent-hover: #FB923C;

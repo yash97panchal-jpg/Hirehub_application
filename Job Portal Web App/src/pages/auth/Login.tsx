@@ -16,6 +16,7 @@ import Input from "../../components/ui/Input"
 import GoogleAccountModal from "../../components/auth/GoogleAccountModal"
 import { useAuthStore } from "../../store/authStore"
 import { authService } from "../../lib/supabase"
+import { sanitizeInput } from "../../utils/securitySanitizer"
 import { cn } from "../../utils/cn"
 import toast from "react-hot-toast"
 import symbolLogo from "../../imports/symbol_only.jpeg"
@@ -62,7 +63,7 @@ export default function Login() {
     e.preventDefault()
     setFormError("")
 
-    const cleanEmail = email.trim()
+    const cleanEmail = sanitizeInput(email)
     if (!cleanEmail || !cleanEmail.includes("@")) {
       setFormError("Please enter a valid email address.")
       return

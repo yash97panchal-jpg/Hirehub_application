@@ -264,7 +264,7 @@ export default function Home() {
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">Verified Employers</p>
           </div>
           <div>
-            <p className="font-poppins font-extrabold text-2xl sm:text-3xl text-[#101F3E] dark:text-orange-400">
+            <p className="font-poppins font-extrabold text-2xl sm:text-3xl text-emerald-600 dark:text-emerald-400">
               96.4%
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">ATS Match Accuracy</p>

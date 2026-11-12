@@ -6,7 +6,22 @@ export type RemoteType = "Remote" | "Hybrid" | "On-site"
 
 export type ExperienceLevel = "Fresher" | "0-1 years" | "1-3 years" | "3-5 years" | "5+ years"
 
-export type ApplicationStatus = "Applied" | "Viewed" | "Shortlisted" | "Interview" | "Offered" | "Rejected" | "Withdrawn"
+export type ApplicationStatus =
+  | "Applied"
+  | "Viewed"
+  | "Under Review"
+  | "Screening"
+  | "Shortlisted"
+  | "Assessment"
+  | "Interview"
+  | "Interview Scheduled"
+  | "Interview Completed"
+  | "Final Selection"
+  | "Selected"
+  | "Offered"
+  | "Hired"
+  | "Rejected"
+  | "Withdrawn"
 
 export type RecruiterStatus = "pending" | "approved" | "rejected" | "blocked"
 
@@ -31,6 +46,39 @@ export interface Education {
   school: string
   degree: string
   dates: string
+  fieldOfStudy?: string
+  grade?: string
+  description?: string
+}
+
+export interface Certification {
+  id: string
+  name: string
+  issuer: string
+  issueDate: string
+  expiryDate?: string
+  credentialUrl?: string
+}
+
+export interface ResumeVersion {
+  id: string
+  name: string
+  url: string
+  fileName: string
+  fileSize: string
+  uploadedAt: string
+  isDefault: boolean
+  skills?: string[]
+}
+
+export interface SavedSearch {
+  id: string
+  name: string
+  keyword: string
+  location: string
+  category?: string
+  isRemote?: boolean
+  createdAt: string
 }
 
 export interface User {
@@ -38,6 +86,7 @@ export interface User {
   name: string
   email: string
   role: UserRole
+  status?: "active" | "suspended" | "banned"
   avatar?: string
   headline?: string
   location?: string
@@ -49,6 +98,10 @@ export interface User {
   skills: string[]
   experience?: Experience[]
   education?: Education[]
+  certifications?: Certification[]
+  resumes?: ResumeVersion[]
+  savedSearches?: SavedSearch[]
+  followedCompanies?: string[]
   resumeUrl?: string
   profileCompletion: number
   isVerified: boolean
@@ -131,17 +184,89 @@ export interface Job {
   category: string
 }
 
-export interface Application {
+export interface ApplicationQuestion {
   id: string
+  jobId: string
+  question: string
+  questionType: "text" | "yes_no" | "multiple_choice"
+  options?: string[]
+  isRequired: boolean
+  createdAt?: string
+}
+
+export interface ApplicationAnswer {
+  id: string
+  applicationId: string
+  questionId: string
+  questionText?: string
+  answer: string
+  createdAt: string
+}
+
+export interface ApplicationStatusHistory {
+  id: string
+  applicationId: string
+  status: ApplicationStatus
+  previousStatus?: ApplicationStatus | null
+  newStatus?: ApplicationStatus
+  changedBy?: string
+  changedByName: string
+  remarks?: string
+  notes?: string
+  changedAt?: string
+  createdAt?: string
+}
+
+export interface RecruiterNote {
+  id: string
+  applicationId: string
+  authorId?: string
+  authorName: string
+  note: string
+  createdAt: string
+}
+
+export interface Application {
+  id: string // e.g. "APP-20261110-8472"
+  applicationNumber?: string
+  applicationCode?: string
   jobId?: string
   job: Job
   userId?: string
+  candidateId?: string
+  recruiterId?: string
   applicant: User
   status: ApplicationStatus
   resumeUrl: string
+  resumeName?: string
+  resumeId?: string
   coverLetter?: string
   answers?: Record<string, string>
+  
+  // Detailed candidate submission data
+  fullName?: string
+  email?: string
+  mobileNumber?: string
+  currentLocation?: string
+  highestQualification?: string
+  highestEducation?: string
+  collegeUniversity?: string
+  skills?: string[]
+  workExperience?: string
+  totalExperience?: string
+  currentCompany?: string
+  currentEmploymentStatus?: string
+  noticePeriod?: string
+  expectedSalary?: string
+  linkedinUrl?: string
+  portfolioUrl?: string
+  additionalInformation?: string
+  submittedData?: Record<string, any>
+
   notes?: string
+  recruiterNotes?: RecruiterNote[]
+  statusHistory?: ApplicationStatusHistory[]
+  interviews?: InterviewSchedule[]
   atsScore?: number
   source?: "easy" | "external"
   appliedAt: string
@@ -215,4 +340,114 @@ export interface AuthState {
   token: string | null
   isAuthenticated: boolean
   isLoading: boolean
+  sessionCreatedAt?: number
+  lastActiveAt?: number
 }
+
+export type InterviewRound =
+  | "Screening"
+  | "Technical"
+  | "System Design"
+  | "Behavioral"
+  | "Final"
+
+export interface InterviewFeedback {
+  id: string
+  interviewId?: string
+  score: number // 1 to 5
+  rating?: number // 1 to 5 alias
+  strengths: string
+  weaknesses: string
+  recommendation: "Strong Hire" | "Hire" | "Neutral" | "No Hire"
+  result?: "Strong Hire" | "Hire" | "Neutral" | "No Hire"
+  notes: string
+  feedback?: string
+  submittedAt: string
+  submittedBy: string
+  interviewerId?: string
+}
+
+export interface InterviewSchedule {
+  id: string
+  title?: string
+  interviewTitle?: string
+  applicationId: string
+  jobId: string
+  candidateId: string
+  candidateName: string
+  candidateEmail: string
+  jobTitle: string
+  companyName: string
+  round: InterviewRound
+  date: string
+  time: string
+  durationMinutes: number
+  platform: "Google Meet" | "Zoom" | "Microsoft Teams" | "In-Person" | "Phone"
+  interviewType?: "Online" | "Phone" | "In-person" | "Offline"
+  meetingLink: string
+  location?: string
+  interviewerId?: string
+  interviewerName: string
+  interviewerEmail: string
+  instructions?: string
+  notes?: string
+  status: "scheduled" | "completed" | "cancelled" | "rescheduled"
+  feedback?: InterviewFeedback
+  createdAt: string
+  updatedAt?: string
+}
+
+export interface SupportTicket {
+  id: string
+  userId: string
+  userName: string
+  userEmail: string
+  subject: string
+  category: "Account" | "Job Posting" | "Billing" | "Bug Report" | "Other"
+  priority: "Low" | "Medium" | "High" | "Urgent"
+  status: "Open" | "In Progress" | "Resolved" | "Closed"
+  message: string
+  createdAt: string
+  updatedAt: string
+  replies?: {
+    id: string
+    senderName: string
+    senderRole: UserRole
+    message: string
+    createdAt: string
+  }[]
+}
+
+export interface AdminAuditLog {
+  id: string
+  adminId: string
+  adminName: string
+  adminEmail: string
+  action: string
+  targetType: "User" | "Company" | "Job" | "Report" | "Setting" | "Announcement" | "SupportTicket"
+  targetId?: string
+  targetName?: string
+  details: string
+  ipAddress?: string
+  createdAt: string
+}
+
+export interface PlatformAnnouncement {
+  id: string
+  title: string
+  content: string
+  type: "info" | "warning" | "alert" | "success"
+  targetAudience: "all" | "job_seekers" | "recruiters"
+  isActive: boolean
+  createdAt: string
+}
+
+export type AdminSubRole =
+  | "Super Admin"
+  | "User Management Admin"
+  | "Job Moderation Admin"
+  | "Company Verification Admin"
+  | "Support Admin"
+  | "Finance Admin"
+  | "Content Admin"
+

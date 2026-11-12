@@ -75,6 +75,13 @@ export default function JobDetail() {
   )
   const isWithdrawn = Boolean(existingApp && existingApp.status === "Withdrawn")
   const isAlreadyApplied = Boolean(existingApp && existingApp.status !== "Withdrawn")
+  const isJobExpired = Boolean(
+    job && (
+      job.status === "closed" ||
+      job.status === "expired" ||
+      (job.expiresAt && new Date(job.expiresAt).getTime() < Date.now())
+    )
+  )
 
   // Listen for window/tab refocus to prompt external apply follow-up
   useEffect(() => {
@@ -317,7 +324,7 @@ export default function JobDetail() {
                       {job.location}
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <Briefcase size={15} className="text-[#101F3E] dark:text-orange-400" />
+                      <Briefcase size={15} className="text-[#F97316]" />
                       {job.type}
                     </span>
                     {job.isRemote && (
@@ -411,7 +418,7 @@ export default function JobDetail() {
                       >
                         <CheckCircle
                           size={16}
-                          className="text-[#14B8A6] shrink-0 mt-0.5"
+                          className="text-emerald-500 shrink-0 mt-0.5"
                         />
                         <span>{r}</span>
                       </li>
@@ -567,7 +574,25 @@ export default function JobDetail() {
               </div>
 
               {/* Application Status or Apply Buttons by Mode */}
-              {!isAuthenticated || !user ? (
+              {isJobExpired ? (
+                <div className="p-4 rounded-2xl bg-slate-500/10 border border-slate-500/20 text-center space-y-2">
+                  <div className="flex items-center justify-center gap-1.5 text-slate-700 dark:text-slate-300 text-xs font-bold">
+                    <AlertCircle size={16} />
+                    <span>Applications Closed</span>
+                  </div>
+                  <p className="text-xs text-[var(--muted-foreground)]">
+                    This job posting is no longer accepting new applications because the deadline has passed or the position was filled.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-center text-xs"
+                    onClick={() => navigate("/jobs")}
+                  >
+                    Explore Other Open Positions
+                  </Button>
+                </div>
+              ) : !isAuthenticated || !user ? (
                 <div className="p-4 rounded-xl bg-orange-50/70 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 text-center space-y-3">
                   <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/50 text-[#EA580C] flex items-center justify-center mx-auto">
                     <Lock size={18} />

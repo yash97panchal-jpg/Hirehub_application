@@ -31,7 +31,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       navy:
         "bg-[#101F3E] hover:bg-[#182C58] active:bg-[#0B152B] text-white shadow-sm hover:shadow font-semibold",
       outline:
-        "border border-[#101F3E] dark:border-orange-500 text-[#101F3E] dark:text-orange-400 hover:bg-orange-50/50 dark:hover:bg-orange-950/20 font-medium",
+        "border border-[#F97316] text-[#EA580C] dark:text-orange-400 dark:border-orange-500 hover:bg-orange-50/70 dark:hover:bg-orange-950/20 font-semibold",
       ghost:
         "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white",
       accent:

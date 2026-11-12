@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { Navigate } from "react-router-dom"
 import { useAuthStore } from "../../store/authStore"
 import type { UserRole } from "../../types"
@@ -11,9 +12,16 @@ export default function ProtectedRoute({
   children,
   role,
 }: ProtectedRouteProps) {
-  const { isAuthenticated, user } = useAuthStore()
+  const { isAuthenticated, user, checkSessionValidity, logout } = useAuthStore()
+  const isValid = isAuthenticated && checkSessionValidity()
 
-  if (!isAuthenticated) {
+  useEffect(() => {
+    if (isAuthenticated && !isValid) {
+      logout()
+    }
+  }, [isAuthenticated, isValid, logout])
+
+  if (!isValid) {
     return <Navigate to="/login" replace />
   }
 

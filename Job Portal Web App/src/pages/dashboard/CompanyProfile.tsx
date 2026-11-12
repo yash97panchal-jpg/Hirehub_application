@@ -129,6 +129,27 @@ export default function CompanyProfile() {
     }
   }
 
+  const handleRequestVerification = async () => {
+    try {
+      if (company) {
+        await companyService.updateStatus(company.id, "pending")
+        setCompany({ ...company, status: "pending" })
+      }
+      toast.success("Verification request submitted to platform administrators.")
+    } catch {
+      toast.error("Failed to submit verification request.")
+    }
+  }
+
+  const handleRemoveMember = (email: string) => {
+    if (email === user?.email) {
+      toast.error("You cannot remove yourself as company owner.")
+      return
+    }
+    setTeamMembers((prev) => prev.filter((m) => m.email !== email))
+    toast.success(`Removed ${email} from company workspace.`)
+  }
+
   const isApproved = company?.status === "approved"
 
   return (
@@ -191,9 +212,21 @@ export default function CompanyProfile() {
               </p>
             </div>
           </div>
-          <span className="text-xs font-mono uppercase font-black px-2.5 py-1 rounded-full bg-white/40 dark:bg-black/30">
-            {company?.status || "pending"}
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-mono uppercase font-black px-2.5 py-1 rounded-full bg-white/40 dark:bg-black/30">
+              {company?.status || "pending"}
+            </span>
+            {!isApproved && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRequestVerification}
+                className="bg-white/80 dark:bg-slate-900/80"
+              >
+                Request Verification
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Company Visuals & Details */}
@@ -331,9 +364,21 @@ export default function CompanyProfile() {
                     </p>
                   </div>
                 </div>
-                <span className="px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 font-bold text-[10px]">
-                  {member.status}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 font-bold text-[10px]">
+                    {member.status}
+                  </span>
+                  {member.role !== "owner" && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveMember(member.email)}
+                      className="p-1 text-[var(--muted-foreground)] hover:text-red-500 transition-colors cursor-pointer"
+                      title="Remove Teammate"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import {
@@ -38,16 +38,18 @@ import { useJobStore } from "../../store/jobStore"
 import { useSavedJobsStore } from "../../store/savedJobsStore"
 import { useApplicationStore } from "../../store/applicationStore"
 import { useNotificationStore } from "../../store/notificationStore"
-import { applicationService } from "../../lib/supabase"
+import { applicationService, interviewService, savedSearchService } from "../../lib/supabase"
 import Badge from "../../components/ui/Badge"
 import Button from "../../components/ui/Button"
 import RoundSkillMatchBadge from "../../components/ui/RoundSkillMatchBadge"
 import ApplicationPipelineStepper from "../../components/dashboard/ApplicationPipelineStepper"
 import ProfileStrengthRing from "../../components/dashboard/ProfileStrengthRing"
+import AICoverLetterModal from "../../components/dashboard/AICoverLetterModal"
+import InterviewPrepModal from "../../components/dashboard/InterviewPrepModal"
 import { getCompanyRealLogo } from "../../data/companyLogos"
 import { calculateSkillMatch } from "../../utils/skillMatcher"
 import { isLocalhost } from "../../utils/env"
-import type { ApplicationStatus } from "../../types"
+import type { ApplicationStatus, InterviewSchedule, SavedSearch } from "../../types"
 
 type DashboardTab = "all" | "interview" | "shortlisted" | "recommended" | "saved"
 
@@ -80,6 +82,65 @@ export default function UserDashboard() {
   const [candidateStatus, setCandidateStatus] = useState<"active" | "interviewing" | "open">("active")
   const [withdrawTarget, setWithdrawTarget] = useState<any | null>(null)
   const [withdrawingId, setWithdrawingId] = useState<string | null>(null)
+
+  // Real Interview Schedules & Saved Searches
+  const [scheduledInterviews, setScheduledInterviews] = useState<InterviewSchedule[]>([])
+  const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([])
+  const [isCoverLetterOpen, setIsCoverLetterOpen] = useState(false)
+  const [isPrepModalOpen, setIsPrepModalOpen] = useState(false)
+  const [coverLetterJob, setCoverLetterJob] = useState<{ title: string; company: string } | null>(null)
+
+  useEffect(() => {
+    async function loadCandidateInterviewsAndSearches() {
+      try {
+        const [ints, searches] = await Promise.all([
+          interviewService.getInterviewsForCandidate(user?.id || "usr-demo-seeker"),
+          savedSearchService.getSavedSearches(user?.id || "usr-demo-seeker"),
+        ])
+        setScheduledInterviews(ints)
+        setSavedSearches(searches)
+      } catch (err) {
+        console.error("Error loading candidate dashboard extras:", err)
+      }
+    }
+    loadCandidateInterviewsAndSearches()
+  }, [user?.id])
+
+  const downloadIcsFile = (interview: InterviewSchedule) => {
+    try {
+      const startDate = new Date(`${interview.date}T${interview.time}:00`)
+      const endDate = new Date(startDate.getTime() + (interview.durationMinutes || 45) * 60000)
+      const formatIcsDate = (date: Date) =>
+        date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z"
+
+      const ics = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//HireHub//Interview Scheduler//EN",
+        "BEGIN:VEVENT",
+        `UID:interview-${interview.id}@hirehub.app`,
+        `DTSTAMP:${formatIcsDate(new Date())}`,
+        `DTSTART:${formatIcsDate(startDate)}`,
+        `DTEND:${formatIcsDate(endDate)}`,
+        `SUMMARY:Interview with ${interview.companyName} for ${interview.jobTitle}`,
+        `DESCRIPTION:Round: ${interview.round}\\nMeeting Link: ${interview.meetingLink}\\nInterviewer: ${interview.interviewerName}`,
+        `LOCATION:${interview.meetingLink}`,
+        "STATUS:CONFIRMED",
+        "END:VEVENT",
+        "END:VCALENDAR",
+      ].join("\r\n")
+
+      const blob = new Blob([ics], { type: "text/calendar;charset=utf-8;" })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      link.download = `interview-${interview.companyName.toLowerCase().replace(/\s+/g, "-")}.ics`
+      link.click()
+      toast.success("Calendar invitation (.ics) downloaded!")
+    } catch {
+      toast.error("Failed to generate calendar invite.")
+    }
+  }
 
   const confirmWithdraw = async (target: any) => {
     setWithdrawingId(target.id)
@@ -1118,33 +1179,58 @@ export default function UserDashboard() {
                       Upcoming Interviews
                     </h3>
                     <p className="text-[11px] text-[var(--muted-foreground)]">
-                      Confirmed video screens
+                      Confirmed video screens & loops
                     </p>
                   </div>
                 </div>
+                {scheduledInterviews.length > 0 && (
+                  <span className="px-2 py-0.5 rounded-full bg-purple-500 text-white text-[10px] font-bold">
+                    {scheduledInterviews.length} Scheduled
+                  </span>
+                )}
               </div>
 
-              {countInterviews > 0 ? (
-                <div className="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-purple-700 dark:text-purple-300">
-                      Technical Screen
-                    </span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-purple-600 text-white">
-                      Scheduled
-                    </span>
-                  </div>
-                  <p className="text-xs text-[var(--foreground)] font-medium">
-                    Hiring Team Video Call
-                  </p>
-                  <div className="flex items-center justify-between pt-1 text-[11px] text-[var(--muted-foreground)]">
-                    <span className="inline-flex items-center gap-1">
-                      <Clock size={11} /> Next Available Slot
-                    </span>
-                    <span className="text-blue-500 font-semibold cursor-pointer hover:underline">
-                      Join Call
-                    </span>
-                  </div>
+              {scheduledInterviews.length > 0 ? (
+                <div className="space-y-3">
+                  {scheduledInterviews.slice(0, 2).map((item) => (
+                    <div
+                      key={item.id}
+                      className="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/25 space-y-2.5"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-purple-700 dark:text-purple-300">
+                          {item.round} Round • {item.companyName}
+                        </span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-purple-600 text-white capitalize">
+                          {item.status}
+                        </span>
+                      </div>
+                      <p className="text-xs font-bold text-[var(--foreground)] truncate">
+                        {item.jobTitle}
+                      </p>
+                      <div className="flex items-center gap-2 text-[11px] text-[var(--muted-foreground)]">
+                        <Calendar size={12} />
+                        <span>{item.date} at {item.time} ({item.durationMinutes}m)</span>
+                      </div>
+                      <div className="flex items-center justify-between pt-1 border-t border-purple-500/20 text-xs">
+                        <button
+                          type="button"
+                          onClick={() => downloadIcsFile(item)}
+                          className="text-[11px] font-semibold text-purple-700 dark:text-purple-300 hover:underline cursor-pointer"
+                        >
+                          Add to Calendar (.ics)
+                        </button>
+                        <a
+                          href={item.meetingLink}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-3 py-1 rounded-lg bg-[var(--primary)] text-white text-xs font-bold hover:bg-[var(--primary-hover)] transition-colors inline-block"
+                        >
+                          Join Call →
+                        </a>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div className="p-4 rounded-2xl bg-[var(--background)] border border-[var(--border)] text-center space-y-1">
@@ -1157,34 +1243,81 @@ export default function UserDashboard() {
               )}
             </div>
 
-            {/* Widget 3: Quick Career Tools Navigation */}
+            {/* Widget 3: Quick Career & AI Acceleration Tools */}
             <div className="bg-[var(--card)] rounded-3xl border border-[var(--border)] p-6 shadow-[var(--shadow-card)] space-y-4">
               <h3 className="font-poppins font-bold text-sm text-[var(--foreground)]">
-                Career Acceleration Tools
+                Career Acceleration & AI Tools
               </h3>
 
               <div className="grid grid-cols-2 gap-2.5">
-                {[
-                  { label: "Resume Builder", to: "/resume-builder", icon: FileText, color: "text-emerald-500" },
-                  { label: "Find Jobs", to: "/jobs", icon: Search, color: "text-blue-500" },
-                  { label: "Salary Insights", to: "/salary-insights", icon: BarChart3, color: "text-amber-500" },
-                  { label: "Job Alerts", to: "/dashboard/alerts", icon: Bell, color: "text-purple-500" },
-                ].map((tool) => {
-                  const Icon = tool.icon
-                  return (
-                    <Link
-                      key={tool.label}
-                      to={tool.to}
-                      className="p-3.5 rounded-2xl bg-[var(--background)] hover:bg-[var(--muted)] border border-[var(--border)] transition-all flex flex-col items-center text-center group"
-                    >
-                      <Icon size={20} className={`${tool.color} mb-1.5 transition-transform group-hover:scale-110`} />
-                      <span className="text-xs font-bold text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">
-                        {tool.label}
-                      </span>
-                    </Link>
-                  )
-                })}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCoverLetterJob({ title: "Senior Software Engineer", company: "Target Employer" })
+                    setIsCoverLetterOpen(true)
+                  }}
+                  className="p-3.5 rounded-2xl bg-[var(--background)] hover:bg-[var(--muted)] border border-[var(--border)] transition-all flex flex-col items-center text-center group cursor-pointer"
+                >
+                  <Sparkles size={20} className="text-[#F97316] mb-1.5 transition-transform group-hover:scale-110" />
+                  <span className="text-xs font-bold text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">
+                    AI Cover Letter
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsPrepModalOpen(true)}
+                  className="p-3.5 rounded-2xl bg-[var(--background)] hover:bg-[var(--muted)] border border-[var(--border)] transition-all flex flex-col items-center text-center group cursor-pointer"
+                >
+                  <Award size={20} className="text-emerald-500 mb-1.5 transition-transform group-hover:scale-110" />
+                  <span className="text-xs font-bold text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">
+                    Interview Prep
+                  </span>
+                </button>
+
+                <Link
+                  to="/resume-builder"
+                  className="p-3.5 rounded-2xl bg-[var(--background)] hover:bg-[var(--muted)] border border-[var(--border)] transition-all flex flex-col items-center text-center group"
+                >
+                  <FileText size={20} className="text-blue-500 mb-1.5 transition-transform group-hover:scale-110" />
+                  <span className="text-xs font-bold text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">
+                    Resume Builder
+                  </span>
+                </Link>
+
+                <Link
+                  to="/salary-insights"
+                  className="p-3.5 rounded-2xl bg-[var(--background)] hover:bg-[var(--muted)] border border-[var(--border)] transition-all flex flex-col items-center text-center group"
+                >
+                  <BarChart3 size={20} className="text-amber-500 mb-1.5 transition-transform group-hover:scale-110" />
+                  <span className="text-xs font-bold text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">
+                    Salary Insights
+                  </span>
+                </Link>
               </div>
+
+              {/* Saved Searches Quick Launcher */}
+              {savedSearches.length > 0 && (
+                <div className="pt-3 border-t border-[var(--border)] space-y-2">
+                  <p className="text-[11px] font-bold text-[var(--muted-foreground)] uppercase tracking-wider">
+                    Your Saved Job Searches:
+                  </p>
+                  <div className="space-y-1.5">
+                    {savedSearches.slice(0, 2).map((ss) => (
+                      <Link
+                        key={ss.id}
+                        to={`/jobs?keyword=${encodeURIComponent(ss.keyword)}&location=${encodeURIComponent(ss.location)}`}
+                        className="flex items-center justify-between p-2.5 rounded-xl bg-[var(--background)] hover:bg-[var(--muted)] border border-[var(--border)]/70 text-xs transition-colors"
+                      >
+                        <span className="font-semibold text-[var(--foreground)] truncate">
+                          {ss.name}
+                        </span>
+                        <ArrowRight size={13} className="text-[var(--primary)] shrink-0 ml-1" />
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Widget 4: Recent Alerts / Activity */}
@@ -1223,6 +1356,24 @@ export default function UserDashboard() {
           </div>
         </div>
       </div>
+
+      {/* AI Tailored Cover Letter Modal */}
+      {isCoverLetterOpen && (
+        <AICoverLetterModal
+          isOpen={isCoverLetterOpen}
+          onClose={() => setIsCoverLetterOpen(false)}
+          jobTitle={coverLetterJob?.title || "Senior Software Engineer"}
+          companyName={coverLetterJob?.company || "Target Employer"}
+        />
+      )}
+
+      {/* Interactive Interview Preparation Suite */}
+      {isPrepModalOpen && (
+        <InterviewPrepModal
+          isOpen={isPrepModalOpen}
+          onClose={() => setIsPrepModalOpen(false)}
+        />
+      )}
 
       {/* Modern Mobile-Optimized Withdraw Confirmation Modal */}
       {withdrawTarget && (
