@@ -315,7 +315,7 @@ Tools: Git, VS Code, REST API`)
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
         {/* Header */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800 text-[#EA580C] text-xs font-semibold mb-3">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800 text-[#E8820A] text-xs font-semibold mb-3">
             <Zap size={14} /> Role-Specific ATS Intelligence
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-[var(--foreground)] tracking-tight mb-2.5">
@@ -332,7 +332,7 @@ Tools: Git, VS Code, REST API`)
             <div className="bg-[var(--card)] rounded-xl border border-[var(--border)] p-6 shadow-xs">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#EA580C] flex items-center justify-center font-bold text-xs border border-orange-200 dark:border-orange-800">
+                  <div className="w-7 h-7 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#E8820A] flex items-center justify-center font-bold text-xs border border-orange-200 dark:border-orange-800">
                     1
                   </div>
                   <h2 className="font-bold text-base text-[var(--foreground)] tracking-tight">
@@ -357,8 +357,8 @@ Tools: Git, VS Code, REST API`)
                       }}
                       className={`px-3.5 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 border cursor-pointer ${
                         isSelected
-                          ? "bg-[#F97316] text-white border-[#F97316] shadow-xs font-semibold"
-                          : "bg-white dark:bg-[#101F3E] text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:border-[#F97316] hover:text-[#F97316]"
+                          ? "bg-[#F7941D] text-white border-[#F7941D] shadow-xs font-semibold"
+                          : "bg-white dark:bg-[#101F3E] text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:border-[#F7941D] hover:text-[#F7941D]"
                       }`}
                     >
                       <span>{profile.title}</span>
@@ -370,8 +370,8 @@ Tools: Git, VS Code, REST API`)
                   onClick={() => setIsCustomRole(true)}
                   className={`px-3.5 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 border cursor-pointer ${
                     isCustomRole
-                      ? "bg-[#F97316] text-white border-[#F97316] shadow-xs font-semibold"
-                      : "bg-white dark:bg-[#101F3E] text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:border-[#F97316] hover:text-[#F97316]"
+                      ? "bg-[#F7941D] text-white border-[#F7941D] shadow-xs font-semibold"
+                      : "bg-white dark:bg-[#101F3E] text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:border-[#F7941D] hover:text-[#F7941D]"
                   }`}
                 >
                   <Edit3 size={13} /> Custom Role…
@@ -462,8 +462,8 @@ Tools: Git, VS Code, REST API`)
                         }}
                         className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all ${
                           drag
-                            ? "border-[#F97316] bg-orange-50/50 dark:bg-orange-950/30"
-                            : "border-[var(--border)] hover:border-[#F97316] hover:bg-[var(--muted)]/40"
+                            ? "border-[#F7941D] bg-orange-50/50 dark:bg-orange-950/30"
+                            : "border-[var(--border)] hover:border-[#F7941D] hover:bg-[var(--muted)]/40"
                         }`}
                       >
                         <input
@@ -474,7 +474,7 @@ Tools: Git, VS Code, REST API`)
                           }
                           className="absolute inset-0 opacity-0 cursor-pointer"
                         />
-                        <div className="w-12 h-12 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#EA580C] flex items-center justify-center mx-auto mb-3">
+                        <div className="w-12 h-12 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#E8820A] flex items-center justify-center mx-auto mb-3">
                           {file ? (
                             <FileText size={24} />
                           ) : (
@@ -507,7 +507,7 @@ Tools: Git, VS Code, REST API`)
                         <button
                           type="button"
                           onClick={fillSampleResume}
-                          className="text-[#F97316] font-semibold hover:underline flex items-center gap-1 cursor-pointer"
+                          className="text-[#F7941D] font-semibold hover:underline flex items-center gap-1 cursor-pointer"
                         >
                           <Sparkles size={12} /> Auto-fill candidate demo resume
                         </button>

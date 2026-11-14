@@ -16,9 +16,9 @@ export default function Badge({
   const variants = {
     default: "bg-slate-100 text-slate-700 dark:bg-slate-800/80 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60",
     primary:
-      "bg-orange-50 text-[#EA580C] dark:bg-orange-950/60 dark:text-orange-300 border border-orange-200/60 dark:border-orange-800/60 font-semibold",
+      "bg-orange-50 text-[#E8820A] dark:bg-orange-950/60 dark:text-orange-300 border border-orange-200/60 dark:border-orange-800/60 font-semibold",
     accent:
-      "bg-orange-50 text-[#EA580C] dark:bg-orange-950/60 dark:text-orange-300 border border-orange-200/60 dark:border-orange-800/60 font-semibold",
+      "bg-orange-50 text-[#E8820A] dark:bg-orange-950/60 dark:text-orange-300 border border-orange-200/60 dark:border-orange-800/60 font-semibold",
     navy:
       "bg-[#101F3E]/10 text-[#101F3E] dark:bg-white/10 dark:text-white border border-[#101F3E]/20 dark:border-white/20 font-semibold",
     success:

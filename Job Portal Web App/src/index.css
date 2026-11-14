@@ -1,10 +1,72 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Inter:ital,wght@0,300..800;1,300..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400..800&family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,300..800&display=swap');
 
 @import 'tailwindcss';
 
+
+@theme {
+  --color-blue-50: #F1F4FA;
+  --color-blue-100: #E1E7F3;
+  --color-blue-200: #C3CEE6;
+  --color-blue-300: #97A8D0;
+  --color-blue-400: #6A80B5;
+  --color-blue-500: #3F5896;
+  --color-blue-600: #2A417A;
+  --color-blue-700: #1B2E5C;
+  --color-blue-800: #13224A;
+  --color-blue-900: #101F3E;
+  --color-blue-950: #0A1530;
+  --color-indigo-50: #F1F4FA;
+  --color-indigo-100: #E1E7F3;
+  --color-indigo-200: #C3CEE6;
+  --color-indigo-300: #97A8D0;
+  --color-indigo-400: #6A80B5;
+  --color-indigo-500: #3F5896;
+  --color-indigo-600: #2A417A;
+  --color-indigo-700: #1B2E5C;
+  --color-indigo-800: #13224A;
+  --color-indigo-900: #101F3E;
+  --color-indigo-950: #0A1530;
+  --color-violet-50: #F1F4FA;
+  --color-violet-100: #E1E7F3;
+  --color-violet-200: #C3CEE6;
+  --color-violet-300: #97A8D0;
+  --color-violet-400: #6A80B5;
+  --color-violet-500: #3F5896;
+  --color-violet-600: #2A417A;
+  --color-violet-700: #1B2E5C;
+  --color-violet-800: #13224A;
+  --color-violet-900: #101F3E;
+  --color-violet-950: #0A1530;
+  --color-purple-50: #F1F4FA;
+  --color-purple-100: #E1E7F3;
+  --color-purple-200: #C3CEE6;
+  --color-purple-300: #97A8D0;
+  --color-purple-400: #6A80B5;
+  --color-purple-500: #3F5896;
+  --color-purple-600: #2A417A;
+  --color-purple-700: #1B2E5C;
+  --color-purple-800: #13224A;
+  --color-purple-900: #101F3E;
+  --color-purple-950: #0A1530;
+}
+
+@theme {
+  --color-slate-50: #F7F5F0;
+  --color-slate-100: #EFEBE3;
+  --color-slate-200: #E6E0D4;
+  --color-slate-300: #CFC8B9;
+  --color-slate-400: #8E96A8;
+  --color-slate-500: #667089;
+  --color-slate-600: #4C566E;
+  --color-slate-700: #34405D;
+  --color-slate-800: #1B2A4D;
+  --color-slate-900: #101F3E;
+  --color-slate-950: #0A1530;
+}
+
 @theme inline {
-  --font-poppins: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-inter: 'Inter', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-poppins: 'Sora', 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-inter: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
@@ -27,64 +89,59 @@
   --color-warning: var(--warning);
 
   --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-2xl: 20px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --radius-2xl: 28px;
   --radius-full: 9999px;
 }
 
 :root {
-  /* Brand Action Primary: Symbol Vibrant Orange */
-  --primary: #F97316;
-  --primary-hover: #EA580C;
-  --primary-deep: #C2410C;
-
-  /* 30% Structural Authority: Deep Symbol Navy */
-  --secondary: #101F3E;
-  --secondary-hover: #182C58;
-  --navy: #101F3E;
-  --navy-hover: #182C58;
-
-  /* 10% High-Impact Accent: Symbol Vibrant Orange */
-  --accent: #F97316;
-  --accent-hover: #EA580C;
-
-  /* 60% Canvas & Surfaces: Crisp White (Fixed Foundation) */
-  --background: #F8FAFC;
+  /* 60% DOMINANT: warm ivory canvas + white surfaces */
+  --background: #FAF8F4;
   --card: #FFFFFF;
-  --card-foreground: #0F172A;
+  --card-foreground: #101F3E;
+  --muted: #F2EEE7;
+  --muted-foreground: #5B6478;
+  --border: #E6E0D4;
+  --foreground: #101F3E;
 
-  /* Typography & Neutral Elements */
-  --foreground: #0F172A;
-  --muted: #F1F5F9;
-  --muted-foreground: #64748B;
-  --border: #E2E8F0;
+  /* 30% SECONDARY: logo navy (nav, footer, headings, structural blocks) */
+  --secondary: #101F3E;
+  --secondary-hover: #1B2E5C;
+  --navy: #101F3E;
+  --navy-hover: #1B2E5C;
 
-  /* Status Colors */
-  --success: #16A34A;
-  --warning: #F59E0B;
+  /* 10% ACCENT: logo orange (CTAs, highlights only) */
+  --primary: #F7941D;
+  --primary-hover: #E8820A;
+  --primary-deep: #C46A04;
+  --accent: #F7941D;
+  --accent-hover: #E8820A;
+
+  --success: #15803D;
+  --warning: #D97706;
   --error: #DC2626;
 
-  --ring: #F97316;
+  --ring: #F7941D;
   --shadow-sm: 0 1px 2px 0 rgba(16, 31, 62, 0.05);
-  --shadow-card: 0 1px 3px 0 rgba(16, 31, 62, 0.06), 0 1px 2px -1px rgba(16, 31, 62, 0.06);
-  --shadow-elevated: 0 10px 25px -3px rgba(16, 31, 62, 0.08), 0 4px 6px -4px rgba(16, 31, 62, 0.03);
+  --shadow-card: 0 1px 3px 0 rgba(16, 31, 62, 0.07), 0 1px 2px -1px rgba(16, 31, 62, 0.06);
+  --shadow-elevated: 0 14px 30px -6px rgba(16, 31, 62, 0.12), 0 4px 8px -4px rgba(16, 31, 62, 0.05);
 }
 
 .dark {
   /* Dark Mode Palette adhering to 60-30-10 */
-  --primary: #F97316;
-  --primary-hover: #FB923C;
-  --primary-deep: #EA580C;
+  --primary: #FBA63C;
+  --primary-hover: #FDB95F;
+  --primary-deep: #F7941D;
 
   --secondary: #1E3563;
   --secondary-hover: #26437C;
   --navy: #101F3E;
   --navy-hover: #182C58;
 
-  --accent: #F97316;
-  --accent-hover: #FB923C;
+  --accent: #FBA63C;
+  --accent-hover: #FDB95F;
 
   --background: #090F1E;
   --card: #101F3E;
@@ -99,7 +156,7 @@
   --warning: #F59E0B;
   --error: #EF4444;
 
-  --ring: #F97316;
+  --ring: #F7941D;
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
   --shadow-card: 0 2px 8px 0 rgba(0, 0, 0, 0.35);
   --shadow-elevated: 0 12px 28px -4px rgba(0, 0, 0, 0.5);
@@ -203,14 +260,14 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Gradient text utility using 60-30-10 Symbol Palette */
 .gradient-text {
-  background: linear-gradient(135deg, #101F3E 0%, #1E3A70 50%, #F97316 100%);
+  background: linear-gradient(135deg, #101F3E 0%, #1E3A70 50%, #F7941D 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .dark .gradient-text {
-  background: linear-gradient(135deg, #FFFFFF 0%, #FDBA74 50%, #F97316 100%);
+  background: linear-gradient(135deg, #FFFFFF 0%, #FDBA74 50%, #F7941D 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -360,7 +417,7 @@ select {
 }
 
 .hirehub-marker-pin.active + .hirehub-marker-badge {
-  background: #2563eb;
+  background: #2A417A;
   color: #ffffff;
   border-color: #60a5fa;
   box-shadow: 0 3px 10px rgba(37, 99, 235, 0.4);
@@ -405,6 +462,20 @@ select {
   color: #94a3b8 !important;
 }
 .leaflet-control-attribution a {
-  color: #3b82f6 !important;
+  color: #3F5896 !important;
 }
 
+
+
+/* ===== Redesign polish ===== */
+h1, h2, h3, h4 { font-family: var(--font-poppins); letter-spacing: -0.02em; }
+h1 { line-height: 1.1; }
+p { text-wrap: pretty; }
+::selection { background: #F7941D; color: #101F3E; }
+:focus-visible { outline: 2px solid #F7941D; outline-offset: 2px; border-radius: 6px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
+
+/* Cards lift on hover; headings navy */
+a.group, article { transition: transform .2s ease, box-shadow .2s ease; }
+a.group:hover, article:hover { transform: translateY(-2px); }
+h1, h2, h3 { color: inherit; }

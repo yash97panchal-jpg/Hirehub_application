@@ -397,7 +397,7 @@ export default function ResumeBuilder() {
             onClick={() => setMobileTab("editor")}
             className={`flex-1 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
               mobileTab === "editor"
-                ? "bg-[#101F3E] text-white dark:bg-[#F97316] dark:text-white shadow-xs"
+                ? "bg-[#101F3E] text-white dark:bg-[#F7941D] dark:text-white shadow-xs"
                 : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
             }`}
           >
@@ -408,7 +408,7 @@ export default function ResumeBuilder() {
             onClick={() => setMobileTab("preview")}
             className={`flex-1 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
               mobileTab === "preview"
-                ? "bg-[#101F3E] text-white dark:bg-[#F97316] dark:text-white shadow-xs"
+                ? "bg-[#101F3E] text-white dark:bg-[#F7941D] dark:text-white shadow-xs"
                 : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
             }`}
           >
@@ -440,7 +440,7 @@ export default function ResumeBuilder() {
                   onClick={() => setActiveSection(tab.id as any)}
                   className={`py-2 px-1 rounded-xl flex flex-col items-center gap-1 transition-all ${
                     activeSection === tab.id
-                      ? "bg-[#101F3E] text-white dark:bg-[#F97316] dark:text-white font-bold shadow-xs"
+                      ? "bg-[#101F3E] text-white dark:bg-[#F7941D] dark:text-white font-bold shadow-xs"
                       : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
                   }`}
                 >

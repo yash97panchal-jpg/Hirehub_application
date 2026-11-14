@@ -220,7 +220,7 @@ END:VCALENDAR`
                 placeholder="Search recruiters or chats..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-xs rounded-lg bg-[var(--muted)]/50 border border-[var(--border)] text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[#F97316]"
+                className="w-full pl-9 pr-3 py-2 text-xs rounded-lg bg-[var(--muted)]/50 border border-[var(--border)] text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[#F7941D]"
               />
             </div>
           </div>

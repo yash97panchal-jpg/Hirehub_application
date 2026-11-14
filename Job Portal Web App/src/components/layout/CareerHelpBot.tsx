@@ -262,7 +262,7 @@ export default function CareerHelpBot() {
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.94 }}
         onClick={() => setIsOpen((prev) => !prev)}
-        className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-40 w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-[#EA580C] via-[#F97316] to-[#FB923C] text-white shadow-xl hover:shadow-2xl flex items-center justify-center border-2 border-white/30 transition-all cursor-pointer"
+        className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-40 w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-[#E8820A] via-[#F7941D] to-[#FB923C] text-white shadow-xl hover:shadow-2xl flex items-center justify-center border-2 border-white/30 transition-all cursor-pointer"
         aria-label="Open HireHub Career AI Bot"
       >
         <span className="relative">
@@ -286,7 +286,7 @@ export default function CareerHelpBot() {
             {/* Header: Authoritative Deep Navy Brand Authority */}
             <div className="p-4 bg-gradient-to-r from-[#101F3E] via-[#1E3563] to-[#101F3E] text-white border-b border-slate-700/60 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-[#F97316] shadow-xs">
+                <div className="w-10 h-10 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-[#F7941D] shadow-xs">
                   <Bot size={22} />
                 </div>
                 <div>
@@ -314,7 +314,7 @@ export default function CareerHelpBot() {
                 onClick={() => setActiveTab("chat")}
                 className={`py-2.5 flex items-center justify-center gap-1.5 transition-colors border-b-2 cursor-pointer ${
                   activeTab === "chat"
-                    ? "border-[#F97316] text-[#EA580C] dark:text-[#F97316] bg-orange-50/70 dark:bg-orange-950/30"
+                    ? "border-[#F7941D] text-[#E8820A] dark:text-[#F7941D] bg-orange-50/70 dark:bg-orange-950/30"
                     : "border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                 }`}
               >
@@ -324,7 +324,7 @@ export default function CareerHelpBot() {
                 onClick={() => setActiveTab("matcher")}
                 className={`py-2.5 flex items-center justify-center gap-1.5 transition-colors border-b-2 cursor-pointer ${
                   activeTab === "matcher"
-                    ? "border-[#F97316] text-[#EA580C] dark:text-[#F97316] bg-orange-50/70 dark:bg-orange-950/30"
+                    ? "border-[#F7941D] text-[#E8820A] dark:text-[#F7941D] bg-orange-50/70 dark:bg-orange-950/30"
                     : "border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                 }`}
               >
@@ -334,11 +334,11 @@ export default function CareerHelpBot() {
 
             {/* TAB 1: CONVERSATIONAL ASSISTANT */}
             {activeTab === "chat" && (
-              <div className="flex-1 flex flex-col min-h-0 bg-[#F8FAFC] dark:bg-[#090F1E]">
+              <div className="flex-1 flex flex-col min-h-0 bg-[#FAF8F4] dark:bg-[#090F1E]">
                 {/* Guest Warning Notice when not logged in */}
                 {!isAuthenticated && (
                   <div className="bg-orange-50 dark:bg-orange-950/50 border-b border-orange-200 dark:border-orange-800/80 px-3.5 py-2 flex items-center justify-between gap-2 shrink-0">
-                    <div className="flex items-center gap-1.5 text-xs text-[#EA580C] dark:text-orange-300 font-semibold truncate">
+                    <div className="flex items-center gap-1.5 text-xs text-[#E8820A] dark:text-orange-300 font-semibold truncate">
                       <Lock size={13} className="shrink-0" />
                       <span className="truncate">Sign in required to apply & track</span>
                     </div>
@@ -349,7 +349,7 @@ export default function CareerHelpBot() {
                           setIsOpen(false)
                           navigate("/login")
                         }}
-                        className="text-[11px] font-bold px-2.5 py-1 rounded-md bg-[#F97316] hover:bg-[#EA580C] text-white transition-colors cursor-pointer"
+                        className="text-[11px] font-bold px-2.5 py-1 rounded-md bg-[#F7941D] hover:bg-[#E8820A] text-white transition-colors cursor-pointer"
                       >
                         Log In
                       </button>
@@ -359,7 +359,7 @@ export default function CareerHelpBot() {
                           setIsOpen(false)
                           navigate("/register")
                         }}
-                        className="text-[11px] font-bold px-2 py-1 rounded-md border border-orange-300 dark:border-orange-700 bg-white dark:bg-[#101F3E] text-[#EA580C] dark:text-orange-300 hover:bg-orange-50 transition-colors cursor-pointer"
+                        className="text-[11px] font-bold px-2 py-1 rounded-md border border-orange-300 dark:border-orange-700 bg-white dark:bg-[#101F3E] text-[#E8820A] dark:text-orange-300 hover:bg-orange-50 transition-colors cursor-pointer"
                       >
                         Create Account
                       </button>
@@ -379,7 +379,7 @@ export default function CareerHelpBot() {
                       <div
                         className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm leading-relaxed ${
                           m.sender === "user"
-                            ? "bg-[#F97316] text-white font-medium rounded-br-sm shadow-xs"
+                            ? "bg-[#F7941D] text-white font-medium rounded-br-sm shadow-xs"
                             : "bg-white dark:bg-[#101F3E] border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-bl-sm shadow-xs whitespace-pre-line"
                         }`}
                       >
@@ -442,7 +442,7 @@ export default function CareerHelpBot() {
                                   handleSendMessage(sug)
                                 }
                               }}
-                              className="px-2.5 py-1 rounded-xl bg-white dark:bg-slate-800 hover:bg-[#F97316] hover:text-white border border-slate-200 dark:border-slate-700 text-[11px] font-medium text-slate-700 dark:text-slate-300 transition-colors text-left shadow-2xs cursor-pointer"
+                              className="px-2.5 py-1 rounded-xl bg-white dark:bg-slate-800 hover:bg-[#F7941D] hover:text-white border border-slate-200 dark:border-slate-700 text-[11px] font-medium text-slate-700 dark:text-slate-300 transition-colors text-left shadow-2xs cursor-pointer"
                             >
                               {sug}
                             </button>
@@ -454,9 +454,9 @@ export default function CareerHelpBot() {
 
                   {isTyping && (
                     <div className="flex items-center gap-1.5 p-3 rounded-2xl bg-white dark:bg-[#101F3E] border border-slate-200 dark:border-slate-700 w-20 shadow-xs">
-                      <div className="w-2 h-2 rounded-full bg-[#F97316] animate-bounce" />
-                      <div className="w-2 h-2 rounded-full bg-[#F97316] animate-bounce [animation-delay:0.2s]" />
-                      <div className="w-2 h-2 rounded-full bg-[#F97316] animate-bounce [animation-delay:0.4s]" />
+                      <div className="w-2 h-2 rounded-full bg-[#F7941D] animate-bounce" />
+                      <div className="w-2 h-2 rounded-full bg-[#F7941D] animate-bounce [animation-delay:0.2s]" />
+                      <div className="w-2 h-2 rounded-full bg-[#F7941D] animate-bounce [animation-delay:0.4s]" />
                     </div>
                   )}
                   <div ref={chatBottomRef} />
@@ -479,12 +479,12 @@ export default function CareerHelpBot() {
                         ? "Ask about applying or sign in..."
                         : "Ask about applying, roles, or verification..."
                     }
-                    className="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#090F1E] text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]"
+                    className="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#090F1E] text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-[#F7941D] focus:ring-1 focus:ring-[#F7941D]"
                   />
                   <button
                     type="submit"
                     disabled={!inputText.trim()}
-                    className="w-9 h-9 rounded-xl bg-[#F97316] text-white flex items-center justify-center hover:bg-[#EA580C] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-xs"
+                    className="w-9 h-9 rounded-xl bg-[#F7941D] text-white flex items-center justify-center hover:bg-[#E8820A] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-xs"
                     aria-label="Send message"
                   >
                     <Send size={15} />
@@ -495,11 +495,11 @@ export default function CareerHelpBot() {
 
             {/* TAB 2: RESUME JOB MATCHER WITH MATCH PERCENTAGE */}
             {activeTab === "matcher" && (
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F8FAFC] dark:bg-[#090F1E]">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#FAF8F4] dark:bg-[#090F1E]">
                 {!isAuthenticated ? (
                   /* Auth Gate Card */
                   <div className="p-5 rounded-2xl bg-white dark:bg-[#101F3E] border border-orange-200 dark:border-orange-800 text-center space-y-3.5 shadow-sm">
-                    <div className="w-12 h-12 rounded-2xl bg-orange-50 dark:bg-orange-950/60 text-[#EA580C] dark:text-orange-300 flex items-center justify-center mx-auto border border-orange-200/80 dark:border-orange-800/80">
+                    <div className="w-12 h-12 rounded-2xl bg-orange-50 dark:bg-orange-950/60 text-[#E8820A] dark:text-orange-300 flex items-center justify-center mx-auto border border-orange-200/80 dark:border-orange-800/80">
                       <Lock size={22} />
                     </div>
                     <div>
@@ -509,7 +509,7 @@ export default function CareerHelpBot() {
                       <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed">
                         To calculate your resume match score and submit 1-click applications to verified employers, you must be signed in.
                       </p>
-                      <p className="text-xs font-semibold text-[#EA580C] dark:text-orange-300 mt-2">
+                      <p className="text-xs font-semibold text-[#E8820A] dark:text-orange-300 mt-2">
                         If your account exists, please Log In. If not, please Create an Account.
                       </p>
                     </div>
@@ -543,13 +543,13 @@ export default function CareerHelpBot() {
                   <div className="p-3.5 rounded-2xl bg-white dark:bg-[#101F3E] border border-slate-200 dark:border-slate-700 space-y-2 shadow-xs">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
-                        <FileText size={14} className="text-[#F97316]" />
+                        <FileText size={14} className="text-[#F7941D]" />
                         Paste or Type Your Resume Summary:
                       </label>
                       <button
                         type="button"
                         onClick={handleLoadSampleResume}
-                        className="text-[11px] font-semibold text-[#EA580C] dark:text-orange-300 hover:underline cursor-pointer"
+                        className="text-[11px] font-semibold text-[#E8820A] dark:text-orange-300 hover:underline cursor-pointer"
                       >
                         Load Sample
                       </button>
@@ -559,7 +559,7 @@ export default function CareerHelpBot() {
                       value={resumeText}
                       onChange={(e) => setResumeText(e.target.value)}
                       placeholder="e.g. Senior Frontend Engineer with 5 years experience in React, TypeScript, Tailwind CSS, GraphQL, and performance optimization..."
-                      className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#090F1E] text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316] resize-none"
+                      className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#090F1E] text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#F7941D] focus:ring-1 focus:ring-[#F7941D] resize-none"
                     />
                     <Button
                       variant="primary"
@@ -590,14 +590,14 @@ export default function CareerHelpBot() {
                     {matchResults.map(({ job, score, matchedSkills, missingSkills }) => (
                       <div
                         key={job.id}
-                        className="p-3.5 rounded-2xl bg-white dark:bg-[#101F3E] border border-slate-200 dark:border-slate-700 shadow-xs space-y-2 hover:border-[#F97316]/50 transition-colors"
+                        className="p-3.5 rounded-2xl bg-white dark:bg-[#101F3E] border border-slate-200 dark:border-slate-700 shadow-xs space-y-2 hover:border-[#F7941D]/50 transition-colors"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
                             <Link
                               to={`/jobs/${job.id}`}
                               onClick={() => setIsOpen(false)}
-                              className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white hover:text-[#F97316] hover:underline"
+                              className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white hover:text-[#F7941D] hover:underline"
                             >
                               {job.title}
                             </Link>
@@ -612,7 +612,7 @@ export default function CareerHelpBot() {
                                   ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
                                   : score >= 70
                                     ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30"
-                                    : "bg-orange-500/15 text-[#EA580C] dark:text-orange-400 border border-orange-500/30"
+                                    : "bg-orange-500/15 text-[#E8820A] dark:text-orange-400 border border-orange-500/30"
                               }`}
                             >
                               {score}% MATCH
@@ -655,7 +655,7 @@ export default function CareerHelpBot() {
                         )}
 
                         <div className="pt-2 flex items-center justify-between border-t border-slate-100 dark:border-slate-700/80">
-                          <span className="text-[11px] font-semibold text-[#EA580C] dark:text-orange-300 uppercase">
+                          <span className="text-[11px] font-semibold text-[#E8820A] dark:text-orange-300 uppercase">
                             {job.applyMode === "both"
                               ? "Easy Apply & External"
                               : job.applyMode === "external"
@@ -665,7 +665,7 @@ export default function CareerHelpBot() {
                           <button
                             type="button"
                             onClick={() => handleApplyClick(job.id)}
-                            className="text-xs font-bold text-[#F97316] hover:text-[#EA580C] hover:underline flex items-center gap-1 cursor-pointer"
+                            className="text-xs font-bold text-[#F7941D] hover:text-[#E8820A] hover:underline flex items-center gap-1 cursor-pointer"
                           >
                             Apply Now <ArrowRight size={12} />
                           </button>

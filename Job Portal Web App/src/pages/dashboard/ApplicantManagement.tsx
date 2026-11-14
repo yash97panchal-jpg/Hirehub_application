@@ -513,7 +513,7 @@ export default function ApplicantManagement() {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-[var(--foreground)] tracking-tight flex items-center gap-2">
-              <Briefcase className="text-[#F97316]" />
+              <Briefcase className="text-[#F7941D]" />
               <span>Applicants Management (ATS)</span>
               <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold">
                 11-Stage Workflow
@@ -532,7 +532,7 @@ export default function ApplicantManagement() {
                 onClick={() => setViewMode("kanban")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                   viewMode === "kanban"
-                    ? "bg-[#101F3E] text-white dark:bg-[#F97316] dark:text-white shadow-xs"
+                    ? "bg-[#101F3E] text-white dark:bg-[#F7941D] dark:text-white shadow-xs"
                     : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
                 }`}
               >
@@ -543,7 +543,7 @@ export default function ApplicantManagement() {
                 onClick={() => setViewMode("table")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                   viewMode === "table"
-                    ? "bg-[#101F3E] text-white dark:bg-[#F97316] dark:text-white shadow-xs"
+                    ? "bg-[#101F3E] text-white dark:bg-[#F7941D] dark:text-white shadow-xs"
                     : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
                 }`}
               >
@@ -584,7 +584,7 @@ export default function ApplicantManagement() {
               placeholder="Search by candidate name, email, skills, job title, or application ID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs text-[var(--foreground)] focus:outline-none focus:border-[#F97316]"
+              className="w-full pl-9 pr-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs text-[var(--foreground)] focus:outline-none focus:border-[#F7941D]"
             />
           </div>
 

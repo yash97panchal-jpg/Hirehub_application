@@ -385,7 +385,7 @@ ${fullName || "Candidate"}`
           animate={{ opacity: 1, scale: 1 }}
           className="w-full max-w-md bg-[var(--card)] border border-[var(--border)] rounded-3xl shadow-2xl p-6 text-center space-y-4"
         >
-          <div className="w-12 h-12 rounded-2xl bg-orange-50 dark:bg-orange-950/40 text-[#F97316] flex items-center justify-center mx-auto shadow-inner">
+          <div className="w-12 h-12 rounded-2xl bg-orange-50 dark:bg-orange-950/40 text-[#F7941D] flex items-center justify-center mx-auto shadow-inner">
             <Lock size={22} />
           </div>
           <div>
@@ -470,7 +470,7 @@ ${fullName || "Candidate"}`
         {/* Progress bar */}
         <div className="w-full bg-[var(--muted)] h-1.5">
           <div
-            className="bg-gradient-to-r from-[#F97316] to-orange-500 h-1.5 transition-all duration-300 rounded-r-full"
+            className="bg-gradient-to-r from-[#F7941D] to-orange-500 h-1.5 transition-all duration-300 rounded-r-full"
             style={{ width: `${(step / 5) * 100}%` }}
           />
         </div>
@@ -791,7 +791,7 @@ ${fullName || "Candidate"}`
                     type="button"
                     onClick={handleGenerateCoverLetter}
                     disabled={isGeneratingCoverLetter}
-                    className="text-xs font-semibold text-[#F97316] hover:underline inline-flex items-center gap-1 cursor-pointer"
+                    className="text-xs font-semibold text-[#F7941D] hover:underline inline-flex items-center gap-1 cursor-pointer"
                   >
                     <Sparkles size={13} />
                     {isGeneratingCoverLetter ? "Generating AI Pitch..." : "Generate with AI"}

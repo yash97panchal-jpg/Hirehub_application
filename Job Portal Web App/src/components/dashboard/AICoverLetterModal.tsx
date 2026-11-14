@@ -117,7 +117,7 @@ export default function AICoverLetterModal({
         {/* Header */}
         <div className="p-5 border-b border-[var(--border)] flex items-center justify-between bg-[var(--muted)]/20">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-orange-500/15 text-[#F97316] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-orange-500/15 text-[#F7941D] flex items-center justify-center">
               <Sparkles size={20} />
             </div>
             <div>

@@ -349,15 +349,15 @@ export default function UserDashboard() {
           className="relative rounded-2xl p-6 sm:p-8 overflow-hidden bg-[#101F3E] text-white border border-[#1E3563] shadow-xl"
         >
           {/* Subtle background ambient mesh */}
-          <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#F97316]/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#F7941D]/15 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-[#101F3E]/60 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
             <div className="space-y-3">
               {/* Top Meta Bar */}
               <div className="flex items-center gap-3 flex-wrap">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase bg-orange-500/15 text-[#F97316] border border-orange-500/30">
-                  <Sparkles size={13} className="text-[#F97316]" /> Candidate Command Center
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase bg-orange-500/15 text-[#F7941D] border border-orange-500/30">
+                  <Sparkles size={13} className="text-[#F7941D]" /> Candidate Command Center
                 </span>
 
                 {/* Candidate Availability Status Picker */}
@@ -367,7 +367,7 @@ export default function UserDashboard() {
                     onClick={() => setCandidateStatus("active")}
                     className={`px-3 py-1 rounded-md transition-all flex items-center gap-1.5 cursor-pointer ${
                       candidateStatus === "active"
-                        ? "bg-[#F97316] text-white shadow-xs font-bold"
+                        ? "bg-[#F7941D] text-white shadow-xs font-bold"
                         : "text-slate-300 hover:text-white"
                     }`}
                   >
@@ -406,7 +406,7 @@ export default function UserDashboard() {
               <div className="space-y-1">
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight flex items-center gap-2">
                   <span>{greeting}, {user?.name ? user.name.split(" ")[0] : "Candidate"}</span>
-                  <span className="inline-flex items-center p-1 rounded-full bg-orange-500/20 text-[#F97316]" title="Verified Profile">
+                  <span className="inline-flex items-center p-1 rounded-full bg-orange-500/20 text-[#F7941D]" title="Verified Profile">
                     <ShieldCheck size={20} />
                   </span>
                 </h1>
@@ -420,7 +420,7 @@ export default function UserDashboard() {
             <div className="flex items-center gap-3 self-stretch sm:self-auto shrink-0 flex-wrap">
               <Link
                 to="/jobs"
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[#F97316] hover:bg-[#EA580C] text-white text-xs sm:text-sm font-semibold transition-all shadow-sm"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[#F7941D] hover:bg-[#E8820A] text-white text-xs sm:text-sm font-semibold transition-all shadow-sm"
               >
                 <Compass size={15} /> Discover Jobs
               </Link>
@@ -1258,7 +1258,7 @@ export default function UserDashboard() {
                   }}
                   className="p-3.5 rounded-2xl bg-[var(--background)] hover:bg-[var(--muted)] border border-[var(--border)] transition-all flex flex-col items-center text-center group cursor-pointer"
                 >
-                  <Sparkles size={20} className="text-[#F97316] mb-1.5 transition-transform group-hover:scale-110" />
+                  <Sparkles size={20} className="text-[#F7941D] mb-1.5 transition-transform group-hover:scale-110" />
                   <span className="text-xs font-bold text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">
                     AI Cover Letter
                   </span>

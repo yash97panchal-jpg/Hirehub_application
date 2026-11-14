@@ -122,7 +122,7 @@ export default function JobCard({ job, compact = false }: JobCardProps) {
       ref={cardRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="tilt-card bg-[var(--card)] rounded-xl border border-slate-200/90 dark:border-slate-800/90 shadow-sm hover:shadow-md hover:border-[#F97316]/60 transition-all duration-200 p-5 group flex flex-col justify-between"
+      className="tilt-card bg-[var(--card)] rounded-xl border border-slate-200/90 dark:border-slate-800/90 shadow-sm hover:shadow-md hover:border-[#F7941D]/60 transition-all duration-200 p-5 group flex flex-col justify-between"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
@@ -145,7 +145,7 @@ export default function JobCard({ job, compact = false }: JobCardProps) {
               />
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover/comp:text-[#F97316] transition-colors truncate">
+              <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover/comp:text-[#F7941D] transition-colors truncate">
                 {job.company.name}
               </p>
               <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
@@ -162,14 +162,14 @@ export default function JobCard({ job, compact = false }: JobCardProps) {
               onClick={handleBookmarkClick}
               className={`shrink-0 w-8 h-8 flex items-center justify-center rounded-lg transition-all cursor-pointer ${
                 isSaved
-                  ? "bg-orange-50 dark:bg-orange-950/60 text-[#F97316]"
+                  ? "bg-orange-50 dark:bg-orange-950/60 text-[#F7941D]"
                   : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
               }`}
               aria-label={isSaved ? "Unsave job" : "Save job"}
               title={isSaved ? "Remove from saved jobs" : "Save job for later"}
             >
               {isSaved ? (
-                <BookmarkCheck size={16} className="text-[#F97316] fill-[#F97316]/20" />
+                <BookmarkCheck size={16} className="text-[#F7941D] fill-[#F7941D]/20" />
               ) : (
                 <Bookmark
                   size={16}
@@ -197,7 +197,7 @@ export default function JobCard({ job, compact = false }: JobCardProps) {
 
         {/* Title */}
         <Link to={`/jobs/${job.id}`}>
-          <h3 className="font-poppins font-semibold text-slate-900 dark:text-white text-base leading-snug mb-2 group-hover:text-[#F97316] transition-colors line-clamp-2">
+          <h3 className="font-poppins font-semibold text-slate-900 dark:text-white text-base leading-snug mb-2 group-hover:text-[#F7941D] transition-colors line-clamp-2">
             {job.title}
           </h3>
         </Link>
@@ -258,7 +258,7 @@ export default function JobCard({ job, compact = false }: JobCardProps) {
           <Link
             to={`/jobs/${job.id}`}
             onClick={(e) => e.stopPropagation()}
-            className="flex-1 py-2 px-3.5 rounded-lg bg-[#F97316] hover:bg-[#EA580C] active:bg-[#C2410C] text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+            className="flex-1 py-2 px-3.5 rounded-lg bg-[#F7941D] hover:bg-[#E8820A] active:bg-[#C46A04] text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm"
           >
             <span>Apply Now</span>
             <ArrowRight size={13} />
@@ -269,7 +269,7 @@ export default function JobCard({ job, compact = false }: JobCardProps) {
             className="py-2 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#101F3E] hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-medium text-xs flex items-center justify-center gap-1.5 transition-colors whitespace-nowrap shadow-xs"
             title={`View ${job.company.name} profile and other openings`}
           >
-            <Building2 size={13} className="text-[#F97316] shrink-0" />
+            <Building2 size={13} className="text-[#F7941D] shrink-0" />
             <span>Company</span>
           </Link>
         </div>

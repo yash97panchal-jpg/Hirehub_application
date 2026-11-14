@@ -122,7 +122,7 @@ export default function Login() {
       {/* LEFT PANEL: Premium Deep Navy Brand Hero (30% Structural Authority) */}
       <div className="flex flex-col justify-between w-full lg:w-1/2 h-[260px] sm:h-[300px] md:h-[340px] lg:h-full relative overflow-hidden bg-[#101F3E] border-b lg:border-b-0 lg:border-r border-[#1E3563] shrink-0 p-6 sm:p-8 lg:p-12">
         {/* Subtle radial ambient gradients */}
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#F97316]/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#F7941D]/15 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-[#101F3E]/60 rounded-full blur-3xl pointer-events-none" />
 
         {/* Top Logo */}
@@ -135,7 +135,7 @@ export default function Login() {
                 className="w-full h-full object-contain"
               />
             </div>
-            <span className="text-xl font-bold text-white tracking-tight">Hire<span className="text-[#F97316]">Hub</span></span>
+            <span className="text-xl font-bold text-white tracking-tight">Hire<span className="text-[#F7941D]">Hub</span></span>
           </div>
         </div>
 
@@ -149,8 +149,8 @@ export default function Login() {
 
         {/* Bottom Value Proposition & Proof Points */}
         <div className="relative z-10 pointer-events-none select-none max-w-md">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-[#F97316] font-semibold mb-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#F97316] animate-pulse" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-[#F7941D] font-semibold mb-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#F7941D] animate-pulse" />
             Enterprise-Grade Job Platform
           </div>
           <h2 className="text-xl sm:text-2xl font-bold text-white mb-2 leading-tight tracking-tight">
@@ -234,7 +234,7 @@ export default function Login() {
               className={cn(
                 "flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer",
                 activeRole === "candidate"
-                  ? "bg-[var(--card)] text-[#F97316] font-bold shadow-xs border border-[var(--border)]"
+                  ? "bg-[var(--card)] text-[#F7941D] font-bold shadow-xs border border-[var(--border)]"
                   : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]",
               )}
             >
@@ -251,7 +251,7 @@ export default function Login() {
               className={cn(
                 "flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer",
                 activeRole === "recruiter"
-                  ? "bg-[var(--card)] text-[#F97316] font-bold shadow-xs border border-[var(--border)]"
+                  ? "bg-[var(--card)] text-[#F7941D] font-bold shadow-xs border border-[var(--border)]"
                   : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]",
               )}
             >

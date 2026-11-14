@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "cd \"Job Portal Web App\" && npm run build",
-    "dev": "cd \"Job Portal Web App\" && npm run dev",
-    "typecheck": "cd \"Job Portal Web App\" && npm run typecheck",
-    "test": "cd \"Job Portal Web App\" && npm run test",
-    "assets": "cd \"Job Portal Web App\" && npm run assets",
-    "android": "cd \"Job Portal Web App\" && npm run android",
-    "ios": "cd \"Job Portal Web App\" && npm run ios",
-    "cap": "cd \"Job Portal Web App\" && npx cap"
+    "build": "npm --prefix \"Job Portal Web App\" run build",
+    "dev": "npm --prefix \"Job Portal Web App\" run dev",
+    "typecheck": "npm --prefix \"Job Portal Web App\" run typecheck",
+    "test": "npm --prefix \"Job Portal Web App\" run test",
+    "assets": "npm --prefix \"Job Portal Web App\" run assets",
+    "android": "npm --prefix \"Job Portal Web App\" run android",
+    "ios": "npm --prefix \"Job Portal Web App\" run ios",
+    "cap": "npm --prefix \"Job Portal Web App\" run cap"
   }
 }

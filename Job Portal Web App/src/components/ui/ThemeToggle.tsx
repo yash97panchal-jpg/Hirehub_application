@@ -11,7 +11,7 @@ export default function ThemeToggle() {
       onClick={toggleTheme}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       title={isDark ? "Switch to light mode" : "Switch to dark mode"}
-      className="relative w-10 h-10 rounded-full flex items-center justify-center shadow-xs transition-all duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F97316] cursor-pointer"
+      className="relative w-10 h-10 rounded-full flex items-center justify-center shadow-xs transition-all duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F7941D] cursor-pointer"
       style={{
         background: isDark
           ? "linear-gradient(135deg, #101F3E 0%, #182C58 100%)" // Deep Symbol Navy for Moon
@@ -33,7 +33,7 @@ export default function ThemeToggle() {
             exit={{ rotate: 90, scale: 0.6, opacity: 0 }}
             transition={{ duration: 0.25 }}
           >
-            <Moon size={19} className="text-[#F97316]" fill="currentColor" />
+            <Moon size={19} className="text-[#F7941D]" fill="currentColor" />
           </motion.div>
         ) : (
           <motion.div
@@ -43,7 +43,7 @@ export default function ThemeToggle() {
             exit={{ rotate: -90, scale: 0.6, opacity: 0 }}
             transition={{ duration: 0.25 }}
           >
-            <Sun size={19} className="text-[#EA580C]" fill="currentColor" />
+            <Sun size={19} className="text-[#E8820A]" fill="currentColor" />
           </motion.div>
         )}
       </AnimatePresence>

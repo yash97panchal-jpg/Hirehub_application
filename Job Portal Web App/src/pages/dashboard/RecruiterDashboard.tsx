@@ -309,7 +309,7 @@ export default function RecruiterDashboard() {
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold capitalize transition-all cursor-pointer ${
                 activeTab === tab
-                  ? "bg-[var(--card)] text-[#F97316] shadow-xs"
+                  ? "bg-[var(--card)] text-[#F7941D] shadow-xs"
                   : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
               }`}
             >
@@ -332,8 +332,8 @@ export default function RecruiterDashboard() {
                   label: "Active Jobs",
                   value: storeJobs.length,
                   icon: Briefcase,
-                  color: "#F97316",
-                  bg: "bg-orange-50 dark:bg-orange-950/40 text-[#EA580C]",
+                  color: "#F7941D",
+                  bg: "bg-orange-50 dark:bg-orange-950/40 text-[#E8820A]",
                   change: `${planDetails.usedJobs} active / ${planDetails.maxJobs} limit`,
                 },
                 {

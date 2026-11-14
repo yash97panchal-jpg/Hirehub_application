@@ -284,7 +284,7 @@ export default function ApplicationTracker() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-[var(--foreground)] tracking-tight flex items-center gap-2.5">
-              <Briefcase className="text-[#F97316]" />
+              <Briefcase className="text-[#F7941D]" />
               My Job Applications
             </h1>
             <p className="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1">
@@ -572,7 +572,7 @@ export default function ApplicationTracker() {
                               company: app.job?.company?.name || "Company",
                             })
                           }
-                          className="text-[var(--muted-foreground)] hover:text-[#F97316] flex items-center gap-1 cursor-pointer font-semibold"
+                          className="text-[var(--muted-foreground)] hover:text-[#F7941D] flex items-center gap-1 cursor-pointer font-semibold"
                         >
                           <Sparkles size={13} />
                           AI Cover Letter

@@ -11,6 +11,9 @@ error-log.txt
 .env.local
 .env.*.local
 
+# Backups
+hirehub-older-design-backup/
+
 # Node & Build Outputs
 node_modules/
 dist/

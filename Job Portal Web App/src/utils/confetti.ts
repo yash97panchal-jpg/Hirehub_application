@@ -21,7 +21,7 @@ export function triggerConfetti() {
   canvas.height = window.innerHeight * dpr
   ctx.scale(dpr, dpr)
 
-  const colors = ["#7C3AED", "#EC4899", "#3B82F6", "#10B981", "#F59E0B", "#8B5CF6"]
+  const colors = ["#101F3E", "#EC4899", "#3F5896", "#10B981", "#F59E0B", "#3F5896"]
   const particles: Array<{
     x: number
     y: number
