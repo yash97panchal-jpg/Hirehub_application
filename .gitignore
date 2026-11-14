@@ -13,6 +13,8 @@ error-log.txt
 
 # Backups
 hirehub-older-design-backup/
+screenshots/
+test_suite.py
 
 # Node & Build Outputs
 node_modules/
