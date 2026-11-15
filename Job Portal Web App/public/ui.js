@@ -29,7 +29,7 @@ const IC={
 };
 
 const I=(n,s)=>`<svg class="i" viewBox="0 0 24 24" ${s?`style="width:${s}px;height:${s}px"`:''}>${IC[n]||''}</svg>`;
-const AVC=['#1C2541','#233154','#3A506B','#1B2B48','#2A3B5E','#17283C'];
+const AVC=['#1B263B','#25344D','#415A77','#17273A','#2D4159','#1F3147'];
 const av=(n,s=40)=>{
   n=String(n||'?');
   let h=0;

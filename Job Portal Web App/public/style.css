@@ -1,27 +1,27 @@
 :root{
-  --bg:#0B132B;
-  --s1:#1C2541;
-  --s2:#233154;
-  --line:#3A506B;
-  --ink:#FBEFDD;
-  --h-ink:#F4D6B0;
-  --muted:rgba(244,214,176,0.70);
-  --pri:#D97706;
-  --pri2:#B45309;
-  --prit:#0B132B;
-  --sec:#5BC0DE;
-  --sect:#0B132B;
-  --soft:rgba(217,119,6,0.16);
-  --soft-sec:rgba(91,192,222,0.16);
-  --amb:#D97706;
-  --lg1:#F4D6B0;
-  --ft:#1C2541;
-  --ok:#34D399;
-  --bad:#F87171;
-  --warn:#FBBF24;
+  --bg:#0D1B2A;
+  --s1:#1B263B;
+  --s2:#25344D;
+  --line:#415A77;
+  --ink:#F7F3E9;
+  --h-ink:#F7F3E9;
+  --muted:rgba(247,243,233,0.70);
+  --pri:#D4AF37;
+  --pri2:#B89726;
+  --prit:#0D1B2A;
+  --sec:#778DA9;
+  --sect:#0D1B2A;
+  --soft:rgba(212,175,55,0.16);
+  --soft-sec:rgba(65,90,119,0.22);
+  --amb:#D4AF37;
+  --lg1:#F7F3E9;
+  --ft:#1B263B;
+  --ok:#48BB78;
+  --bad:#F56565;
+  --warn:#ECC94B;
   --sh:0 4px 20px -2px rgba(0,0,0,0.5),0 2px 6px -1px rgba(0,0,0,0.4);
-  --glow-amb:rgba(217,119,6,0.22);
-  --glow-sec:rgba(91,192,222,0.22);
+  --glow-amb:rgba(212,175,55,0.25);
+  --glow-sec:rgba(119,141,169,0.25);
   --acc:var(--pri);
   --acc2:var(--amb);
   --accink:var(--prit);
@@ -30,29 +30,29 @@
 }
 
 html[data-mode=light]{
-  --bg:#FBEFDD;
-  --s1:#F4D6B0;
-  --s2:#E8CBA5;
-  --line:#3A506B;
-  --ink:#0B132B;
-  --h-ink:#0B132B;
-  --muted:#3A506B;
-  --pri:#D97706;
-  --pri2:#B45309;
-  --prit:#0B132B;
-  --sec:#3A506B;
-  --sect:#FBEFDD;
-  --soft:rgba(217,119,6,0.15);
-  --soft-sec:rgba(91,192,222,0.15);
-  --amb:#D97706;
-  --lg1:#0B132B;
-  --ft:#0B132B;
-  --ok:#34D399;
-  --bad:#F87171;
-  --warn:#FBBF24;
-  --sh:0 4px 20px -2px rgba(11,19,43,0.12),0 2px 6px -1px rgba(11,19,43,0.08);
-  --glow-amb:rgba(217,119,6,0.18);
-  --glow-sec:rgba(91,192,222,0.18);
+  --bg:#F7F3E9;
+  --s1:#EFE9DA;
+  --s2:#E2D9C5;
+  --line:#415A77;
+  --ink:#0D1B2A;
+  --h-ink:#0D1B2A;
+  --muted:#415A77;
+  --pri:#D4AF37;
+  --pri2:#B89726;
+  --prit:#0D1B2A;
+  --sec:#415A77;
+  --sect:#F7F3E9;
+  --soft:rgba(212,175,55,0.15);
+  --soft-sec:rgba(65,90,119,0.15);
+  --amb:#D4AF37;
+  --lg1:#0D1B2A;
+  --ft:#0D1B2A;
+  --ok:#2F855A;
+  --bad:#C53030;
+  --warn:#D69E2E;
+  --sh:0 4px 20px -2px rgba(13,27,42,0.12),0 2px 6px -1px rgba(13,27,42,0.08);
+  --glow-amb:rgba(212,175,55,0.18);
+  --glow-sec:rgba(65,90,119,0.18);
 }
 
 *{box-sizing:border-box}
@@ -102,7 +102,7 @@ svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stro
   position:sticky;
   top:0;
   z-index:60;
-  background:rgba(28,37,65,0.88);
+  background:rgba(27,38,59,0.88);
   backdrop-filter:blur(14px);
   -webkit-backdrop-filter:blur(14px);
   border-bottom:1px solid var(--line);
@@ -119,7 +119,7 @@ svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stro
   transition:height .25s cubic-bezier(.16,1,.3,1);
 }
 .top.shrunk .nb{height:54px}
-.top.shrunk{box-shadow:0 6px 24px -2px rgba(11,19,43,0.7)}
+.top.shrunk{box-shadow:0 6px 24px -2px rgba(13,27,42,0.7)}
 
 .logo{
   display:flex;
@@ -284,7 +284,7 @@ svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stro
   border-color:transparent;
 }
 .btn.d:hover{
-  background:rgba(217,119,6,0.25);
+  background:var(--soft);
   transform:translateY(-1px);
 }
 .btn.o{
@@ -299,13 +299,13 @@ svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 }
 .btn.s{padding:6px 13px;font-size:13px;border-radius:9px}
 .btn.x{
-  background:rgba(248,113,113,0.18);
+  background:rgba(245,101,101,0.18);
   border-color:var(--bad);
   color:var(--bad);
 }
 .btn.x:hover{
   background:var(--bad);
-  color:#0B132B;
+  color:var(--prit);
 }
 .btn.lg{padding:14px 28px;font-size:16px;border-radius:13px}
 
@@ -366,7 +366,7 @@ svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .tag.i{
   background:var(--soft-sec);
   color:var(--sec);
-  border-color:rgba(91,192,222,0.3);
+  border-color:rgba(119,141,169,0.3);
 }
 .tag.r{
   background:rgba(248,113,113,0.15);
@@ -381,7 +381,7 @@ svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .tag.a{
   background:var(--soft);
   color:var(--amb);
-  border-color:rgba(217,119,6,0.3);
+  border-color:rgba(212,175,55,0.3);
 }
 
 .muted{color:var(--muted)}
@@ -409,7 +409,7 @@ svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stro
   width:500px;
   height:500px;
   border-radius:50%;
-  background:radial-gradient(circle,rgba(217,119,6,0.16) 0%,rgba(217,119,6,0.03) 50%,transparent 70%);
+  background:radial-gradient(circle,rgba(212,175,55,0.16) 0%,rgba(212,175,55,0.03) 50%,transparent 70%);
   filter:blur(80px);
   pointer-events:none;
   z-index:0;
@@ -423,7 +423,7 @@ svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stro
   width:540px;
   height:540px;
   border-radius:50%;
-  background:radial-gradient(circle,rgba(91,192,222,0.16) 0%,rgba(91,192,222,0.03) 50%,transparent 70%);
+  background:radial-gradient(circle,rgba(119,141,169,0.16) 0%,rgba(119,141,169,0.03) 50%,transparent 70%);
   filter:blur(80px);
   pointer-events:none;
   z-index:0;
@@ -478,7 +478,7 @@ svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stro
   max-width:640px;
   transition:border-color .2s ease;
 }
-.sbox:focus-within{border-color:var(--sec);box-shadow:0 0 0 3px rgba(91,192,222,0.25)}
+.sbox:focus-within{border-color:var(--sec);box-shadow:0 0 0 3px var(--glow-sec)}
 .sbox label{
   flex:1;
   display:flex;
@@ -615,7 +615,7 @@ svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stro
   border-radius:12px;
   background:var(--soft-sec);
   color:var(--sec);
-  border:1px solid rgba(91,192,222,0.25);
+  border:1px solid rgba(119,141,169,0.25);
   display:grid;
   place-items:center;
   font:700 18px 'Bricolage Grotesque';
@@ -646,7 +646,7 @@ svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stro
   font-size:13px;
   color:var(--sec);
   background:var(--soft-sec);
-  border:1px solid rgba(91,192,222,0.3);
+  border:1px solid rgba(119,141,169,0.3);
   padding:3px 10px;
   border-radius:99px;
 }
@@ -667,7 +667,7 @@ select option{background:var(--s1);color:var(--ink)}
 input:focus,select:focus,textarea:focus{
   outline:0;
   border-color:var(--sec);
-  box-shadow:0 0 0 3px rgba(91,192,222,0.25);
+  box-shadow:0 0 0 3px rgba(119,141,169,0.25);
 }
 .btn:focus-visible,summary:focus-visible,a:focus-visible,button:focus-visible{
   outline:2px solid var(--sec);
@@ -744,7 +744,7 @@ th{
   color:var(--h-ink);
   background:var(--s2);
 }
-tr:hover td{background:rgba(58,80,107,0.18)}
+tr:hover td{background:rgba(65,90,119,0.18)}
 tr:last-child td{border-bottom:0}
 .tw{overflow-x:auto}
 
@@ -886,7 +886,7 @@ details.q p{margin:.6em 0 0;color:var(--ink)}
   width:100%;
   max-width:44px;
   border-radius:8px 8px 3px 3px;
-  background:linear-gradient(180deg,var(--sec),#3A506B);
+  background:linear-gradient(180deg,var(--sec),#415A77);
   transform-origin:bottom;
   animation:barGrow .6s cubic-bezier(.16,1,.3,1) forwards;
 }
@@ -923,7 +923,7 @@ details.q p{margin:.6em 0 0;color:var(--ink)}
 
 .au{display:grid;grid-template-columns:1fr 1fr;min-height:calc(100vh - 66px)}
 .au .l{
-  background:linear-gradient(150deg,#1C2541,#0B132B);
+  background:linear-gradient(150deg,#1B263B,#0D1B2A);
   border-right:1px solid var(--line);
   color:var(--ink);
   padding:60px;
@@ -982,7 +982,7 @@ details.q p{margin:.6em 0 0;color:var(--ink)}
 }
 .kc.ov{
   border-color:var(--sec) !important;
-  background:rgba(91,192,222,0.1) !important;
+  background:rgba(119,141,169,0.12) !important;
 }
 .kc h4{
   margin:0 0 10px;
@@ -1034,7 +1034,7 @@ details.q p{margin:.6em 0 0;color:var(--ink)}
 #cmd{
   position:fixed;
   inset:0;
-  background:rgba(11,19,43,0.85);
+  background:rgba(13,27,42,0.85);
   backdrop-filter:blur(10px);
   z-index:300;
   display:none;
@@ -1425,7 +1425,7 @@ summary::-webkit-details-marker{display:none}
   position:fixed;
   inset:0;
   z-index:999;
-  background:rgba(11,19,43,0.85);
+  background:rgba(13,27,42,0.85);
   backdrop-filter:blur(8px);
   display:flex;
   align-items:center;
@@ -1475,7 +1475,7 @@ summary::-webkit-details-marker{display:none}
   border-bottom:1px solid var(--line);
 }
 .co-compare-table tr:hover td{
-  background:rgba(35,49,84,0.3);
+  background:rgba(65,90,119,0.22);
 }
 
 /* Homepage Top Hiring Companies Marquee */
