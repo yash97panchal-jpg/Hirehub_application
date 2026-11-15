@@ -150,3 +150,43 @@ npm run dev
 ```
 
 Visit `http://localhost:8443` or the configured local dev port.
+
+---
+
+## 🏢 Company Ecosystem & Logo Upload Guide
+
+### Key Company Features
+1. **Company Directory (`#/companies`)**:
+   - Comprehensive searchable directory supporting **Grid** and **List** view modes.
+   - Granular multi-filter: Search by name/keyword/tagline, Industry, Company Size, Work Mode (Remote, Hybrid, On-site), and Location.
+   - Sort by Most Open Roles, Name A–Z, or Newest Founded.
+   - Badges: `✓ Verified Employer`, `Hiring fast` (2+ open listings), `Featured`.
+   - **Quick Snapshot Preview**: Click "Snapshot" / "Preview" on any card for an instant modal summary of company stats, perks, and latest openings without navigating away.
+
+2. **Rich Company Profile (`#/company/:name` or `#/company/:id`)**:
+   - **Uncropped High-Resolution Logo**: Preserved with natural aspect ratio (`object-fit: contain`) across all viewport sizes (desktop and mobile), with graceful monogram avatar fallback.
+   - **Cover Banner & Verified Badge**: Real-time follower counter with live follow/unfollow toggle.
+   - **4 Tabbed Views** (zero-jump smooth animation):
+     - **Overview**: In-depth company narrative, tech stack tags, workplace perks/benefits, and interactive photo gallery lightbox.
+     - **Open Roles**: Active job listings with direct Apply CTAs.
+     - **Culture & Values**: Core operating pillars and team principles.
+     - **Office Locations**: Styled headquarters and regional hub addresses.
+   - **Mobile Sticky Sub-Header**: Fixed header with company logo, name, and 1-tap Follow button on small screens.
+
+3. **Job Seeker Engagement & Automated Alerts**:
+   - Follow companies to receive immediate notification alerts in `#/alerts` whenever that company posts a new job or internship.
+   - **Followed Companies Tab (`#/dash?t=following`)**: Dedicated tracker in Seeker Dashboard.
+   - **Company Comparison Tool (`#/compare-companies`)**: Side-by-side attribute comparison for up to 3 companies.
+
+4. **Recruiter Company Management & Logo Upload (`#/dash?t=company`)**:
+   - Dedicated tab in Recruiter Dashboard with live real-time card preview panel.
+   - **How to Upload Company Logos**:
+     1. Log in with a Recruiter account (e.g. `recruiter@hirehub.app`).
+     2. Navigate to **Dashboard > My Company** (`#/dash?t=company`).
+     3. Under "Company Logo Upload", click the dropzone or drag and drop an image.
+     4. Supported formats: **PNG, JPG, SVG, WebP** (Maximum size: **2MB**).
+     5. Strict client-side security scanner rejects malicious SVGs containing `<script>`, `onload=`, `onerror=`, or inline javascript.
+     6. Logos are rendered **uncropped** with their natural aspect ratio intact.
+     7. Click "Remove Logo & Use Monogram" at any time to revert to a clean 2-letter monogram.
+     8. Click "Save Company Profile" to commit changes.
+

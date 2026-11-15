@@ -1287,3 +1287,193 @@ summary::-webkit-details-marker{display:none}
   .res h1,.res h3{color:var(--h-ink) !important;border-bottom-color:var(--line) !important}
   .res .muted{color:var(--muted) !important}
 }
+
+/* Company Ecosystem Styling */
+.co-logo-box{
+  width:var(--s,44px);
+  height:var(--s,44px);
+  border-radius:10px;
+  background:var(--s1);
+  border:1px solid var(--line);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+  overflow:hidden;
+  padding:4px;
+  box-sizing:border-box;
+}
+.co-logo-box img.co-img{
+  max-width:100%;
+  max-height:100%;
+  width:auto;
+  height:auto;
+  object-fit:contain;
+  display:block;
+  border-radius:6px;
+}
+.co-mono{
+  font-family:'Space Grotesk',system-ui,sans-serif;
+  font-weight:700;
+  color:var(--h-ink);
+  font-size:calc(var(--s, 44px) * 0.38);
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+  user-select:none;
+}
+.co-mono-box{
+  background:var(--s2);
+}
+.co-logo-lg{
+  --s:88px;
+  width:88px;
+  height:88px;
+  border-radius:16px;
+  padding:8px;
+  background:var(--s1);
+  border:2px solid var(--line);
+  box-shadow:0 4px 16px rgba(0,0,0,0.35);
+}
+.co-card{
+  transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
+}
+.co-card:hover{
+  border-color:var(--sec);
+  transform:translateY(-2px);
+  box-shadow:0 6px 20px -4px var(--glow-sec);
+}
+.co-list-row{
+  transition:all .18s ease;
+}
+.co-list-row:hover{
+  border-color:var(--sec);
+}
+.badge-tick{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background:rgba(52,211,153,0.15);
+  color:var(--ok);
+  border:1px solid rgba(52,211,153,0.4);
+  font-size:11px;
+  font-weight:bold;
+  line-height:1;
+}
+.flw-btn{
+  transition:all .18s ease;
+}
+.flw-btn.following{
+  background:var(--s2);
+  color:var(--h-ink);
+  border-color:var(--line);
+}
+.co-tabs{
+  display:flex;
+  gap:8px;
+  border-bottom:1px solid var(--line);
+  margin-bottom:24px;
+  overflow-x:auto;
+}
+.co-tab-btn{
+  background:transparent;
+  border:0;
+  border-bottom:2px solid transparent;
+  padding:12px 18px;
+  font-family:'Figtree',sans-serif;
+  font-weight:600;
+  font-size:15px;
+  color:var(--muted);
+  cursor:pointer;
+  transition:all .18s ease;
+  white-space:nowrap;
+}
+.co-tab-btn:hover{
+  color:var(--h-ink);
+}
+.co-tab-btn.active{
+  color:var(--amb);
+  border-bottom-color:var(--amb);
+}
+.co-tab-pane{
+  display:none;
+}
+.co-tab-pane.active{
+  display:block;
+  animation:coFadeIn .25s ease forwards;
+}
+@keyframes coFadeIn{
+  from{opacity:0;transform:translateY(6px)}
+  to{opacity:1;transform:none}
+}
+.co-dropzone{
+  border:2px dashed var(--line);
+  padding:24px;
+  border-radius:12px;
+  text-align:center;
+  cursor:pointer;
+  background:var(--s2);
+  transition:all .2s ease;
+}
+.co-dropzone:hover,.co-dropzone.dragover{
+  border-color:var(--sec);
+  background:var(--soft-sec);
+}
+.co-modal-overlay{
+  position:fixed;
+  inset:0;
+  z-index:999;
+  background:rgba(11,19,43,0.85);
+  backdrop-filter:blur(8px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+.co-modal-box{
+  background:var(--s1);
+  border:1px solid var(--line);
+  border-radius:16px;
+  max-width:640px;
+  width:100%;
+  max-height:90vh;
+  overflow-y:auto;
+  box-shadow:var(--sh);
+  padding:24px;
+}
+.co-lightbox-box{
+  background:var(--s1);
+  border:1px solid var(--line);
+  border-radius:16px;
+  max-width:850px;
+  width:100%;
+  overflow:hidden;
+  box-shadow:var(--sh);
+  padding:16px;
+}
+.co-profile-grid{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:24px;
+  align-items:start;
+}
+.co-header-inner{
+  padding:0 24px 24px;
+}
+@media(max-width:860px){
+  .co-profile-grid{
+    grid-template-columns:1fr !important;
+  }
+  .co-header-inner{
+    padding:0 14px 18px !important;
+  }
+}
+.co-compare-table th, .co-compare-table td{
+  padding:14px 18px;
+  border-bottom:1px solid var(--line);
+}
+.co-compare-table tr:hover td{
+  background:rgba(35,49,84,0.3);
+}
