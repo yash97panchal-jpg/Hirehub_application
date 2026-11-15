@@ -1,8 +1,21 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>HireHub — Jobs & Internships that fit</title><meta name="description" content="Find jobs and internships, hire talent, and manage applications on HireHub.">
-<meta name="theme-color" content="#151B2B"><link rel="icon" href="favicon.png">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500..700;1,9..144,500..700&family=Outfit:wght@400..700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-<script>try{var t=JSON.parse(localStorage.getItem("hhtheme"));if(t&&t!=="midnight")document.documentElement.dataset.theme=t}catch(e){}</script><link rel="stylesheet" href="style.css"></head><body>
-<header><div class="bar" id="nav"></div></header><main class="wrap" id="app"></main>
-<footer><div class="fg"><div><h4>HireHub</h4><p>Jobs and internships that fit. Search, apply and hire in one place.</p></div><div><h4>Job seekers</h4><a href="#/jobs">Find jobs</a><a href="#/jobs?type=Internship">Internships</a><a href="#/companies">Companies</a><a href="#/salary">Salaries</a><a href="#/resume">Resume builder</a><a href="#/ats">ATS checker</a></div><div><h4>Recruiters</h4><a href="#/register?r=recruiter">Post a job</a><a href="#/pricing">Pricing</a><a href="#/blog">Hiring guides</a></div><div><h4>Company</h4><a href="#/about">About</a><a href="#/blog">Blog</a><a href="#/faq">Help &amp; FAQ</a><a href="#/contact">Contact</a><a href="#/privacy">Privacy</a><a href="#/terms">Terms</a></div></div><div class="fc">© HireHub. All rights reserved.</div></footer><div id="toast"></div>
-<script src="app.js"></script><script src="pages.js"></script><script src="dynamic.js"></script></body></html>
+<!doctype html><html lang="en" data-mode="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HireHub — Jobs & internships that fit</title><meta name="description" content="Search verified jobs and internships, check your resume against ATS filters, and hire great talent on HireHub.">
+<meta property="og:title" content="HireHub — Jobs & internships that fit"><meta property="og:description" content="Search verified jobs and internships, build your resume and apply in minutes."><meta property="og:type" content="website">
+<meta name="theme-color" content="#0B132B"><link rel="icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Figtree:wght@400..700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<script>try{var m=JSON.parse(localStorage.getItem("hhmode")),d=document.documentElement;d.dataset.mode=m||"dark"}catch(e){}</script>
+<link rel="stylesheet" href="style.css?v=20261115">
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.getRegistrations().then(function(regs){
+    for(var reg of regs) reg.update();
+  });
+  navigator.serviceWorker.register('sw.js?v=20261115').catch(function(){});
+}
+</script>
+</head><body>
+<header class="top" id="nav"></header><main class="wrap" id="app"></main>
+<footer><div class="fg"><div><a class="logo" href="#/" style="padding:0;margin-bottom:12px"><span class="lg" role="img" aria-label="HireHub logo"><i></i><i></i></span><span>Hire<b>Hub</b></span></a><p style="max-width:300px">Jobs and internships that fit. Search, apply and hire in one place.</p></div><div><h4>Job seekers</h4><a href="#/jobs">Find jobs</a><a href="#/jobs?type=Internship">Internships</a><a href="#/companies">Companies</a><a href="#/salary">Salaries</a><a href="#/resume">Resume builder</a><a href="#/ats">ATS checker</a></div><div><h4>Employers</h4><a href="#/register?r=recruiter">Post a job</a><a href="#/pricing">Pricing</a><a href="#/blog">Hiring guides</a></div><div><h4>Company</h4><a href="#/about">About</a><a href="#/blog">Blog</a><a href="#/faq">Help &amp; FAQ</a><a href="#/contact">Contact</a><a href="#/privacy">Privacy</a><a href="#/terms">Terms</a></div></div>
+<div class="fc"><span>© HireHub. All rights reserved.</span><span class="row"><button class="btn s o" onclick="tmode()" aria-label="Toggle light or dark mode">Light / Dark</button></span></div></footer>
+<div id="toast"></div>
+<script src="app.js?v=20261115"></script><script src="pages.js?v=20261115"></script><script src="dynamic.js?v=20261115"></script><script src="ui.js?v=20261115"></script></body></html>
