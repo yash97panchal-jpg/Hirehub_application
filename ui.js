@@ -37,6 +37,31 @@ const av=(n,s=40)=>{
   return`<span class="av" style="--s:${s}px;background:${AVC[h%AVC.length]}">${E(n[0].toUpperCase())}</span>`;
 };
 
+let hoverTimer=null;
+window.coHoverPreview=function(e,id){
+  clearTimeout(hoverTimer);
+  hoverTimer=setTimeout(()=>{
+    const c=typeof getCompany==='function'?getCompany(id):null;
+    if(!c)return;
+    let card=$('#coHoverCard');
+    if(!card){
+      document.body.insertAdjacentHTML('beforeend','<div id="coHoverCard" style="position:fixed;z-index:9999;background:var(--s1);border:1px solid var(--sec);border-radius:12px;padding:12px 16px;box-shadow:var(--sh);max-width:280px;pointer-events:none;transition:opacity .15s ease;opacity:0"></div>');
+      card=$('#coHoverCard');
+    }
+    const roles=db.jobs.filter(j=>j.company_id===c.id&&j.st==='approved').length;
+    card.innerHTML=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">${renderCompanyLogo(c,36)}<div><b style="font-size:15px;color:var(--h-ink)">${E(c.name)}</b><div class="muted" style="font-size:12px">${E(c.industry)}</div></div></div><div class="row sp" style="font-size:12px;margin-top:6px"><span class="tag i" style="font-size:11px">${roles} open role${roles===1?'':'s'}</span><span class="muted">${E(c.hq)}</span></div>`;
+    const rect=e.target.getBoundingClientRect();
+    card.style.top=`${Math.min(window.innerHeight-100,rect.bottom+8)}px`;
+    card.style.left=`${Math.min(window.innerWidth-300,Math.max(10,rect.left))}px`;
+    card.style.opacity='1';
+  },220);
+};
+window.coHoverLeave=function(){
+  clearTimeout(hoverTimer);
+  const card=$('#coHoverCard');
+  if(card)card.style.opacity='0';
+};
+
 const pn=s=>{
   const m=String(s).match(/[\d.]+/);
   if(!m)return 0;
@@ -132,7 +157,13 @@ home=function(){
 <section class="in sec rv"><div class="sh"><div><h2>Featured opportunities</h2><p>Hand-picked from the newest listings.</p></div><div class="chips" id="fc" style="margin:0"><button class="chip on" onclick="ftab('new',this)">Latest</button><button class="chip" onclick="ftab('int',this)">Internships</button><button class="chip" onclick="ftab('rem',this)">Remote</button><button class="chip" onclick="ftab('fr',this)">Fresher</button></div></div><div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(430px,1fr));transition:opacity .15s ease,transform .15s ease" id="ft">${FT.new().slice(0,6).map(card).join('')}</div><p style="text-align:center;margin-top:24px"><a class="btn o" href="#/jobs">Browse all jobs ${I('arrow')}</a></p></section>
 <section class="in sec rv"><div class="sh"><div><h2>How HireHub works</h2><p>From search to offer in three simple steps.</p></div></div><div class="g3">${[['user','Create your profile','Sign up as a job seeker or recruiter and add your skills in a minute.'],['search','Search and apply','Filter by type, mode and experience, then apply with a short note.'],['check','Track every step','Follow each application from Applied to Hired and chat with recruiters.']].map((s,i)=>`<div class="card step"><div class="row sp"><div class="ico">${I(s[0])}</div><span class="n">Step ${i+1}</span></div><h3>${s[1]}</h3><p class="muted" style="margin:0">${s[2]}</p></div>`).join('')}</div></section>
 <section class="in sec rv"><div class="sh"><div><h2>Free tools for your career</h2><p>Everything you need to get interview-ready.</p></div></div><div class="g3">${[['file','Resume builder','Create a clean, printable resume with a live preview.','#/resume'],['check','ATS checker','See which keywords your resume is missing for a job.','#/ats'],['trend','Salary insights','Check typical pay ranges before you negotiate.','#/salary']].map(t=>`<a class="card cat" href="${t[3]}"><div class="ico">${I(t[0])}</div><h3 style="margin:0">${t[1]}</h3><span class="muted">${t[2]}</span><b style="color:var(--sec)">Try it free →</b></a>`).join('')}</div></section>
-<section class="in sec rv"><div class="sh"><div><h2>Companies hiring now</h2><p>Learn about the teams behind the openings.</p></div><a class="btn o s" href="#/companies">All companies</a></div><div class="grid">${C.slice(0,6).map(c=>{const co=typeof getCompany==='function'?getCompany(c):null,lgo=co&&typeof renderCompanyLogo==='function'?renderCompanyLogo(co,48):av(c,48),tagline=co?co.tagline:'Hiring company',cTarget=co?(co.slug||co.name):c;return`<a class="card jrow" href="#/company/${enc(cTarget)}" style="margin:0">${lgo}<div class="jb"><h3>${E(c)}</h3><div class="sub">${E(tagline)}</div></div><span class="tag i">${L.filter(j=>j.co===c).length} open</span></a>`}).join('')}</div></section>
+<section class="in sec rv"><div class="sh"><div><h2>Top hiring companies</h2><p>Learn about the verified teams behind the openings.</p></div><a class="btn o s" href="#/companies">All companies</a></div>
+<div class="co-marquee-wrap"><div class="co-marquee-track">${(db.companies||[]).concat(db.companies||[]).map(c=>{
+  const lgo=typeof renderCompanyLogo==='function'?renderCompanyLogo(c,42):av(c.name,42);
+  const openCount=live().filter(j=>j.company_id===c.id||j.co===c.name).length;
+  return`<a class="co-marquee-tile" href="#/company/${enc(c.slug||c.name)}" aria-label="${E(c.name)}">${lgo}<div><b style="color:var(--h-ink);font-size:15px;display:block">${E(c.name)}</b><span class="muted" style="font-size:12px">${openCount} open role${openCount===1?'':'s'}</span></div></a>`;
+}).join('')}</div></div>
+<div class="grid" style="margin-top:20px">${C.slice(0,6).map(c=>{const co=typeof getCompany==='function'?getCompany(c):null,lgo=co&&typeof renderCompanyLogo==='function'?renderCompanyLogo(co,48):av(c,48),tagline=co?co.tagline:'Hiring company',cTarget=co?(co.slug||co.name):c;return`<a class="card jrow" href="#/company/${enc(cTarget)}" style="margin:0">${lgo}<div class="jb"><h3>${E(c)}</h3><div class="sub">${E(tagline)}</div></div><span class="tag i">${L.filter(j=>j.co===c).length} open</span></a>`}).join('')}</div></section>
 <section class="in sec rv"><div class="band"><div><span class="tag a" style="margin-bottom:14px">For employers</span><h2>Hire people who fit, faster.</h2><ul style="padding:0;margin:18px 0 24px">${['Post jobs and internships in minutes','Every listing is reviewed before going live','Move candidates through a drag-and-drop pipeline','Message candidates directly'].map(x=>`<li>${I('check')}${x}</li>`).join('')}</ul><div class="row"><a class="btn" href="#/register?r=recruiter">Start hiring</a><a class="btn o" href="#/pricing">See plans</a></div></div><div class="g2">${[[L.length,'live listings'],[db.apps.length,'applications'],[C.length,'companies'],[db.users.filter(u=>u.role==='seeker').length,'job seekers']].map(s=>`<div class="card" style="background:rgba(244,214,176,0.06);border-color:var(--line);box-shadow:none"><b class="n" style="font-size:32px;color:var(--h-ink);display:block">${s[0]}</b><span>${s[1]}</span></div>`).join('')}</div></div></section>
 <section class="in sec rv"><div class="sh"><div><h2>From the career blog</h2><p>Guides to help you grow.</p></div><a class="btn o s" href="#/blog">All articles</a></div><div class="g3">${BL.slice(0,3).map(bcard).join('')}</div></section>`;
 };

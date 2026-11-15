@@ -1477,3 +1477,48 @@ summary::-webkit-details-marker{display:none}
 .co-compare-table tr:hover td{
   background:rgba(35,49,84,0.3);
 }
+
+/* Homepage Top Hiring Companies Marquee */
+.co-marquee-wrap{
+  overflow:hidden;
+  position:relative;
+  padding:14px 0;
+  mask-image:linear-gradient(90deg,transparent 0%,black 8%,black 92%,transparent 100%);
+  -webkit-mask-image:linear-gradient(90deg,transparent 0%,black 8%,black 92%,transparent 100%);
+}
+.co-marquee-track{
+  display:flex;
+  gap:16px;
+  width:max-content;
+  animation:coMarquee 35s linear infinite;
+}
+.co-marquee-wrap:hover .co-marquee-track{
+  animation-play-state:paused;
+}
+.co-marquee-tile{
+  display:inline-flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 20px;
+  background:var(--s1);
+  border:1px solid var(--line);
+  border-radius:14px;
+  text-decoration:none;
+  transition:all .2s ease;
+  flex-shrink:0;
+}
+.co-marquee-tile:hover{
+  border-color:var(--sec);
+  transform:translateY(-2px);
+  box-shadow:0 4px 16px -2px var(--glow-sec);
+}
+@keyframes coMarquee{
+  0%{transform:translateX(0)}
+  100%{transform:translateX(-50%)}
+}
+@media(prefers-reduced-motion:reduce){
+  .co-marquee-track{
+    animation:none !important;
+    overflow-x:auto;
+  }
+}

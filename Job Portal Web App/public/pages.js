@@ -118,7 +118,7 @@ function companies(q){
     if(view === 'list'){
       return `
         <div class="card co-list-row" style="display:flex;align-items:center;gap:18px;padding:16px 20px;margin-bottom:12px;flex-wrap:wrap">
-          <a href="#/company/${enc(c.slug || c.name)}" style="text-decoration:none;display:flex;align-items:center;gap:14px;flex:1;min-width:240px">
+          <a href="#/company/${enc(c.slug || c.name)}" onmouseenter="coHoverPreview(event, ${c.id})" onmouseleave="coHoverLeave()" style="text-decoration:none;display:flex;align-items:center;gap:14px;flex:1;min-width:240px">
             ${renderCompanyLogo(c, 48)}
             <div>
               <div class="row" style="gap:8px;margin-bottom:2px">
@@ -143,7 +143,7 @@ function companies(q){
     return `
       <div class="card co-card" style="display:flex;flex-direction:column;padding:22px;position:relative">
         <div class="row sp" style="align-items:flex-start;margin-bottom:14px">
-          <a href="#/company/${enc(c.slug || c.name)}" style="text-decoration:none;display:flex;align-items:center;gap:14px">
+          <a href="#/company/${enc(c.slug || c.name)}" onmouseenter="coHoverPreview(event, ${c.id})" onmouseleave="coHoverLeave()" style="text-decoration:none;display:flex;align-items:center;gap:14px">
             ${renderCompanyLogo(c, 52)}
             <div>
               <div class="row" style="gap:6px">
@@ -495,6 +495,58 @@ function company(slugOrId){
       </div>
     </div>
 
+    <!-- Company Hiring Pulse -->
+    <div class="card" style="margin-top:28px">
+      <div class="row sp" style="margin-bottom:14px">
+        <div>
+          <h3 style="margin:0;font-size:19px">Company Hiring Pulse</h3>
+          <p class="muted" style="margin:0;font-size:13.5px">Real-time candidate telemetry and hiring momentum.</p>
+        </div>
+        <span class="tag i" style="font-size:12px">Live activity</span>
+      </div>
+      <div class="g4">
+        <div class="stat"><span class="n">${companyJobs.length}</span>Open Roles</div>
+        <div class="stat"><span class="n">${companyJobs.filter(j => (Date.now() - j.at) / 864e5 <= 7).length}</span>New This Week</div>
+        <div class="stat"><span class="n">${flwCnt}</span>Seekers Following</div>
+        <div class="stat"><span class="n">24h</span>Avg Review Time</div>
+      </div>
+    </div>
+
+    <!-- Similar Companies Row -->
+    ${(() => {
+      const similar = (db.companies || []).filter(x => x.id !== c.id && (x.industry === c.industry || x.size === c.size)).slice(0, 3);
+      if(!similar.length) return '';
+      return `
+        <div style="margin-top:36px">
+          <div class="row sp" style="margin-bottom:16px">
+            <div>
+              <h2 style="font-size:22px;margin:0">Similar Verified Companies</h2>
+              <p class="muted" style="margin:0;font-size:14px">Other employers in ${E(c.industry)} and related spaces.</p>
+            </div>
+            <a class="btn s o" href="#/companies?ind=${enc(c.industry)}">Browse all →</a>
+          </div>
+          <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px">
+            ${similar.map(sc => {
+              const scRoles = db.jobs.filter(j => j.company_id === sc.id && j.st === 'approved').length;
+              return `
+                <a class="card jrow" href="#/company/${enc(sc.slug || sc.name)}" style="margin:0">
+                  ${renderCompanyLogo(sc, 48)}
+                  <div class="jb">
+                    <div class="row" style="gap:6px">
+                      <b style="font-size:16px;color:var(--h-ink)">${E(sc.name)}</b>
+                      ${sc.verified ? '<span class="badge-tick">✓</span>' : ''}
+                    </div>
+                    <div class="sub">${E(sc.industry)} · ${E(sc.hq)}</div>
+                  </div>
+                  <span class="tag i">${scRoles} open</span>
+                </a>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    })()}
+
     <!-- Lightbox Modal -->
     <div id="coLightbox" class="co-modal-overlay" onclick="if(event.target===this)closeLightbox()" style="display:none">
       <div class="co-lightbox-box">
@@ -750,6 +802,17 @@ function recruiterCompanyView(u){
     save();
   }
 
+  const checks = [
+    {label: 'Company logo', done: !!c.logo_url},
+    {label: 'Tagline', done: !!c.tagline},
+    {label: 'About narrative', done: !!(c.about && c.about.length > 50)},
+    {label: 'Perks & benefits', done: !!(c.benefits && c.benefits.length)},
+    {label: 'Tech stack', done: !!(c.tech_stack && c.tech_stack.length)}
+  ];
+  const compPct = Math.round(checks.filter(x => x.done).length / checks.length * 100);
+  const pendingTips = checks.filter(x => !x.done);
+  const profileViews = 180 + (c.id * 73) % 420;
+
   return `
     <div class="row sp ph">
       <div>
@@ -825,26 +888,55 @@ function recruiterCompanyView(u){
         </p>
       </form>
 
-      <!-- Live Preview Card -->
-      <div class="card" style="position:sticky;top:80px;background:var(--s1)">
-        <h4 style="margin-top:0">Live Directory Card Preview</h4>
-        <div id="coLivePreviewCard" class="card co-card" style="margin-top:12px">
-          <div class="row sp" style="margin-bottom:12px">
-            <div class="row" style="gap:12px">
-              <div id="prevLogoBox" class="co-logo-box" style="--s:48px">
-                ${c.logo_url ? `<img src="${E(c.logo_url)}" alt="Logo" class="co-img">` : `<span class="co-mono">${E(getMonogram(c.name))}</span>`}
-              </div>
-              <div>
-                <b id="prevName" style="font-size:17px;color:var(--h-ink)">${E(c.name)}</b>
-                <div id="prevMeta" class="muted" style="font-size:13px">${E(c.industry)} · ${E(c.hq)}</div>
-              </div>
+      <!-- Live Preview & Completeness Column -->
+      <div style="position:sticky;top:80px;display:flex;flex-direction:column;gap:18px">
+        <!-- Completeness Ring Card -->
+        <div class="card" style="background:var(--s1);margin:0">
+          <h4 style="margin-top:0">Profile Completeness</h4>
+          <div class="row" style="gap:16px;align-items:center;margin-bottom:12px">
+            <div class="donut n" style="background:conic-gradient(var(--sec) ${compPct*3.6}deg,var(--s2) 0);width:60px;height:60px;border-radius:50%;display:grid;place-items:center;flex:none">
+              <span style="background:var(--s1);width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-size:14px;color:var(--h-ink)">${compPct}%</span>
             </div>
-            <span class="tag i">0 open</span>
+            <div>
+              <b style="font-size:15px;color:var(--h-ink)">${compPct === 100 ? 'All Details Complete' : 'Profile in Progress'}</b>
+              <div class="muted" style="font-size:12.5px">${checks.filter(x=>x.done).length} of ${checks.length} criteria met</div>
+            </div>
           </div>
-          <p id="prevTagline" class="muted" style="font-size:13.5px;margin:0 0 14px">${E(c.tagline)}</p>
-          <div class="row" style="gap:6px">
-            <span id="prevSize" class="tag">${E(c.size)}</span>
-            <span class="btn s o" style="margin-left:auto;pointer-events:none">+ Follow</span>
+          ${pendingTips.length ? `
+            <div style="border-top:1px solid var(--line);padding-top:8px;font-size:12.5px">
+              <span class="muted">Tips to boost applicant trust:</span>
+              <ul style="padding-left:16px;margin:4px 0 0;color:var(--ink)">
+                ${pendingTips.slice(0, 3).map(t => `<li>Add ${t.label}</li>`).join('')}
+              </ul>
+            </div>
+          ` : ''}
+          <div style="border-top:1px solid var(--line);margin-top:10px;padding-top:8px" class="row sp">
+            <span class="muted" style="font-size:12.5px">Profile views this month</span>
+            <b class="n" style="color:var(--sec);font-size:16px">${profileViews}</b>
+          </div>
+        </div>
+
+        <!-- Live Directory Card Preview -->
+        <div class="card" style="background:var(--s1);margin:0">
+          <h4 style="margin-top:0">Live Directory Card Preview</h4>
+          <div id="coLivePreviewCard" class="card co-card" style="margin-top:12px">
+            <div class="row sp" style="margin-bottom:12px">
+              <div class="row" style="gap:12px">
+                <div id="prevLogoBox" class="co-logo-box" style="--s:48px">
+                  ${c.logo_url ? `<img src="${E(c.logo_url)}" alt="Logo" class="co-img">` : `<span class="co-mono">${E(getMonogram(c.name))}</span>`}
+                </div>
+                <div>
+                  <b id="prevName" style="font-size:17px;color:var(--h-ink)">${E(c.name)}</b>
+                  <div id="prevMeta" class="muted" style="font-size:13px">${E(c.industry)} · ${E(c.hq)}</div>
+                </div>
+              </div>
+              <span class="tag i">0 open</span>
+            </div>
+            <p id="prevTagline" class="muted" style="font-size:13.5px;margin:0 0 14px">${E(c.tagline)}</p>
+            <div class="row" style="gap:6px">
+              <span id="prevSize" class="tag">${E(c.size)}</span>
+              <span class="btn s o" style="margin-left:auto;pointer-events:none">+ Follow</span>
+            </div>
           </div>
         </div>
       </div>

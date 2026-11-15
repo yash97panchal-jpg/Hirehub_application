@@ -83,5 +83,12 @@ function cf(){
 }
 function cr(){
   const el=$('#cmdl');if(!el)return;
-  el.innerHTML=cl.map((x,i)=>`<a href="${x[1]}" class="${i===cs?'sel':''}" onclick="cmd(0)"><span>${E(x[0])}</span><span class="tag i" style="font-size:11px">${x[2]}</span></a>`).join('')||'<div class="empty">No matching results</div>';
+  el.innerHTML=cl.map((x,i)=>{
+    let prefix = '';
+    if(x[2]==='Company'){
+      const co = typeof getCompany==='function'?getCompany(x[0]):null;
+      prefix = co && typeof renderCompanyLogo==='function'?renderCompanyLogo(co,24):'';
+    }
+    return `<a href="${x[1]}" class="${i===cs?'sel':''}" onclick="cmd(0)"><div class="row" style="gap:10px;align-items:center">${prefix}<span>${E(x[0])}</span></div><span class="tag i" style="font-size:11px">${x[2]}</span></a>`;
+  }).join('')||'<div class="empty">No matching results</div>';
 }
