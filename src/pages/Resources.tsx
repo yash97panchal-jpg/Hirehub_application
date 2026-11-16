@@ -62,8 +62,8 @@ export default function Resources() {
                 <span className="status review" style={{ fontSize: '11px', padding: '4px 10px' }}>
                   {article.category}
                 </span>
-                <span style={{ fontSize: '12px', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <Clock size={13} /> {article.readTime}
+                <span style={{ fontSize: '12px', color: 'var(--muted)', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                  <Clock size={13} color="#8FA3C7" /> {article.readTime}
                 </span>
               </div>
 

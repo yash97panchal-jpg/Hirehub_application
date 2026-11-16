@@ -121,7 +121,9 @@ export default function Contact() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div className="workspace-card" style={{ padding: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-              <Mail size={20} color="var(--navy)" />
+              <div className="icon-badge blue" style={{ width: '38px', height: '38px' }}>
+                <Mail size={18} />
+              </div>
               <h4 style={{ margin: 0, fontSize: '16px' }}>Direct Email</h4>
             </div>
             <p style={{ margin: '0 0 8px', fontSize: '13px', color: 'var(--muted)' }}>For general inquiries and candidate questions:</p>
@@ -132,7 +134,9 @@ export default function Contact() {
 
           <div className="workspace-card" style={{ padding: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-              <Clock size={20} color="var(--navy)" />
+              <div className="icon-badge gold" style={{ width: '38px', height: '38px' }}>
+                <Clock size={18} />
+              </div>
               <h4 style={{ margin: 0, fontSize: '16px' }}>Response Time</h4>
             </div>
             <p style={{ margin: '0', fontSize: '13px', lineHeight: '1.6', color: '#4a5568' }}>
@@ -142,7 +146,9 @@ export default function Contact() {
 
           <div className="workspace-card" style={{ padding: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-              <ShieldCheck size={20} color="var(--green)" />
+              <div className="icon-badge green" style={{ width: '38px', height: '38px' }}>
+                <ShieldCheck size={18} />
+              </div>
               <h4 style={{ margin: 0, fontSize: '16px' }}>Anti-Scam Reporting</h4>
             </div>
             <p style={{ margin: '0', fontSize: '13px', lineHeight: '1.6', color: '#4a5568' }}>

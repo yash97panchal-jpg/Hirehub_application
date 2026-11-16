@@ -83,13 +83,13 @@ export default function SalaryInsights() {
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '20px' }}>
-              <span className="status shortlist" style={{ fontSize: '11px', padding: '5px 10px' }}>
-                <TrendingUp size={13} style={{ display: 'inline', marginRight: '4px' }} />
+              <span className="status shortlist" style={{ fontSize: '11px', padding: '5px 10px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <TrendingUp size={13} color="#E87438" />
                 {benchmark.demand} Demand
               </span>
               {benchmark.remoteFriendly && (
-                <span className="status review" style={{ fontSize: '11px', padding: '5px 10px' }}>
-                  <MapPin size={13} style={{ display: 'inline', marginRight: '4px' }} />
+                <span className="status review" style={{ fontSize: '11px', padding: '5px 10px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <MapPin size={13} color="#0284C7" />
                   Remote Friendly
                 </span>
               )}

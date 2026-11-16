@@ -385,8 +385,8 @@ function Home() {
 
         <div className="listing-grid">
           <Link to="/ats" className="workspace-card" style={{ padding: '24px', transition: 'transform 0.2s', display: 'block' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'var(--navy)', color: 'var(--gold-light)', display: 'grid', placeItems: 'center', marginBottom: '14px' }}>
-              <FileText size={20} />
+            <div className="icon-badge copper" style={{ marginBottom: '14px' }}>
+              <Sparkles size={22} />
             </div>
             <h3 style={{ fontSize: '18px', margin: '0 0 8px', color: 'var(--navy)' }}>ATS Resume Checker</h3>
             <p style={{ fontSize: '13px', color: 'var(--muted)', margin: '0 0 14px', lineHeight: '1.6' }}>
@@ -398,8 +398,8 @@ function Home() {
           </Link>
 
           <Link to="/companies" className="workspace-card" style={{ padding: '24px', transition: 'transform 0.2s', display: 'block' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'var(--navy)', color: 'var(--gold-light)', display: 'grid', placeItems: 'center', marginBottom: '14px' }}>
-              <Building2 size={20} />
+            <div className="icon-badge green" style={{ marginBottom: '14px' }}>
+              <Building2 size={22} />
             </div>
             <h3 style={{ fontSize: '18px', margin: '0 0 8px', color: 'var(--navy)' }}>Verified Companies</h3>
             <p style={{ fontSize: '13px', color: 'var(--muted)', margin: '0 0 14px', lineHeight: '1.6' }}>
@@ -411,8 +411,8 @@ function Home() {
           </Link>
 
           <Link to="/salary" className="workspace-card" style={{ padding: '24px', transition: 'transform 0.2s', display: 'block' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'var(--navy)', color: 'var(--gold-light)', display: 'grid', placeItems: 'center', marginBottom: '14px' }}>
-              <Wallet size={20} />
+            <div className="icon-badge gold" style={{ marginBottom: '14px' }}>
+              <TrendingUp size={22} />
             </div>
             <h3 style={{ fontSize: '18px', margin: '0 0 8px', color: 'var(--navy)' }}>Salary Calculator</h3>
             <p style={{ fontSize: '13px', color: 'var(--muted)', margin: '0 0 14px', lineHeight: '1.6' }}>
@@ -577,10 +577,12 @@ function JobCard({ job, compact = false }: { job: Job; compact?: boolean }) {
           <Bookmark size={15} />
         </button>
       </div>
-      <div className="job-meta-row">
-        <span>{job.company}</span>
+      <div className="job-meta-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--muted)', marginTop: '8px' }}>
+        <span style={{ fontWeight: 700, color: 'var(--navy)' }}>{job.company}</span>
         <i>·</i>
-        <span>{job.location}</span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+          <MapPin size={12} color="#E87438" /> {job.location}
+        </span>
       </div>
       <h3>
         <Link to={`/jobs/${job.id}`}>{job.title}</Link>
@@ -588,11 +590,15 @@ function JobCard({ job, compact = false }: { job: Job; compact?: boolean }) {
       <p className="job-desc">{job.description}</p>
       <div className="job-card-bottom">
         <div className="chip-row">
-          <span className="chip">{job.type}</span>
-          <span className="chip pay-chip">{job.salary}</span>
+          <span className="chip" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+            <Briefcase size={11} color="#3B82F6" /> {job.type}
+          </span>
+          <span className="chip pay-chip" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+            <Wallet size={11} color="#9E7428" /> {job.salary}
+          </span>
         </div>
         <Link className="apply-link" to={`/jobs/${job.id}`}>
-          Details <ArrowRight size={14} />
+          Details <ArrowRight size={13} />
         </Link>
       </div>
     </article>
@@ -607,6 +613,7 @@ function Jobs() {
   const [q, setQ] = useState(initialQ);
   const [kind, setKind] = useState('All');
   const [category, setCategory] = useState('All');
+  const [locationFilter, setLocationFilter] = useState('All');
 
   useEffect(() => {
     const p = new URLSearchParams(location.search);
@@ -620,11 +627,15 @@ function Jobs() {
         j =>
           (kind === 'All' || j.type === kind) &&
           (category === 'All' || j.category === category) &&
+          (locationFilter === 'All' ||
+            (locationFilter === 'Remote'
+              ? j.location.toLowerCase().includes('remote')
+              : j.location.toLowerCase().includes(locationFilter.toLowerCase()))) &&
           `${j.title} ${j.company} ${j.location} ${j.skills.join(' ')}`
             .toLowerCase()
             .includes(q.toLowerCase())
       ),
-    [q, kind, category]
+    [q, kind, category, locationFilter]
   );
 
   return (
@@ -641,50 +652,146 @@ function Jobs() {
         </p>
       </div>
 
-      <div className="search-panel">
-        <div className="search-field">
-          <Search size={18} />
-          <input
-            value={q}
-            onChange={e => setQ(e.target.value)}
-            placeholder="Search by role, company, skill or city…"
-          />
-        </div>
-        <div className="filter-row">
-          <div className="filter-chip-group">
-            {['All', 'Full-time', 'Internship'].map(k => (
+      {/* Advanced Search & Filter Studio */}
+      <div className="search-studio-card">
+        {/* Main Inputs Row */}
+        <div className="search-studio-inputs">
+          {/* Keyword Box */}
+          <div className="search-input-box keyword-box">
+            <Search size={18} className="search-box-icon" />
+            <input
+              type="text"
+              value={q}
+              onChange={e => setQ(e.target.value)}
+              placeholder="Search by role, company, skill or tech stack…"
+            />
+            {q && (
               <button
-                key={k}
-                className={kind === k ? 'chip-btn active' : 'chip-btn'}
-                onClick={() => setKind(k)}
+                type="button"
+                className="search-clear-btn"
+                onClick={() => setQ('')}
+                aria-label="Clear keyword"
               >
-                {k}
+                ✕
               </button>
-            ))}
+            )}
           </div>
-          <div className="filter-chip-group">
+
+          {/* Location Box */}
+          <div className="search-input-box location-box">
+            <MapPin size={17} style={{ color: '#E87438', flexShrink: 0 }} />
+            <select
+              value={locationFilter}
+              onChange={e => setLocationFilter(e.target.value)}
+              aria-label="Filter by location"
+            >
+              <option value="All">All Locations & Remote</option>
+              <option value="Remote">Remote Only</option>
+              <option value="Bengaluru">Bengaluru</option>
+              <option value="Ahmedabad">Ahmedabad</option>
+              <option value="Mumbai">Mumbai</option>
+              <option value="Hyderabad">Hyderabad</option>
+              <option value="Gurugram">Gurugram</option>
+              <option value="Pune">Pune</option>
+            </select>
+          </div>
+
+          {/* Job Type Box */}
+          <div className="search-input-box type-box">
+            <Briefcase size={17} style={{ color: '#3B82F6', flexShrink: 0 }} />
+            <select
+              value={kind}
+              onChange={e => setKind(e.target.value)}
+              aria-label="Filter by job type"
+            >
+              <option value="All">All Job Types</option>
+              <option value="Full-time">Full-time Roles</option>
+              <option value="Internship">Internships</option>
+            </select>
+          </div>
+
+          {/* Action Button */}
+          <button
+            type="button"
+            className="btn btn-gold search-submit-btn"
+          >
+            <Sparkles size={15} /> Filter Roles
+          </button>
+        </div>
+
+        {/* Category Pills Bar */}
+        <div className="search-categories-bar">
+          <span className="categories-label">
+            <SlidersHorizontal size={13} style={{ color: '#C5A15B' }} />
+            Category:
+          </span>
+          <div className="categories-pills-scroll">
             {[
-              'All',
-              'Engineering',
-              'Design',
-              'Data & Analytics',
-              'Operations',
-              'Product',
-              'Customer Success',
-            ].map(c => (
+              { id: 'All', label: 'All Disciplines' },
+              { id: 'Engineering', label: 'Engineering' },
+              { id: 'Design', label: 'Product & Design' },
+              { id: 'Data & Analytics', label: 'Data & AI' },
+              { id: 'Product', label: 'Product Management' },
+              { id: 'Operations', label: 'Operations' },
+              { id: 'Marketing', label: 'Growth Marketing' },
+              { id: 'Customer Success', label: 'Customer Success' },
+            ].map(cat => (
               <button
-                key={c}
-                className={category === c ? 'chip-btn active' : 'chip-btn'}
-                onClick={() => setCategory(c)}
+                key={cat.id}
+                type="button"
+                className={`category-pill-btn ${category === cat.id ? 'active' : ''}`}
+                onClick={() => setCategory(cat.id)}
               >
-                {c}
+                {cat.label}
               </button>
             ))}
           </div>
         </div>
-        <span className="results-count">
-          Showing <b>{filtered.length}</b> opportunities
-        </span>
+
+        {/* Live Results Strip & Active Filter Tags */}
+        <div className="search-results-strip">
+          <div className="results-badge">
+            Showing <b>{filtered.length}</b> verified {filtered.length === 1 ? 'position' : 'positions'}
+          </div>
+
+          {(q || kind !== 'All' || category !== 'All' || locationFilter !== 'All') && (
+            <div className="active-filters-list">
+              <span style={{ fontSize: '11px', color: '#7E8589', fontWeight: 600 }}>Active filters:</span>
+              {q && (
+                <span className="active-filter-tag">
+                  "{q}" <button onClick={() => setQ('')}>✕</button>
+                </span>
+              )}
+              {locationFilter !== 'All' && (
+                <span className="active-filter-tag">
+                  <MapPin size={10} color="#E87438" /> {locationFilter} <button onClick={() => setLocationFilter('All')}>✕</button>
+                </span>
+              )}
+              {kind !== 'All' && (
+                <span className="active-filter-tag">
+                  <Briefcase size={10} color="#3B82F6" /> {kind} <button onClick={() => setKind('All')}>✕</button>
+                </span>
+              )}
+              {category !== 'All' && (
+                <span className="active-filter-tag">
+                  {category} <button onClick={() => setCategory('All')}>✕</button>
+                </span>
+              )}
+              <button
+                type="button"
+                className="clear-all-filters-btn"
+                onClick={() => {
+                  setQ('');
+                  setKind('All');
+                  setCategory('All');
+                  setLocationFilter('All');
+                }}
+              >
+                Reset All
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="listing-grid">
@@ -728,18 +835,26 @@ function JobDetail({ user }: { user: User | null }) {
         <div className="detail-head">
           <CompanyLogo name={job.company} size={58} />
           <div>
-            <div className="job-meta-row">
-              <span>{job.company}</span>
+            <div className="job-meta-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--muted)', marginBottom: '6px' }}>
+              <span style={{ fontWeight: 700, color: 'var(--navy)' }}>{job.company}</span>
               <i>·</i>
-              <span>{job.location}</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <MapPin size={13} color="#E87438" /> {job.location}
+              </span>
             </div>
             <h1>{job.title}</h1>
           </div>
         </div>
-        <div className="detail-chips">
-          <span className="chip">{job.type}</span>
-          <span className="chip pay-chip">{job.salary}</span>
-          <span className="chip">{job.category}</span>
+        <div className="detail-chips" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', margin: '14px 0 24px' }}>
+          <span className="chip" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+            <Briefcase size={12} color="#3B82F6" /> {job.type}
+          </span>
+          <span className="chip pay-chip" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+            <Wallet size={12} color="#9E7428" /> {job.salary}
+          </span>
+          <span className="chip" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+            <Sparkles size={12} color="#C5A15B" /> {job.category}
+          </span>
         </div>
         <div className="detail-copy">
           <h2>About the opportunity</h2>

@@ -44,24 +44,33 @@ export default function FAQ() {
       </div>
 
       {/* Search & Category Filter */}
-      <div className="workspace-card" style={{ padding: '20px 24px', marginBottom: '28px' }}>
-        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: '1', minWidth: '240px', background: 'var(--paper)', padding: '10px 16px', borderRadius: '8px', border: '1px solid var(--line)' }}>
-            <Search size={18} color="var(--muted)" />
+      <div className="search-studio-card" style={{ padding: '16px 20px', marginBottom: '28px' }}>
+        <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <div className="search-input-box" style={{ flex: '1', minWidth: '260px' }}>
+            <Search size={18} className="search-box-icon" />
             <input
               type="text"
-              placeholder="Search questions or keywords…"
+              placeholder="Search questions by keyword, topic, or policy…"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{ border: 'none', background: 'transparent', width: '100%', outline: 'none', fontSize: '14px', color: 'var(--ink)' }}
             />
+            {search && (
+              <button
+                type="button"
+                className="search-clear-btn"
+                onClick={() => setSearch('')}
+                aria-label="Clear search"
+              >
+                ✕
+              </button>
+            )}
           </div>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
             {categories.map(cat => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`btn small-btn ${activeCategory === cat ? 'btn-dark' : 'btn-outline'}`}
+                className={`category-pill-btn ${activeCategory === cat ? 'active' : ''}`}
               >
                 {cat}
               </button>
@@ -118,7 +127,7 @@ export default function FAQ() {
       {/* Still need help strip */}
       <div className="workspace-card" style={{ padding: '28px', background: 'var(--paper)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '18px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'var(--navy)', color: 'white', display: 'grid', placeItems: 'center' }}>
+          <div className="icon-badge copper">
             <MessageSquare size={20} />
           </div>
           <div>

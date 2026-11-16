@@ -152,8 +152,8 @@ export default function ATSChecker() {
             <button
               onClick={handleAnalyze}
               disabled={analyzing || !resumeText.trim()}
-              className="btn btn-dark"
-              style={{ minWidth: '160px' }}
+              className="btn btn-gold"
+              style={{ minWidth: '170px' }}
             >
               {analyzing ? <><RefreshCw size={15} className="spinner" /> Analyzing…</> : <><Sparkles size={15} /> Analyze Resume</>}
             </button>
@@ -234,7 +234,7 @@ export default function ATSChecker() {
             </div>
 
             <div style={{ padding: '12px 14px', background: 'var(--paper)', borderRadius: '8px', fontSize: '11px', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <ShieldCheck size={16} color="var(--navy)" />
+              <ShieldCheck size={16} color="#059669" />
               HireHub ATS scanner strictly runs client-side. Your resume content is never stored without your explicit job application.
             </div>
           </div>

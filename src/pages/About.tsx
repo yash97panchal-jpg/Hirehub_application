@@ -19,22 +19,30 @@ export default function About() {
       {/* Numbers Grid */}
       <div className="stat-grid" style={{ marginBottom: '48px' }}>
         <div className="stat-card">
-          <Briefcase size={20} color="var(--navy)" />
+          <div className="icon-badge blue" style={{ width: '38px', height: '38px', marginBottom: '10px' }}>
+            <Briefcase size={18} />
+          </div>
           <strong>15,000+</strong>
           <span>Verified Applications Sent</span>
         </div>
         <div className="stat-card">
-          <Building2 size={20} color="var(--navy)" />
+          <div className="icon-badge violet" style={{ width: '38px', height: '38px', marginBottom: '10px' }}>
+            <Building2 size={18} />
+          </div>
           <strong>450+</strong>
           <span>Vetted Tech Employers</span>
         </div>
         <div className="stat-card">
-          <Award size={20} color="var(--navy)" />
+          <div className="icon-badge gold" style={{ width: '38px', height: '38px', marginBottom: '10px' }}>
+            <Award size={18} />
+          </div>
           <strong>98%</strong>
           <span>Candidate Satisfaction</span>
         </div>
         <div className="stat-card">
-          <ShieldCheck size={20} color="var(--green)" />
+          <div className="icon-badge green" style={{ width: '38px', height: '38px', marginBottom: '10px' }}>
+            <ShieldCheck size={18} />
+          </div>
           <strong>100%</strong>
           <span>Free for Candidates Always</span>
         </div>
@@ -51,8 +59,8 @@ export default function About() {
 
         <div className="listing-grid">
           <div className="workspace-card" style={{ padding: '28px' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'var(--paper)', display: 'grid', placeItems: 'center', marginBottom: '16px' }}>
-              <Eye size={22} color="var(--navy)" />
+            <div className="icon-badge cyan" style={{ marginBottom: '16px' }}>
+              <Eye size={22} />
             </div>
             <h3 style={{ fontSize: '18px', margin: '0 0 10px', color: 'var(--navy)' }}>Salary Transparency First</h3>
             <p style={{ fontSize: '13px', lineHeight: '1.6', color: '#4a5568', margin: 0 }}>
@@ -61,8 +69,8 @@ export default function About() {
           </div>
 
           <div className="workspace-card" style={{ padding: '28px' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'var(--paper)', display: 'grid', placeItems: 'center', marginBottom: '16px' }}>
-              <HeartHandshake size={22} color="var(--navy)" />
+            <div className="icon-badge rose" style={{ marginBottom: '16px' }}>
+              <HeartHandshake size={22} />
             </div>
             <h3 style={{ fontSize: '18px', margin: '0 0 10px', color: 'var(--navy)' }}>Zero-Ghosting Policy</h3>
             <p style={{ fontSize: '13px', lineHeight: '1.6', color: '#4a5568', margin: 0 }}>
@@ -71,8 +79,8 @@ export default function About() {
           </div>
 
           <div className="workspace-card" style={{ padding: '28px' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'var(--paper)', display: 'grid', placeItems: 'center', marginBottom: '16px' }}>
-              <ShieldCheck size={22} color="var(--green)" />
+            <div className="icon-badge green" style={{ marginBottom: '16px' }}>
+              <ShieldCheck size={22} />
             </div>
             <h3 style={{ fontSize: '18px', margin: '0 0 10px', color: 'var(--navy)' }}>Vetted Employers Only</h3>
             <p style={{ fontSize: '13px', lineHeight: '1.6', color: '#4a5568', margin: 0 }}>
@@ -81,8 +89,8 @@ export default function About() {
           </div>
 
           <div className="workspace-card" style={{ padding: '28px' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'var(--paper)', display: 'grid', placeItems: 'center', marginBottom: '16px' }}>
-              <Users size={22} color="var(--navy)" />
+            <div className="icon-badge copper" style={{ marginBottom: '16px' }}>
+              <Users size={22} />
             </div>
             <h3 style={{ fontSize: '18px', margin: '0 0 10px', color: 'var(--navy)' }}>Direct Recruiter Channels</h3>
             <p style={{ fontSize: '13px', lineHeight: '1.6', color: '#4a5568', margin: 0 }}>

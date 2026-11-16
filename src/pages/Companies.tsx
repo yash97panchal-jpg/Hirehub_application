@@ -40,29 +40,53 @@ export default function Companies() {
       </div>
 
       {/* Search & Filter Bar */}
-      <div className="workspace-card" style={{ marginBottom: '28px', padding: '18px 24px' }}>
-        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: '1', minWidth: '240px', background: 'var(--paper)', padding: '10px 16px', borderRadius: '8px', border: '1px solid var(--line)' }}>
-            <Search size={18} color="var(--muted)" />
+      <div className="search-studio-card" style={{ padding: '16px 20px', marginBottom: '28px' }}>
+        <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <div className="search-input-box" style={{ flex: '1', minWidth: '260px' }}>
+            <Search size={18} className="search-box-icon" />
             <input
               type="text"
               placeholder="Search companies by name, location, or tech…"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{ border: 'none', background: 'transparent', width: '100%', outline: 'none', fontSize: '14px', color: 'var(--ink)' }}
             />
+            {search && (
+              <button
+                type="button"
+                className="search-clear-btn"
+                onClick={() => setSearch('')}
+                aria-label="Clear search"
+              >
+                ✕
+              </button>
+            )}
           </div>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
             {industries.map(ind => (
               <button
                 key={ind}
                 onClick={() => setIndustryFilter(ind)}
-                className={`btn small-btn ${industryFilter === ind ? 'btn-dark' : 'btn-outline'}`}
+                className={`category-pill-btn ${industryFilter === ind ? 'active' : ''}`}
               >
                 {ind}
               </button>
             ))}
           </div>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(16,27,45,0.06)', fontSize: '12.5px' }}>
+          <span style={{ color: 'var(--muted)' }}>
+            Showing <b>{filteredCompanies.length}</b> verified {filteredCompanies.length === 1 ? 'employer' : 'employers'}
+          </span>
+          {(search || industryFilter !== 'All') && (
+            <button
+              onClick={() => { setSearch(''); setIndustryFilter('All'); }}
+              className="clear-all-filters-btn"
+            >
+              Reset Filters
+            </button>
+          )}
         </div>
       </div>
 
@@ -79,7 +103,7 @@ export default function Companies() {
                       <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700 }}>{company.name}</h3>
                       {company.verified && (
                         <span title="Verified Employer" style={{ display: 'inline-flex', alignItems: 'center' }}>
-                          <ShieldCheck size={16} color="var(--green)" />
+                          <ShieldCheck size={16} color="#059669" />
                         </span>
                       )}
                     </div>
@@ -96,17 +120,17 @@ export default function Companies() {
               </p>
 
               <div style={{ display: 'flex', gap: '14px', fontSize: '12px', color: 'var(--muted)', marginBottom: '16px' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <MapPin size={14} /> {company.location}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                  <MapPin size={13} color="#E87438" /> {company.location}
                 </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <Users size={14} /> {company.size}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                  <Users size={13} color="#6366F1" /> {company.size}
                 </span>
               </div>
 
               {/* Culture snippet */}
               <div style={{ background: 'var(--paper)', padding: '10px 14px', borderRadius: '8px', borderLeft: '3px solid var(--gold)', fontSize: '12px', color: 'var(--ink)', marginBottom: '16px' }}>
-                <Sparkles size={13} style={{ display: 'inline', marginRight: '6px', color: 'var(--gold)' }} />
+                <Sparkles size={13} style={{ display: 'inline', marginRight: '6px', color: '#D97706' }} />
                 {company.cultureHighlight}
               </div>
 
@@ -121,10 +145,10 @@ export default function Companies() {
             </div>
 
             <div style={{ display: 'flex', gap: '10px', paddingTop: '16px', borderTop: '1px solid var(--line)' }}>
-              <Link to={`/jobs?company=${encodeURIComponent(company.name)}`} className="btn btn-dark small-btn" style={{ flex: 1 }}>
-                <Briefcase size={14} /> View Openings
+              <Link to={`/jobs?keyword=${encodeURIComponent(company.name)}`} className="btn btn-dark small-btn" style={{ flex: 1 }}>
+                <Briefcase size={14} color="#FFE4A0" /> View Openings
               </Link>
-              <button onClick={() => setSelectedCompany(company)} className="btn btn-outline small-btn" style={{ padding: '8px 14px' }}>
+              <button onClick={() => setSelectedCompany(company)} className="btn btn-outline small-btn">
                 Company Details
               </button>
             </div>

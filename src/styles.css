@@ -287,3 +287,482 @@
   box-shadow: 0 6px 20px rgba(197, 161, 91, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.4) !important;
   border-color: rgba(225, 199, 141, 0.8) !important;
 }
+
+
+/* ==========================================================================
+   UNIFIED BUTTON SIZING & HIERARCHY SYSTEM
+   ========================================================================== */
+
+/* Universal Button Reset & Box Model */
+.btn {
+  position: relative !important;
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  gap: 8px !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  padding: 0 22px !important;
+  border-radius: 10px !important;
+  font-family: 'DM Sans', -apple-system, sans-serif !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.2px !important;
+  line-height: 1 !important;
+  vertical-align: middle !important;
+  white-space: nowrap !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  outline: none !important;
+  user-select: none !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.btn svg {
+  flex-shrink: 0 !important;
+  transition: transform 0.2s ease !important;
+}
+
+.btn:hover svg {
+  transform: translateX(2px) !important;
+}
+
+/* Button Size: Large / Hero */
+.btn.large-btn,
+.btn-lg,
+.hero-ctas .btn {
+  height: 48px !important;
+  min-height: 48px !important;
+  padding: 0 26px !important;
+  font-size: 14px !important;
+  border-radius: 12px !important;
+  gap: 9px !important;
+}
+
+/* Button Size: Standard (Default) */
+.btn.medium-btn,
+.btn-md {
+  height: 44px !important;
+  min-height: 44px !important;
+  padding: 0 20px !important;
+  font-size: 13.5px !important;
+  border-radius: 10px !important;
+}
+
+/* Button Size: Small */
+.btn.small-btn,
+.btn-sm {
+  height: 34px !important;
+  min-height: 34px !important;
+  padding: 0 14px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  gap: 6px !important;
+}
+
+/* Button Size: Micro / Filter Tag */
+.btn.micro-btn,
+.btn-xs {
+  height: 28px !important;
+  min-height: 28px !important;
+  padding: 0 10px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+  gap: 5px !important;
+}
+
+/* Full Width Button */
+.btn.full {
+  width: 100% !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  display: flex !important;
+}
+
+/* Apply Link Pill */
+.apply-link {
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  padding: 0 16px !important;
+  border-radius: 999px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+}
+
+/* Topbar Sign In Button */
+.sign-in {
+  height: 38px !important;
+  min-height: 38px !important;
+  padding: 0 18px !important;
+  font-size: 12.5px !important;
+  border-radius: 9px !important;
+}
+
+/* Standardized Icon Buttons */
+.icon-btn {
+  box-sizing: border-box !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 9px !important;
+  background: transparent !important;
+  color: var(--navy) !important;
+  border: 1px solid transparent !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+}
+
+.icon-btn:hover {
+  background: rgba(16, 27, 45, 0.06) !important;
+  border-color: rgba(16, 27, 45, 0.12) !important;
+}
+
+/* Bookmark Buttons */
+.bookmark-btn,
+.save-btn {
+  box-sizing: border-box !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+}
+
+/* ==========================================================================
+   ADVANCED SEARCH & FILTER STUDIO SYSTEM
+   ========================================================================== */
+
+.search-studio-card {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(16, 27, 45, 0.1) !important;
+  border-radius: 18px !important;
+  padding: 18px 20px !important;
+  box-shadow: 0 14px 40px -10px rgba(16, 27, 45, 0.08) !important;
+  margin-bottom: 30px !important;
+  transition: box-shadow 0.2s, border-color 0.2s !important;
+}
+
+.search-studio-card:focus-within {
+  box-shadow: 0 16px 45px -8px rgba(16, 27, 45, 0.12) !important;
+  border-color: rgba(197, 161, 91, 0.4) !important;
+}
+
+.search-studio-inputs {
+  display: grid !important;
+  grid-template-columns: 2fr 1.2fr 1fr auto !important;
+  gap: 12px !important;
+  align-items: center !important;
+}
+
+.search-input-box {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  background: #F8F6F0 !important;
+  border: 1px solid rgba(16, 27, 45, 0.09) !important;
+  border-radius: 10px !important;
+  padding: 0 14px !important;
+  height: 44px !important;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s !important;
+  min-width: 0 !important;
+}
+
+.search-input-box:focus-within {
+  background: #FFFFFF !important;
+  border-color: rgba(197, 161, 91, 0.7) !important;
+  box-shadow: 0 0 0 3px rgba(197, 161, 91, 0.15) !important;
+}
+
+.search-input-box input {
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  color: #101B2D !important;
+}
+
+.search-input-box input::placeholder {
+  color: #9299A0 !important;
+}
+
+.search-input-box select {
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #101B2D !important;
+  cursor: pointer !important;
+}
+
+.search-box-icon {
+  color: #C5A15B !important;
+  flex-shrink: 0 !important;
+}
+
+.search-clear-btn {
+  border: 0 !important;
+  background: rgba(16, 27, 45, 0.08) !important;
+  color: #788087 !important;
+  width: 18px !important;
+  height: 18px !important;
+  border-radius: 50% !important;
+  display: grid !important;
+  place-items: center !important;
+  font-size: 10px !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  transition: background 0.15s, color 0.15s !important;
+}
+
+.search-clear-btn:hover {
+  background: rgba(16, 27, 45, 0.18) !important;
+  color: #101B2D !important;
+}
+
+.search-submit-btn {
+  height: 44px !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+.search-categories-bar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin-top: 16px !important;
+  padding-top: 14px !important;
+  border-top: 1px solid rgba(16, 27, 45, 0.06) !important;
+  overflow-x: auto !important;
+  scrollbar-width: none !important;
+}
+
+.search-categories-bar::-webkit-scrollbar {
+  display: none !important;
+}
+
+.categories-label {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  color: #7A848D !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.6px !important;
+  flex-shrink: 0 !important;
+}
+
+.categories-pills-scroll {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+.category-pill-btn {
+  border: 1px solid rgba(16, 27, 45, 0.1) !important;
+  background: #F6F3EC !important;
+  color: #586370 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  padding: 6px 14px !important;
+  border-radius: 999px !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  white-space: nowrap !important;
+}
+
+.category-pill-btn:hover {
+  background: #EDE8DE !important;
+  color: #101B2D !important;
+  border-color: rgba(197, 161, 91, 0.4) !important;
+  transform: translateY(-1px) !important;
+}
+
+.category-pill-btn.active {
+  background: linear-gradient(135deg, #1C2D44 0%, #101B2D 100%) !important;
+  color: #FFE4A0 !important;
+  border-color: #C5A15B !important;
+  box-shadow: 0 4px 12px rgba(16, 27, 45, 0.2) !important;
+  font-weight: 700 !important;
+}
+
+.search-results-strip {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-top: 14px !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  font-size: 12.5px !important;
+}
+
+.results-badge {
+  color: #6B7682 !important;
+  font-size: 12.5px !important;
+}
+
+.results-badge b {
+  color: #101B2D !important;
+  font-weight: 800 !important;
+}
+
+.active-filters-list {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+.active-filter-tag {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: rgba(197, 161, 91, 0.15) !important;
+  color: #8F6E29 !important;
+  border: 1px solid rgba(197, 161, 91, 0.35) !important;
+  padding: 3px 10px !important;
+  border-radius: 999px !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+}
+
+.active-filter-tag button {
+  border: 0 !important;
+  background: transparent !important;
+  color: inherit !important;
+  cursor: pointer !important;
+  font-size: 11px !important;
+  padding: 0 2px !important;
+}
+
+.clear-all-filters-btn {
+  border: 0 !important;
+  background: transparent !important;
+  color: #E87438 !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  text-decoration: underline !important;
+  text-underline-offset: 2px !important;
+}
+
+/* Responsive Search Studio */
+@media (max-width: 860px) {
+  .search-studio-inputs {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .search-input-box.keyword-box {
+    grid-column: span 2 !important;
+  }
+  .search-submit-btn {
+    grid-column: span 2 !important;
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 540px) {
+  .search-studio-inputs {
+    grid-template-columns: 1fr !important;
+  }
+  .search-input-box.keyword-box,
+  .search-input-box.location-box,
+  .search-input-box.type-box,
+  .search-submit-btn {
+    grid-column: span 1 !important;
+  }
+}
+
+/* ==========================================================================
+   SEMANTIC THEMED ICON BADGES SYSTEM
+   ========================================================================== */
+
+.icon-badge {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 12px !important;
+  display: grid !important;
+  place-items: center !important;
+  flex-shrink: 0 !important;
+  transition: transform 0.22s, box-shadow 0.22s !important;
+}
+
+.icon-badge:hover {
+  transform: translateY(-2px) scale(1.05) !important;
+}
+
+.icon-badge.copper {
+  background: linear-gradient(135deg, rgba(232, 116, 56, 0.16) 0%, rgba(232, 116, 56, 0.06) 100%) !important;
+  border: 1px solid rgba(232, 116, 56, 0.3) !important;
+  color: #E87438 !important;
+  box-shadow: 0 4px 12px rgba(232, 116, 56, 0.15) !important;
+}
+
+.icon-badge.green {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.16) 0%, rgba(16, 185, 129, 0.06) 100%) !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+  color: #059669 !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15) !important;
+}
+
+.icon-badge.gold {
+  background: linear-gradient(135deg, rgba(197, 161, 91, 0.2) 0%, rgba(197, 161, 91, 0.08) 100%) !important;
+  border: 1px solid rgba(197, 161, 91, 0.4) !important;
+  color: #9E7428 !important;
+  box-shadow: 0 4px 12px rgba(197, 161, 91, 0.15) !important;
+}
+
+.icon-badge.blue {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.16) 0%, rgba(37, 99, 235, 0.06) 100%) !important;
+  border: 1px solid rgba(37, 99, 235, 0.3) !important;
+  color: #2563EB !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15) !important;
+}
+
+.icon-badge.violet {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.16) 0%, rgba(124, 58, 237, 0.06) 100%) !important;
+  border: 1px solid rgba(124, 58, 237, 0.3) !important;
+  color: #7C3AED !important;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15) !important;
+}
+
+.icon-badge.cyan {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.16) 0%, rgba(6, 182, 212, 0.06) 100%) !important;
+  border: 1px solid rgba(6, 182, 212, 0.3) !important;
+  color: #0891B2 !important;
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.15) !important;
+}
+
+.icon-badge.rose {
+  background: linear-gradient(135deg, rgba(225, 29, 72, 0.16) 0%, rgba(225, 29, 72, 0.06) 100%) !important;
+  border: 1px solid rgba(225, 29, 72, 0.3) !important;
+  color: #E11D48 !important;
+  box-shadow: 0 4px 12px rgba(225, 29, 72, 0.15) !important;
+}
