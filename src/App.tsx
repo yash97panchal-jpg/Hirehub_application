@@ -53,7 +53,6 @@ import {
 
 import { HireHubLogo } from './components/HireHubLogo';
 import { CompanyLogo } from './components/CompanyLogo';
-import { FloatingDock } from './components/FloatingDock';
 import { HelpChatbot } from './components/HelpChatbot';
 
 // Import our rich new pages
@@ -65,7 +64,6 @@ import About from './pages/About';
 import FAQ from './pages/FAQ';
 import Contact from './pages/Contact';
 import Legal from './pages/Legal';
-import DockShowcase from './pages/DockShowcase';
 
 function App() {
   const [user, setUser] = useState<User | null>(readSession());
@@ -136,7 +134,6 @@ function App() {
           <NavLink to="/ats">ATS Checker</NavLink>
           <NavLink to="/resources">Resources</NavLink>
           <NavLink to="/about">About</NavLink>
-          <NavLink to="/dock">Dock</NavLink>
 
           {user && (
             <NavLink
@@ -208,7 +205,6 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/dock" element={<DockShowcase />} />
           <Route path="/privacy" element={<Legal />} />
           <Route path="/terms" element={<Legal />} />
           <Route path="/login" element={<Auth onLogin={login} />} />
@@ -228,9 +224,6 @@ function App() {
       </main>
 
       <Footer />
-
-      {/* Floating macOS-Style Navigation Dock */}
-      <FloatingDock />
 
       {/* AI Help Bot / Application Assistant */}
       <HelpChatbot />
@@ -273,7 +266,6 @@ function Footer() {
               <Link to="/resources">Career Playbooks</Link>
               <Link to="/faq">Help & FAQ</Link>
               <Link to="/contact">Contact Support</Link>
-              <Link to="/dock">macOS Navigation Dock</Link>
             </div>
           </div>
 
