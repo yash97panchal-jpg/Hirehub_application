@@ -661,6 +661,16 @@
   cursor: pointer !important;
   font-size: 11px !important;
   padding: 0 2px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  opacity: 0.8 !important;
+  transition: opacity 0.15s, transform 0.15s !important;
+}
+
+.active-filter-tag button:hover {
+  opacity: 1 !important;
+  transform: scale(1.15) !important;
 }
 
 .clear-all-filters-btn {

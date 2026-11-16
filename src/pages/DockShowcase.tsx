@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import {
+  ArrowLeft,
   Compass,
   Search,
   Building2,
@@ -92,7 +93,8 @@ export default function DockShowcase() {
               gap: '6px',
             }}
           >
-            ← Back to HireHub
+            <ArrowLeft size={13} />
+            Back to HireHub
           </Link>
           <span style={{ color: 'rgba(143, 163, 199, 0.4)' }}>/</span>
           <span

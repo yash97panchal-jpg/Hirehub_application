@@ -141,7 +141,7 @@ export default function ATSChecker() {
             rows={11}
             value={resumeText}
             onChange={e => setResumeText(e.target.value)}
-            placeholder="Paste your resume sections, skills list, and bullet points here…"
+            placeholder="Paste your resume sections, skills list, and bullet points here..."
             style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: '1px solid var(--line)', background: 'var(--white)', fontSize: '13px', lineHeight: '1.6', fontFamily: 'inherit', color: 'var(--ink)', resize: 'vertical' }}
           />
 
@@ -155,7 +155,7 @@ export default function ATSChecker() {
               className="btn btn-gold"
               style={{ minWidth: '170px' }}
             >
-              {analyzing ? <><RefreshCw size={15} className="spinner" /> Analyzing…</> : <><Sparkles size={15} /> Analyze Resume</>}
+              {analyzing ? <><RefreshCw size={15} className="spinner" /> Analyzing...</> : <><Sparkles size={15} /> Analyze Resume</>}
             </button>
           </div>
         </div>

@@ -102,7 +102,7 @@ export default function Contact() {
                   <textarea
                     required
                     rows={5}
-                    placeholder="Tell us how we can help you…"
+                    placeholder="Tell us how we can help you..."
                     value={message}
                     onChange={e => setMessage(e.target.value)}
                     style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: '1px solid var(--line)', background: 'var(--paper)', fontSize: '13px', color: 'var(--ink)', resize: 'vertical' }}

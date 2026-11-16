@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { HelpCircle, ChevronDown, Search, MessageSquare, ArrowRight, ShieldCheck } from 'lucide-react';
+import { HelpCircle, ChevronDown, Search, MessageSquare, ArrowRight, ShieldCheck, X } from 'lucide-react';
 import { faqList, type FAQItem } from '../lib/data';
 
 export default function FAQ() {
@@ -50,7 +50,7 @@ export default function FAQ() {
             <Search size={18} className="search-box-icon" />
             <input
               type="text"
-              placeholder="Search questions by keyword, topic, or policy…"
+              placeholder="Search questions by keyword, topic, or policy..."
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
@@ -61,7 +61,7 @@ export default function FAQ() {
                 onClick={() => setSearch('')}
                 aria-label="Clear search"
               >
-                ✕
+                <X size={11} strokeWidth={2.5} />
               </button>
             )}
           </div>

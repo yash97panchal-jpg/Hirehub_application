@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookOpen, Clock, ArrowRight, Sparkles, CheckCircle2, Bookmark, Share2 } from 'lucide-react';
+import { BookOpen, Clock, ArrowRight, Sparkles, CheckCircle2, Bookmark, Share2, X } from 'lucide-react';
 import { careerArticles, type CareerArticle } from '../lib/data';
 
 export default function Resources() {
@@ -121,7 +121,7 @@ export default function Resources() {
             <input
               type="email"
               required
-              placeholder="Enter your email address…"
+              placeholder="Enter your email address..."
               value={email}
               onChange={e => setEmail(e.target.value)}
               style={{ flex: 1, padding: '12px 16px', borderRadius: '8px', border: 'none', background: 'var(--white)', fontSize: '13px', outline: 'none', color: 'var(--ink)' }}
@@ -157,7 +157,14 @@ export default function Resources() {
               <span className="status shortlist" style={{ fontSize: '11px', padding: '4px 10px' }}>
                 {selectedArticle.category} · {selectedArticle.readTime}
               </span>
-              <button className="icon-btn" onClick={() => setSelectedArticle(null)} style={{ fontSize: '18px' }}>✕</button>
+              <button
+                className="icon-btn"
+                onClick={() => setSelectedArticle(null)}
+                aria-label="Close article modal"
+                style={{ width: '32px', height: '32px', borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <X size={18} strokeWidth={2.2} />
+              </button>
             </div>
 
             <h2 style={{ fontSize: '24px', lineHeight: '1.3', color: 'var(--navy)', margin: '0 0 12px' }}>

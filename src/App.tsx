@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { Link, NavLink, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
+  ArrowLeft,
   ArrowRight,
   ArrowUpRight,
   Briefcase,
@@ -663,7 +664,7 @@ function Jobs() {
               type="text"
               value={q}
               onChange={e => setQ(e.target.value)}
-              placeholder="Search by role, company, skill or tech stack…"
+              placeholder="Search by role, company, skill or tech stack..."
             />
             {q && (
               <button
@@ -672,7 +673,7 @@ function Jobs() {
                 onClick={() => setQ('')}
                 aria-label="Clear keyword"
               >
-                ✕
+                <X size={11} strokeWidth={2.5} />
               </button>
             )}
           </div>
@@ -759,22 +760,22 @@ function Jobs() {
               <span style={{ fontSize: '11px', color: '#7E8589', fontWeight: 600 }}>Active filters:</span>
               {q && (
                 <span className="active-filter-tag">
-                  "{q}" <button onClick={() => setQ('')}>✕</button>
+                  "{q}" <button onClick={() => setQ('')} aria-label="Remove keyword filter"><X size={11} strokeWidth={2.5} /></button>
                 </span>
               )}
               {locationFilter !== 'All' && (
                 <span className="active-filter-tag">
-                  <MapPin size={10} color="#E87438" /> {locationFilter} <button onClick={() => setLocationFilter('All')}>✕</button>
+                  <MapPin size={10} color="#E87438" /> {locationFilter} <button onClick={() => setLocationFilter('All')} aria-label="Remove location filter"><X size={11} strokeWidth={2.5} /></button>
                 </span>
               )}
               {kind !== 'All' && (
                 <span className="active-filter-tag">
-                  <Briefcase size={10} color="#3B82F6" /> {kind} <button onClick={() => setKind('All')}>✕</button>
+                  <Briefcase size={10} color="#3B82F6" /> {kind} <button onClick={() => setKind('All')} aria-label="Remove job type filter"><X size={11} strokeWidth={2.5} /></button>
                 </span>
               )}
               {category !== 'All' && (
                 <span className="active-filter-tag">
-                  {category} <button onClick={() => setCategory('All')}>✕</button>
+                  {category} <button onClick={() => setCategory('All')} aria-label="Remove category filter"><X size={11} strokeWidth={2.5} /></button>
                 </span>
               )}
               <button
@@ -830,7 +831,8 @@ function JobDetail({ user }: { user: User | null }) {
     <article className="page-wrap detail-layout">
       <div className="detail-main">
         <Link className="back-link" to="/jobs">
-          ← Back to all opportunities
+          <ArrowLeft size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '5px' }} />
+          Back to all opportunities
         </Link>
         <div className="detail-head">
           <CompanyLogo name={job.company} size={58} />
@@ -1394,7 +1396,7 @@ function Profile({ user }: { user: User | null }) {
               <textarea
                 value={bio}
                 onChange={e => setBio(e.target.value)}
-                placeholder="A short introduction about your experience and goals…"
+                placeholder="A short introduction about your experience and goals..."
                 rows={4}
               />
             </label>
@@ -1545,7 +1547,7 @@ function PostJob({ user }: { user: User | null }) {
               <textarea
                 rows={6}
                 required
-                placeholder="Describe the role, responsibilities and what success looks like…"
+                placeholder="Describe the role, responsibilities and what success looks like..."
               />
             </label>
             <label className="span-2">

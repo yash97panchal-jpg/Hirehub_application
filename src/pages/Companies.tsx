@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Building2, MapPin, Users, Briefcase, ExternalLink, ShieldCheck, Search, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Building2, MapPin, Users, Briefcase, ExternalLink, ShieldCheck, Search, Sparkles, CheckCircle2, X } from 'lucide-react';
 import { demoCompanies, type Company } from '../lib/data';
 import { CompanyLogo } from '../components/CompanyLogo';
 
@@ -46,7 +46,7 @@ export default function Companies() {
             <Search size={18} className="search-box-icon" />
             <input
               type="text"
-              placeholder="Search companies by name, location, or tech…"
+              placeholder="Search companies by name, location, or tech..."
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
@@ -57,7 +57,7 @@ export default function Companies() {
                 onClick={() => setSearch('')}
                 aria-label="Clear search"
               >
-                ✕
+                <X size={11} strokeWidth={2.5} />
               </button>
             )}
           </div>
@@ -195,7 +195,14 @@ export default function Companies() {
                   <span style={{ fontSize: '13px', color: 'var(--muted)' }}>{selectedCompany.industry} · {selectedCompany.location}</span>
                 </div>
               </div>
-              <button className="icon-btn" onClick={() => setSelectedCompany(null)} style={{ fontSize: '18px' }}>✕</button>
+              <button
+                className="icon-btn"
+                onClick={() => setSelectedCompany(null)}
+                aria-label="Close modal"
+                style={{ width: '32px', height: '32px', borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <X size={18} strokeWidth={2.2} />
+              </button>
             </div>
 
             <p style={{ fontSize: '14px', lineHeight: '1.7', color: 'var(--ink)', marginBottom: '20px' }}>
