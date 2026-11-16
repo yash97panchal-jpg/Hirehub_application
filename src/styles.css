@@ -4,3 +4,286 @@
 @media(max-width:760px){.topbar{height:66px;padding:0 20px}.nav-links{display:none;position:absolute;top:66px;left:0;right:0;background:#fffefa;padding:20px 24px 24px;border-bottom:1px solid var(--line);box-shadow:0 20px 30px #101b2d12;flex-direction:column;align-items:stretch;gap:18px}.nav-links.open{display:flex}.mobile-nav-action{display:block}.top-actions{gap:10px}.post-link{display:none}.sign-in{padding:10px 13px;font-size:11px}.menu-toggle{display:grid}.hero{display:block;padding:72px 24px 65px;min-height:0}.hero h1{font-size:clamp(48px,13vw,65px);letter-spacing:-3px;margin-top:22px}.hero-lede{font-size:13px;max-width:400px}.hero-ctas{gap:18px;flex-wrap:wrap}.hero-proof{margin-top:35px}.hero-visual{height:370px;margin-top:22px;transform:scale(.88)}.glass-panel{width:min(330px,88vw)}.float-top{right:-4px;top:22px}.float-bottom{left:-5px;bottom:25px}.orbit-one{width:400px}.orbit-two{width:310px}.hero-footnote{left:24px;right:24px;bottom:17px;font-size:7px}.trust-strip{height:auto;min-height:76px;padding:18px 20px;gap:13px;flex-wrap:wrap}.trust-strip span{width:100%;text-align:center}.trust-strip b{font-size:10px}.trust-strip i{display:none}.section{padding:65px 22px}.section-heading{align-items:start;gap:15px;flex-direction:column}.section h2,.band-copy h2,.company-cta h2{font-size:39px}.job-grid,.listing-grid{grid-template-columns:1fr}.job-card{padding:19px}.dark-band{padding:65px 24px;grid-template-columns:1fr;gap:35px}.company-section{padding:65px 22px 90px}.company-cta{display:block}.company-cta>div{margin-top:22px}.footer{padding:38px 24px 80px}.footer-main{grid-template-columns:1fr;gap:15px}.footer-links{justify-content:start;flex-wrap:wrap}.footer-bottom{gap:12px;flex-wrap:wrap}.page-wrap{padding:50px 20px 95px}.page-intro h1{font-size:43px;letter-spacing:-2.4px}.search-panel{grid-template-columns:1fr;gap:8px}.search-field{border:1px solid var(--line);border-radius:7px;padding:13px}.search-panel .btn{width:100%}.filter-row{gap:7px}.results-count{width:100%;margin:5px 0 0}.detail-layout{grid-template-columns:1fr;gap:18px}.apply-card{position:static}.detail-head h1{font-size:24px}.auth-page{grid-template-columns:1fr}.auth-art{padding:52px 25px 120px;min-height:330px}.auth-art h1{font-size:45px;margin:20px 0 12px}.auth-art-card{bottom:25px}.auth-form{width:calc(100% - 48px);padding:45px 0 65px}.workspace{display:block;padding:28px 16px 100px}.workspace-side{position:static;display:flex;flex-direction:row;overflow:auto;gap:4px;padding:9px;margin-bottom:20px;white-space:nowrap}.user-mini,.side-label{display:none}.workspace-side>a{padding:9px;font-size:9px}.workspace-side>a svg{width:13px}.workspace-heading{align-items:flex-start;flex-direction:column}.workspace-heading h1{font-size:24px}.stat-grid{gap:8px}.stat-card{padding:13px}.stat-card strong{font-size:21px}.workspace-columns{grid-template-columns:1fr}.application-row{gap:8px}.application-row .status{font-size:7px;padding:5px 7px}.application-info b{font-size:9px}.application-info small{font-size:8px}.application-date{display:none}.workspace-card{padding:15px}.recommended .job-grid{grid-template-columns:1fr}.profile-form{padding:17px}.form-grid{grid-template-columns:1fr}.span-2{grid-column:auto}.profile-form-head{flex-wrap:wrap}.profile-form-head .status{margin-left:0}.mobile-dock{display:flex;position:fixed;z-index:40;bottom:0;left:0;right:0;height:62px;padding:5px 12px calc(5px + env(safe-area-inset-bottom));background:#fffefa;border-top:1px solid var(--line);justify-content:space-around;box-shadow:0 -8px 22px #101b2d0b}.mobile-dock a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:55px;color:#81898d;font-size:8px}.mobile-dock a.active{color:#9b7b43}.mobile-dock svg{width:18px;height:18px}}
 @media(min-width:761px) and (max-width:1100px){.job-grid,.listing-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{min-height:590px}.hero-visual{transform:scale(.78);margin-left:-25px}.hero h1{font-size:56px}.trust-strip{gap:18px}.trust-strip b{font-size:11px}.company-cta h2{font-size:42px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+
+/* ==========================================================================
+   HIREHUB LUXURY COLOR COMBINATION BUTTON & BRAND SYSTEM
+   ========================================================================== */
+
+/* Base Button Override */
+.btn {
+  position: relative;
+  border: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 11px;
+  padding: 13px 22px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  cursor: pointer;
+  text-decoration: none;
+  overflow: hidden;
+  transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+/* Primary Action Button: Brushed Gold & Midnight Navy Color Combination */
+.btn-gold {
+  background: linear-gradient(135deg, #FFE7A3 0%, #E0BA68 35%, #C5A15B 70%, #A27F35 100%) !important;
+  color: #0E1726 !important;
+  border: 1px solid rgba(255, 255, 255, 0.65) !important;
+  box-shadow: 0 4px 18px -2px rgba(197, 161, 91, 0.55),
+              0 2px 6px rgba(16, 27, 45, 0.12),
+              inset 0 1px 1px rgba(255, 255, 255, 0.85),
+              inset 0 -2px 0 rgba(110, 80, 20, 0.32) !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.btn-gold:hover {
+  background: linear-gradient(135deg, #FFF3BD 0%, #E8C475 35%, #D4AB50 70%, #B38C3B 100%) !important;
+  color: #080F1B !important;
+  transform: translateY(-2.5px);
+  box-shadow: 0 8px 28px -2px rgba(197, 161, 91, 0.72),
+              0 4px 12px rgba(16, 27, 45, 0.18),
+              inset 0 1px 1px #FFFFFF !important;
+}
+
+.btn-gold:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px rgba(197, 161, 91, 0.4),
+              inset 0 2px 4px rgba(0, 0, 0, 0.22) !important;
+}
+
+/* Dark Action Button: Midnight Navy with Gold Accent Border & Ambient Gold Glow */
+.btn-dark {
+  background: linear-gradient(135deg, #1F304A 0%, #132135 55%, #0B1321 100%) !important;
+  color: #FFFEFA !important;
+  border: 1.5px solid rgba(197, 161, 91, 0.45) !important;
+  box-shadow: 0 4px 18px -2px rgba(16, 27, 45, 0.45),
+              0 2px 6px rgba(0, 0, 0, 0.25),
+              inset 0 1px 1px rgba(255, 255, 255, 0.18),
+              inset 0 -1px 0 rgba(0, 0, 0, 0.55) !important;
+}
+
+.btn-dark:hover {
+  background: linear-gradient(135deg, #273D5C 0%, #18283E 55%, #0E1A2C 100%) !important;
+  color: #FFFFFF !important;
+  border-color: rgba(225, 199, 141, 0.85) !important;
+  transform: translateY(-2.5px);
+  box-shadow: 0 9px 28px -3px rgba(16, 27, 45, 0.58),
+              0 0 20px rgba(197, 161, 91, 0.35),
+              inset 0 1px 1px rgba(255, 255, 255, 0.28) !important;
+}
+
+.btn-dark:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45),
+              inset 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Outline / Glassmorphic Button: Warm Ivory with Brushed Gold Rim */
+.btn-outline {
+  background: linear-gradient(135deg, rgba(255, 254, 250, 0.95) 0%, rgba(247, 244, 237, 0.75) 100%) !important;
+  color: var(--navy) !important;
+  border: 1.5px solid rgba(197, 161, 91, 0.55) !important;
+  box-shadow: 0 3px 12px rgba(16, 27, 45, 0.06),
+              inset 0 1px 0 #FFFFFF !important;
+  backdrop-filter: blur(8px);
+}
+
+.btn-outline:hover {
+  background: linear-gradient(135deg, #101B2D 0%, #1A2D46 100%) !important;
+  color: #FFE4A0 !important;
+  border-color: #C5A15B !important;
+  transform: translateY(-2.5px);
+  box-shadow: 0 8px 24px rgba(16, 27, 45, 0.24),
+              0 0 14px rgba(197, 161, 91, 0.3) !important;
+}
+
+.btn-outline:active {
+  transform: translateY(1px);
+}
+
+/* Small Button Variant */
+.btn.small-btn {
+  padding: 8px 14px !important;
+  font-size: 11px !important;
+  border-radius: 8px !important;
+}
+
+/* Apply Link Pill: Dual-Tone Navy & Gold with Glow */
+.apply-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #101B2D 0%, #18283E 100%) !important;
+  color: #FFE4A0 !important;
+  border: 1px solid rgba(197, 161, 91, 0.4) !important;
+  padding: 9px 18px !important;
+  border-radius: 999px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+  box-shadow: 0 3px 12px rgba(16, 27, 45, 0.15) !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.apply-link:hover {
+  background: linear-gradient(135deg, #FFE4A0 0%, #C5A15B 100%) !important;
+  color: #0E1726 !important;
+  border-color: #FFE4A0 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(197, 161, 91, 0.5) !important;
+}
+
+.apply-link svg {
+  transition: transform 0.2s;
+}
+
+.apply-link:hover svg {
+  transform: translate(2px, -2px);
+}
+
+/* Bookmark / Save Job Button */
+.bookmark-btn,
+.save-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50% !important;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #FFFFFF 0%, #F5F0E6 100%) !important;
+  border: 1.5px solid rgba(197, 161, 91, 0.32) !important;
+  color: #8C8270 !important;
+  box-shadow: 0 3px 10px rgba(16, 27, 45, 0.08) !important;
+  cursor: pointer;
+  transition: all 0.22s ease !important;
+}
+
+.bookmark-btn:hover,
+.save-btn:hover {
+  transform: scale(1.08) !important;
+  border-color: rgba(197, 161, 91, 0.7) !important;
+  color: #0E1726 !important;
+  box-shadow: 0 5px 16px rgba(197, 161, 91, 0.35) !important;
+}
+
+.bookmark-btn.saved,
+.save-btn.saved {
+  background: linear-gradient(135deg, #FFE4A0 0%, #C5A15B 100%) !important;
+  border-color: #FFE4A0 !important;
+  color: #0E1726 !important;
+  box-shadow: 0 4px 16px rgba(197, 161, 91, 0.5) !important;
+}
+
+/* Post Job Navbar Link */
+.post-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 15px !important;
+  border-radius: 8px !important;
+  background: rgba(197, 161, 91, 0.12) !important;
+  border: 1px solid rgba(197, 161, 91, 0.35) !important;
+  color: var(--navy) !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  transition: all 0.2s !important;
+}
+
+.post-link:hover {
+  background: linear-gradient(135deg, #101B2D 0%, #1A2D46 100%) !important;
+  color: #FFE4A0 !important;
+  border-color: #101B2D !important;
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 14px rgba(16, 27, 45, 0.2) !important;
+}
+
+/* Sign In Top Button */
+.sign-in {
+  border-radius: 9px !important;
+  padding: 10px 18px !important;
+  font-size: 12px !important;
+}
+
+/* Chips & Pills */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 11px !important;
+  border-radius: 6px !important;
+  background: #F3EFE7 !important;
+  border: 1px solid rgba(16, 27, 45, 0.08) !important;
+  color: #55606E !important;
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.1px !important;
+}
+
+.pay-chip {
+  background: linear-gradient(135deg, #FAF3E3 0%, #F5E8C8 100%) !important;
+  color: #8C6A24 !important;
+  border: 1px solid rgba(197, 161, 91, 0.4) !important;
+  font-weight: 700 !important;
+}
+
+/* Role Selector Buttons */
+.role-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 18px !important;
+  border-radius: 10px !important;
+  background: #FFFFFF !important;
+  border: 1.5px solid rgba(16, 27, 45, 0.1) !important;
+  color: var(--navy) !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  cursor: pointer;
+  transition: all 0.2s !important;
+}
+
+.role-btn:hover {
+  border-color: rgba(197, 161, 91, 0.6) !important;
+  transform: translateY(-1.5px);
+}
+
+.role-btn.active {
+  background: linear-gradient(135deg, #1F304A 0%, #101B2D 100%) !important;
+  border-color: #C5A15B !important;
+  color: #FFE4A0 !important;
+  box-shadow: 0 6px 18px rgba(16, 27, 45, 0.25) !important;
+}
+
+/* Company Logo Container Enhancement */
+.company-logo-container {
+  display: grid;
+  place-items: center;
+  background: #FFFFFF;
+  border: 1px solid rgba(16, 27, 45, 0.1);
+  box-shadow: 0 4px 14px rgba(16, 27, 45, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  transition: transform 0.22s, box-shadow 0.22s;
+}
+
+.job-card:hover .company-logo-container {
+  transform: scale(1.05);
+  box-shadow: 0 6px 18px rgba(16, 27, 45, 0.12), inset 0 1px 0 #FFFFFF;
+}
+
+/* HireHub Brand Logo Hover Effect */
+.hirehub-brand-logo {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hirehub-brand-logo:hover {
+  transform: translateY(-1px);
+}
+
+.hirehub-brand-logo:hover .brand-logo-emblem {
+  box-shadow: 0 6px 20px rgba(197, 161, 91, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.4) !important;
+  border-color: rgba(225, 199, 141, 0.8) !important;
+}

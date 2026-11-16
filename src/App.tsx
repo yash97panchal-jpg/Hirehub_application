@@ -48,6 +48,9 @@ import {
   supabase,
 } from './lib/data';
 
+import { HireHubLogo } from './components/HireHubLogo';
+import { CompanyLogo } from './components/CompanyLogo';
+
 // Import our rich new pages
 import Companies from './pages/Companies';
 import ATSChecker from './pages/ATSChecker';
@@ -116,14 +119,8 @@ function App() {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <Link to="/" className="brand">
-          <span className="brand-mark">
-            <Briefcase size={19} />
-          </span>
-          <span>
-            hire<span className="brand-gold">hub</span>
-            <small>CAREER, IN MOTION</small>
-          </span>
+        <Link to="/" style={{ textDecoration: 'none' }}>
+          <HireHubLogo size={38} />
         </Link>
 
         <nav className={mobile ? 'nav-links open' : 'nav-links'}>
@@ -255,14 +252,8 @@ function Footer() {
     <footer className="footer">
       <div className="footer-main">
         <div>
-          <Link to="/" className="brand brand-light">
-            <span className="brand-mark">
-              <Briefcase size={18} />
-            </span>
-            <span>
-              hire<span className="brand-gold">hub</span>
-              <small>CAREER, IN MOTION</small>
-            </span>
+          <Link to="/" style={{ textDecoration: 'none' }}>
+            <HireHubLogo size={36} light={true} />
           </Link>
           <p style={{ marginTop: '10px', maxWidth: '340px', color: '#c0c9d1', fontSize: '13px', lineHeight: '1.6' }}>
             Good work starts with the right opportunity. A transparent, verified hiring marketplace connecting ambitious candidates with modern product studios and tech companies.
@@ -451,17 +442,35 @@ function Home() {
 
       {/* Trust Strip */}
       <div className="trust-strip">
-        <span>VERIFIED PLATFORMS & PARTNERS</span>
+        <span>TOP HIRING PARTNERS</span>
         <i>·</i>
-        <b>Northstar Labs</b>
+        <b style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          <CompanyLogo name="Google" size={18} /> Google
+        </b>
         <i>·</i>
-        <b>PixelForge</b>
+        <b style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          <CompanyLogo name="Microsoft" size={18} /> Microsoft
+        </b>
         <i>·</i>
-        <b>Aster Digital</b>
+        <b style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          <CompanyLogo name="Razorpay" size={18} /> Razorpay
+        </b>
         <i>·</i>
-        <b>Stackyard Cloud</b>
+        <b style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          <CompanyLogo name="Stripe" size={18} /> Stripe
+        </b>
         <i>·</i>
-        <b>Form & Function</b>
+        <b style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          <CompanyLogo name="Swiggy" size={18} /> Swiggy
+        </b>
+        <i>·</i>
+        <b style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          <CompanyLogo name="Zomato" size={18} /> Zomato
+        </b>
+        <i>·</i>
+        <b style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          <CompanyLogo name="Vercel" size={18} /> Vercel
+        </b>
       </div>
 
       {/* Featured Jobs Section */}
@@ -574,7 +583,7 @@ function JobCard({ job, compact = false }: { job: Job; compact?: boolean }) {
   return (
     <article className={compact ? 'job-card compact' : 'job-card'}>
       <div className="job-card-top">
-        <span className="company-glyph">{job.company.slice(0, 1)}</span>
+        <CompanyLogo name={job.company} size={44} />
         <button
           className={saved ? 'bookmark-btn saved' : 'bookmark-btn'}
           onClick={toggleSave}
@@ -732,7 +741,7 @@ function JobDetail({ user }: { user: User | null }) {
           ← Back to all opportunities
         </Link>
         <div className="detail-head">
-          <span className="company-glyph big">{job.company.slice(0, 1)}</span>
+          <CompanyLogo name={job.company} size={58} />
           <div>
             <div className="job-meta-row">
               <span>{job.company}</span>
@@ -1045,7 +1054,7 @@ function Dashboard({
                 </Link>
               </div>
               <div className="application-row">
-                <span className="company-glyph">N</span>
+                <CompanyLogo name="Northstar Labs" size={38} />
                 <div className="application-info">
                   <b>Junior Data Analyst</b>
                   <small>Northstar Labs · Applied 2 days ago</small>
@@ -1053,7 +1062,7 @@ function Dashboard({
                 <span className="status review">Under review</span>
               </div>
               <div className="application-row">
-                <span className="company-glyph">P</span>
+                <CompanyLogo name="PixelForge Studio" size={38} />
                 <div className="application-info">
                   <b>Frontend Developer</b>
                   <small>PixelForge Studio · Applied 5 days ago</small>
@@ -1171,7 +1180,7 @@ function Applications({ user }: { user: User | null }) {
         </div>
         <div className="workspace-card">
           <div className="application-row">
-            <span className="company-glyph">N</span>
+            <CompanyLogo name="Northstar Labs" size={38} />
             <div className="application-info">
               <b>Junior Data Analyst</b>
               <small>Northstar Labs · Ahmedabad (Hybrid)</small>
@@ -1180,7 +1189,7 @@ function Applications({ user }: { user: User | null }) {
             <span className="status review">Under review</span>
           </div>
           <div className="application-row">
-            <span className="company-glyph">P</span>
+            <CompanyLogo name="PixelForge Studio" size={38} />
             <div className="application-info">
               <b>Frontend Developer</b>
               <small>PixelForge Studio · Remote</small>
@@ -1189,7 +1198,7 @@ function Applications({ user }: { user: User | null }) {
             <span className="status shortlist">Shortlisted</span>
           </div>
           <div className="application-row">
-            <span className="company-glyph">F</span>
+            <CompanyLogo name="Form & Function" size={38} />
             <div className="application-info">
               <b>UI/UX Design Intern</b>
               <small>Form & Function · Remote</small>
@@ -1508,7 +1517,7 @@ function Admin({ user }: { user: User | null }) {
               'Mosaic Commerce · Recruiter access',
             ].map((x, i) => (
               <div className="application-row" key={x}>
-                <span className="company-glyph">{x[0]}</span>
+                <CompanyLogo name={x.split('·')[0].trim()} size={36} />
                 <div className="application-info">
                   <b>{x}</b>
                   <small>

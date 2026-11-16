@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Building2, MapPin, Users, Briefcase, ExternalLink, ShieldCheck, Search, Sparkles, CheckCircle2 } from 'lucide-react';
 import { demoCompanies, type Company } from '../lib/data';
+import { CompanyLogo } from '../components/CompanyLogo';
 
 export default function Companies() {
   const [search, setSearch] = useState('');
@@ -72,22 +73,7 @@ export default function Companies() {
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div
-                    style={{
-                      width: '46px',
-                      height: '46px',
-                      borderRadius: '12px',
-                      background: 'var(--navy)',
-                      color: 'var(--gold-light)',
-                      display: 'grid',
-                      placeItems: 'center',
-                      fontWeight: 800,
-                      fontSize: '18px',
-                      boxShadow: '0 4px 12px rgba(16,27,45,0.15)',
-                    }}
-                  >
-                    {company.name.slice(0, 1)}
-                  </div>
+                  <CompanyLogo name={company.name} website={company.website} size={48} />
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700 }}>{company.name}</h3>
@@ -178,10 +164,8 @@ export default function Companies() {
             onClick={e => e.stopPropagation()}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'var(--navy)', color: 'var(--gold-light)', display: 'grid', placeItems: 'center', fontWeight: 800, fontSize: '20px' }}>
-                  {selectedCompany.name.slice(0, 1)}
-                </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                <CompanyLogo name={selectedCompany.name} website={selectedCompany.website} size={54} />
                 <div>
                   <h2 style={{ margin: 0, fontSize: '22px' }}>{selectedCompany.name}</h2>
                   <span style={{ fontSize: '13px', color: 'var(--muted)' }}>{selectedCompany.industry} · {selectedCompany.location}</span>
