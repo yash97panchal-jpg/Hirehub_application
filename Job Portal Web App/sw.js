@@ -1,6 +1,6 @@
 // HireHub Service Worker for PWA & Mobile Web Application
-// Version: 4.0.0 - Re-themed Midnight Navy & Amber Orange
-const CACHE_NAME = "hirehub-cache-v4-navy";
+// Version: 5.0.0 - Midnight Navy, Brushed Gold & Warm Ivory
+const CACHE_NAME = "hirehub-cache-v5-midnight-gold";
 const PRECACHE_ASSETS = [
   "/",
   "/index.html",
@@ -11,6 +11,8 @@ const PRECACHE_ASSETS = [
   "/ui.js",
   "/favicon.png",
   "/logo.png",
+  "/icon.png",
+  "/play-store-icon-512.png",
   "/manifest.json"
 ];
 

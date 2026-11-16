@@ -264,7 +264,7 @@ export default function RecruiterDashboard() {
         {/* Plan Quota Meter Banner */}
         <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 sm:p-5 mb-8 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-600 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
               <Zap size={20} />
             </div>
             <div>
@@ -309,7 +309,7 @@ export default function RecruiterDashboard() {
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold capitalize transition-all cursor-pointer ${
                 activeTab === tab
-                  ? "bg-[var(--card)] text-[#F7941D] shadow-xs"
+                  ? "bg-[var(--card)] text-[#D4AF37] shadow-xs"
                   : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
               }`}
             >
@@ -332,8 +332,8 @@ export default function RecruiterDashboard() {
                   label: "Active Jobs",
                   value: storeJobs.length,
                   icon: Briefcase,
-                  color: "#F7941D",
-                  bg: "bg-orange-50 dark:bg-orange-950/40 text-[#E8820A]",
+                  color: "#D4AF37",
+                  bg: "bg-amber-50 dark:bg-amber-950/40 text-[#B89726]",
                   change: `${planDetails.usedJobs} active / ${planDetails.maxJobs} limit`,
                 },
                 {
@@ -341,7 +341,7 @@ export default function RecruiterDashboard() {
                   value: realApplied,
                   icon: Users,
                   color: "#101F3E",
-                  bg: "bg-slate-100 dark:bg-slate-800 text-[#101F3E] dark:text-orange-300",
+                  bg: "bg-slate-100 dark:bg-slate-800 text-[#101F3E] dark:text-amber-300",
                   change: realApplied > 0 ? `${realApplied} candidates` : "0 candidates",
                 },
                 {

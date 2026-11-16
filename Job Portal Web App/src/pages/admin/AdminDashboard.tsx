@@ -365,7 +365,7 @@ export default function AdminDashboard() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <div className="flex items-center gap-2.5 mb-1">
-                <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#E8820A] dark:text-orange-400 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-[#B89726] dark:text-amber-400 flex items-center justify-center">
                   <Shield size={18} />
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-[var(--foreground)] tracking-tight">
@@ -397,7 +397,7 @@ export default function AdminDashboard() {
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold capitalize transition-all cursor-pointer ${
                 activeTab === tab
-                  ? "bg-[#101F3E] text-white dark:bg-[#F7941D] dark:text-white shadow-xs font-bold"
+                  ? "bg-[#101F3E] text-white dark:bg-[#D4AF37] dark:text-white shadow-xs font-bold"
                   : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
               }`}
             >

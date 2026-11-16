@@ -190,3 +190,12 @@ Visit `http://localhost:8443` or the configured local dev port.
      7. Click "Remove Logo & Use Monogram" at any time to revert to a clean 2-letter monogram.
      8. Click "Save Company Profile" to commit changes.
 
+
+
+## 🎨 UI refresh — Midnight Navy / Brushed Gold / Warm Ivory
+
+The current interface uses the midnight navy, brushed gold and warm ivory palette across the primary web experience. The home hero includes a subtle 3D treatment, layered cards, responsive spacing, and reduced-motion support. The React source also includes the Three.js hero scene, with the scene placed behind the hero feature cards. The PWA manifest and service-worker cache were refreshed for the updated icons and visual assets.
+
+### Before publishing to app stores
+
+The project is prepared as a responsive web/PWA and includes Capacitor configuration, but this ZIP is not a signed Play Store or App Store release. Before submission, configure production Supabase credentials through your deployment environment (do not commit `.env.local`), verify the production domain and OAuth redirect URLs, run the test/typecheck/build commands on a machine with dependencies installed, generate and sign the Android App Bundle, and complete the store listing, privacy policy, Data safety, content rating, screenshots, and testing requirements. iOS distribution additionally requires the Apple developer account and signing/provisioning setup.

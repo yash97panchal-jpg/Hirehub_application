@@ -113,17 +113,17 @@
   --navy-hover: #1B2E5C;
 
   /* 10% ACCENT: logo orange (CTAs, highlights only) */
-  --primary: #F7941D;
-  --primary-hover: #E8820A;
-  --primary-deep: #C46A04;
-  --accent: #F7941D;
-  --accent-hover: #E8820A;
+  --primary: #D4AF37;
+  --primary-hover: #B89726;
+  --primary-deep: #9A7B1F;
+  --accent: #D4AF37;
+  --accent-hover: #B89726;
 
   --success: #15803D;
   --warning: #D97706;
   --error: #DC2626;
 
-  --ring: #F7941D;
+  --ring: #D4AF37;
   --shadow-sm: 0 1px 2px 0 rgba(16, 31, 62, 0.05);
   --shadow-card: 0 1px 3px 0 rgba(16, 31, 62, 0.07), 0 1px 2px -1px rgba(16, 31, 62, 0.06);
   --shadow-elevated: 0 14px 30px -6px rgba(16, 31, 62, 0.12), 0 4px 8px -4px rgba(16, 31, 62, 0.05);
@@ -131,19 +131,19 @@
 
 .dark {
   /* Dark Mode Palette adhering to 60-30-10 */
-  --primary: #FBA63C;
-  --primary-hover: #FDB95F;
-  --primary-deep: #F7941D;
+  --primary: #D4AF37;
+  --primary-hover: #E2C45D;
+  --primary-deep: #D4AF37;
 
   --secondary: #1E3563;
   --secondary-hover: #26437C;
   --navy: #101F3E;
   --navy-hover: #182C58;
 
-  --accent: #FBA63C;
-  --accent-hover: #FDB95F;
+  --accent: #D4AF37;
+  --accent-hover: #E2C45D;
 
-  --background: #090F1E;
+  --background: #0D1B2A;
   --card: #101F3E;
   --card-foreground: #F8FAFC;
 
@@ -156,7 +156,7 @@
   --warning: #F59E0B;
   --error: #EF4444;
 
-  --ring: #F7941D;
+  --ring: #D4AF37;
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
   --shadow-card: 0 2px 8px 0 rgba(0, 0, 0, 0.35);
   --shadow-elevated: 0 12px 28px -4px rgba(0, 0, 0, 0.5);
@@ -260,14 +260,14 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Gradient text utility using 60-30-10 Symbol Palette */
 .gradient-text {
-  background: linear-gradient(135deg, #101F3E 0%, #1E3A70 50%, #F7941D 100%);
+  background: linear-gradient(135deg, #101F3E 0%, #1E3A70 50%, #D4AF37 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .dark .gradient-text {
-  background: linear-gradient(135deg, #FFFFFF 0%, #FDBA74 50%, #F7941D 100%);
+  background: linear-gradient(135deg, #FFFFFF 0%, #FDBA74 50%, #D4AF37 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -471,11 +471,83 @@ select {
 h1, h2, h3, h4 { font-family: var(--font-poppins); letter-spacing: -0.02em; }
 h1 { line-height: 1.1; }
 p { text-wrap: pretty; }
-::selection { background: #F7941D; color: #101F3E; }
-:focus-visible { outline: 2px solid #F7941D; outline-offset: 2px; border-radius: 6px; }
+::selection { background: #D4AF37; color: #101F3E; }
+:focus-visible { outline: 2px solid #D4AF37; outline-offset: 2px; border-radius: 6px; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
 
 /* Cards lift on hover; headings navy */
 a.group, article { transition: transform .2s ease, box-shadow .2s ease; }
 a.group:hover, article:hover { transform: translateY(-2px); }
 h1, h2, h3 { color: inherit; }
+
+
+/* HireHub visual system: midnight navy, brushed gold and warm ivory */
+:root {
+  --background: #F7F3E9;
+  --card: #FFFEFB;
+  --card-foreground: #0D1B2A;
+  --foreground: #0D1B2A;
+  --muted: #EDE7D9;
+  --muted-foreground: #52647A;
+  --border: #D9D0BD;
+  --secondary: #1B263B;
+  --secondary-hover: #25344D;
+  --navy: #0D1B2A;
+  --navy-hover: #1B263B;
+  --primary: #D4AF37;
+  --primary-hover: #B89726;
+  --primary-deep: #9A7B1F;
+  --accent: #D4AF37;
+  --accent-hover: #B89726;
+  --ring: #D4AF37;
+  --shadow-card: 0 8px 22px rgba(13,27,42,.075), 0 2px 5px rgba(13,27,42,.04);
+  --shadow-elevated: 0 20px 48px -16px rgba(13,27,42,.24), 0 8px 18px -10px rgba(13,27,42,.12);
+}
+.dark {
+  --background: #0D1B2A;
+  --card: #1B263B;
+  --card-foreground: #F7F3E9;
+  --foreground: #F7F3E9;
+  --muted: #25344D;
+  --muted-foreground: #B7C3D2;
+  --border: #415A77;
+  --secondary: #1B263B;
+  --secondary-hover: #25344D;
+  --navy: #0D1B2A;
+  --navy-hover: #1B263B;
+  --primary: #D4AF37;
+  --primary-hover: #E2C45D;
+  --primary-deep: #B89726;
+  --accent: #D4AF37;
+  --accent-hover: #E2C45D;
+  --ring: #D4AF37;
+}
+
+html { scroll-padding-top: 88px; }
+body { background-image: radial-gradient(ellipse at 12% 0%, rgba(212,175,55,.055), transparent 34%), radial-gradient(ellipse at 92% 18%, rgba(65,90,119,.055), transparent 32%); }
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+button, [role="button"] { touch-action: manipulation; }
+:focus-visible { outline: 3px solid rgba(212,175,55,.75); outline-offset: 3px; }
+
+/* Layered, tactile surfaces without sacrificing readability or speed */
+[class*="shadow"], .rounded-2xl.border, .rounded-xl.border { transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease; }
+@media (hover:hover) and (pointer:fine) {
+  .rounded-2xl.border:hover, .rounded-xl.border:hover { transform: translateY(-3px); box-shadow: var(--shadow-elevated); border-color: rgba(212,175,55,.45); }
+}
+.bg-white, .dark .dark\:bg-\[var\(--card\)\] { box-shadow: var(--shadow-card); }
+
+/* Tablet and mobile layout safety */
+@media (max-width: 767px) {
+  html, body, #root { width:100%; max-width:100%; overflow-x:clip !important; }
+  main { min-width:0; }
+  input, select, textarea { max-width:100%; font-size:16px; }
+  button, a[role="button"] { min-height:40px; }
+  table { display:block; max-width:100%; overflow-x:auto; }
+  .leaflet-container { max-width:100%; }
+}
+@media (min-width:768px) and (max-width:1100px) {
+  .max-w-7xl { max-width: calc(100% - 3rem); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; }
+}

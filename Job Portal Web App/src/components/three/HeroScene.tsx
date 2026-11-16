@@ -27,7 +27,7 @@ function FloatingBriefcase() {
         {/* Briefcase body - Marigold */}
         <Box args={[1.4, 1, 0.4]} position={[0, -0.1, 0]}>
           <meshStandardMaterial
-            color="#F59E0B"
+            color="#D4AF37"
             metalness={0.6}
             roughness={0.2}
           />
@@ -39,7 +39,7 @@ function FloatingBriefcase() {
           rotation={[0, 0, 0]}
         >
           <meshStandardMaterial
-            color="#D97706"
+            color="#B89726"
             metalness={0.8}
             roughness={0.1}
           />
@@ -47,7 +47,7 @@ function FloatingBriefcase() {
         {/* Latch - Deep Aubergine */}
         <Box args={[0.25, 0.12, 0.08]} position={[0, -0.05, 0.25]}>
           <meshStandardMaterial
-            color="#2C1038"
+            color="#0D1B2A"
             metalness={0.9}
             roughness={0.1}
           />
@@ -87,7 +87,7 @@ function OrbitingParticles() {
       </bufferGeometry>
       <pointsMaterial
         size={0.05}
-        color="#F1F5F9"
+        color="#F7F3E9"
         transparent
         opacity={0.85}
         sizeAttenuation
@@ -108,10 +108,10 @@ function AccentSphere() {
   return (
     <Sphere ref={ref} args={[0.18, 32, 32]} position={[1.2, 1.4, 0.3]}>
       <meshStandardMaterial
-        color="#F59E0B"
+        color="#D4AF37"
         metalness={0.7}
         roughness={0.1}
-        emissive="#F59E0B"
+        emissive="#D4AF37"
         emissiveIntensity={0.3}
       />
     </Sphere>
@@ -129,10 +129,10 @@ function GlowRing() {
   return (
     <Torus ref={ref} args={[2.2, 0.02, 16, 100]} position={[0, 0, 0]}>
       <meshStandardMaterial
-        color="#F59E0B"
+        color="#D4AF37"
         transparent
         opacity={0.4}
-        emissive="#F59E0B"
+        emissive="#D4AF37"
         emissiveIntensity={0.5}
       />
     </Torus>
@@ -149,7 +149,7 @@ function DistortBlob() {
   return (
     <Sphere ref={ref} args={[1.6, 64, 64]} position={[0, 0, -0.5]}>
       <MeshDistortMaterial
-        color="#3A174E"
+        color="#1B263B"
         distort={0.25}
         speed={2}
         transparent
@@ -173,9 +173,9 @@ export default function HeroScene() {
       <pointLight
         position={[-3, 3, 3]}
         intensity={0.8}
-        color="#F59E0B"
+        color="#D4AF37"
       />
-      <pointLight position={[3, -2, 2]} intensity={0.6} color="#3A174E" />
+      <pointLight position={[3, -2, 2]} intensity={0.6} color="#1B263B" />
       <Environment preset="city" />
       <FloatingBriefcase />
       <OrbitingParticles />
