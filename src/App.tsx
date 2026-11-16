@@ -1157,16 +1157,20 @@ function Dashboard({
   user: User | null;
   onLogin: (u: User) => void;
 }) {
+  if (!user) {
+    return <RequireUser user={user}><></></RequireUser>;
+  }
+
   return (
     <RequireUser user={user}>
       <section className="workspace page-wrap">
-        <WorkspaceSide user={user!} />
+        <WorkspaceSide user={user} />
         <div className="workspace-main">
           <div className="workspace-heading">
             <div>
               <div className="eyebrow dark-eyebrow">YOUR WORKSPACE</div>
               <h1>
-                Welcome, <em>{user?.name.split(' ')[0]}</em>
+                Welcome, <em>{user.name.split(' ')[0]}</em>
               </h1>
               <p>Keep track of conversations, roles and next steps.</p>
             </div>
@@ -1409,6 +1413,11 @@ function Saved({ user }: { user: User | null }) {
 function Profile({ user }: { user: User | null }) {
   const [bio, setBio] = useState('');
   const [skills, setSkills] = useState('');
+
+  if (!user) {
+    return <RequireUser user={user}><></></RequireUser>;
+  }
+
   return (
     <RequireUser user={user}>
       <section className="page-wrap">
@@ -1427,10 +1436,10 @@ function Profile({ user }: { user: User | null }) {
           }}
         >
           <div className="profile-form-head">
-            <span className="avatar big">{user!.name.slice(0, 1)}</span>
+            <span className="avatar big">{(user.name || 'U').slice(0, 1).toUpperCase()}</span>
             <div>
-              <h3>{user!.name}</h3>
-              <small>{user!.email}</small>
+              <h3>{user.name}</h3>
+              <small>{user.email}</small>
             </div>
             <span className="status applied">Preview profile</span>
           </div>
@@ -1483,10 +1492,14 @@ function Profile({ user }: { user: User | null }) {
 }
 
 function Recruiter({ user }: { user: User | null }) {
+  if (!user || (user.role !== 'recruiter' && user.role !== 'admin')) {
+    return <RequireUser user={user} role="recruiter"><></></RequireUser>;
+  }
+
   return (
     <RequireUser user={user} role="recruiter">
       <section className="workspace page-wrap">
-        <WorkspaceSide user={user!} />
+        <WorkspaceSide user={user} />
         <div className="workspace-main">
           <div className="workspace-heading">
             <div>
@@ -1549,6 +1562,10 @@ function Recruiter({ user }: { user: User | null }) {
 }
 
 function PostJob({ user }: { user: User | null }) {
+  if (!user || (user.role !== 'recruiter' && user.role !== 'admin')) {
+    return <RequireUser user={user} role="recruiter"><></></RequireUser>;
+  }
+
   return (
     <RequireUser user={user} role="recruiter">
       <section className="page-wrap">
@@ -1577,7 +1594,7 @@ function PostJob({ user }: { user: User | null }) {
               Company
               <input
                 required
-                defaultValue={user!.company || ''}
+                defaultValue={user.company || ''}
                 placeholder="Company name"
               />
             </label>
@@ -1621,10 +1638,14 @@ function PostJob({ user }: { user: User | null }) {
 }
 
 function Admin({ user }: { user: User | null }) {
+  if (!user || user.role !== 'admin') {
+    return <RequireUser user={user} role="admin"><></></RequireUser>;
+  }
+
   return (
     <RequireUser user={user} role="admin">
       <section className="workspace page-wrap">
-        <WorkspaceSide user={user!} />
+        <WorkspaceSide user={user} />
         <div className="workspace-main">
           <div className="workspace-heading">
             <div>

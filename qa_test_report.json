@@ -1,0 +1,274 @@
+{
+  "summary": {
+    "total_tests": 57,
+    "passed": 55,
+    "failed": 2,
+    "warnings": 0
+  },
+  "phases": {
+    "phase1_codebase": {
+      "Route / (Home Page)": {
+        "status": "PASSED",
+        "details": "Status 200"
+      },
+      "Route /jobs (Job Board)": {
+        "status": "PASSED",
+        "details": "Status 200"
+      },
+      "Route /jobs/JH-1050 (Job Details)": {
+        "status": "PASSED",
+        "details": "Status 200"
+      },
+      "Route /companies (Companies Directory)": {
+        "status": "PASSED",
+        "details": "Status 200"
+      },
+      "Route /salary (Salary Insights)": {
+        "status": "PASSED",
+        "details": "Status 200"
+      },
+      "Route /ats (ATS Resume Checker)": {
+        "status": "PASSED",
+        "details": "Status 200"
+      },
+      "Route /resources (Career Playbooks)": {
+        "status": "PASSED",
+        "details": "Status 200"
+      },
+      "Route /about (About Page)": {
+        "status": "PASSED",
+        "details": "Status 200"
+      },
+      "Route /faq (FAQ Page)": {
+        "status": "PASSED",
+        "details": "Status 200"
+      },
+      "Route /contact (Contact Page)": {
+        "status": "PASSED",
+        "details": "Status 200"
+      },
+      "Route /privacy (Privacy Policy)": {
+        "status": "PASSED",
+        "details": "Status 200"
+      },
+      "Route /terms (Terms of Service)": {
+        "status": "PASSED",
+        "details": "Status 200"
+      },
+      "Route /login (Login Page)": {
+        "status": "PASSED",
+        "details": "Status 200"
+      },
+      "Route /register (Register Page)": {
+        "status": "PASSED",
+        "details": "Status 200"
+      },
+      "Console Errors Audit": {
+        "status": "PASSED",
+        "details": "Zero unhandled runtime errors detected."
+      }
+    },
+    "phase2_auth_rbac": {
+      "Unauthenticated Block on /dashboard": {
+        "status": "PASSED",
+        "details": "Properly gates behind Sign in required screen."
+      },
+      "Unauthenticated Block on /applications": {
+        "status": "PASSED",
+        "details": "Properly gates behind Sign in required screen."
+      },
+      "Unauthenticated Block on /saved": {
+        "status": "PASSED",
+        "details": "Properly gates behind Sign in required screen."
+      },
+      "Unauthenticated Block on /profile": {
+        "status": "FAILED",
+        "details": "Did not display sign-in required screen."
+      },
+      "Unauthenticated Block on /recruiter": {
+        "status": "PASSED",
+        "details": "Properly gates behind Sign in required screen."
+      },
+      "Unauthenticated Block on /post-job": {
+        "status": "FAILED",
+        "details": "Did not display sign-in required screen."
+      },
+      "Unauthenticated Block on /admin": {
+        "status": "PASSED",
+        "details": "Properly gates behind Sign in required screen."
+      },
+      "Candidate Registration Flow": {
+        "status": "PASSED",
+        "details": "Registered and redirected to candidate dashboard."
+      },
+      "Candidate Blocked from /recruiter": {
+        "status": "PASSED",
+        "details": "Restricted access message shown."
+      },
+      "Candidate Blocked from /admin": {
+        "status": "PASSED",
+        "details": "Restricted access message shown."
+      },
+      "Recruiter Login & Access": {
+        "status": "PASSED",
+        "details": "Successfully accessed recruiter workspace."
+      },
+      "Recruiter Blocked from /admin": {
+        "status": "PASSED",
+        "details": "Recruiter cannot access admin control."
+      }
+    },
+    "phase3_job_seeker": {
+      "Live Keyword Search Filter": {
+        "status": "PASSED",
+        "details": "Filtered from 17 to 2 matching jobs."
+      },
+      "Clear Search Button (Lucide X)": {
+        "status": "PASSED",
+        "details": "Successfully cleared search and restored results."
+      },
+      "Transparent Teams Badge on Job Card": {
+        "status": "PASSED",
+        "details": "Displayed: \"Engineering Team\" with transparent glass style."
+      },
+      "Apply Now Button on Job Card": {
+        "status": "PASSED",
+        "details": "Found 17 Apply Now buttons with Lucide Send icon."
+      },
+      "Job Bookmark / Save Toggle": {
+        "status": "PASSED",
+        "details": "Card marked saved in localStorage and UI."
+      },
+      "ATS Checker PDF Dropzone": {
+        "status": "PASSED",
+        "details": "Interactive dropzone rendered with file input."
+      },
+      "ATS Resume Analysis Algorithm": {
+        "status": "PASSED",
+        "details": "Calculated ATS score, keywords match, and improvements."
+      },
+      "HireBot AI Chatbot Launcher": {
+        "status": "PASSED",
+        "details": "Opened floating glassmorphic chat widget."
+      },
+      "HireBot Interactive Apply Flow": {
+        "status": "PASSED",
+        "details": "Initiated application dialogue."
+      }
+    },
+    "phase4_recruiter": {},
+    "phase5_admin": {},
+    "phase6_database": {},
+    "phase7_ui_ux": {
+      "Unified Font Family (DM Sans)": {
+        "status": "PASSED",
+        "details": "All text elements uniformly inherit DM Sans: ['\"DM Sans\", -apple-system, sans-serif', '\"DM Sans\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif']"
+      },
+      "Icons Dock & Navigation Tab Removal": {
+        "status": "PASSED",
+        "details": "Verified icons tab completely removed from header and layout."
+      }
+    },
+    "phase8_responsive": {
+      "Layout Overflow: Mobile Galaxy/Android (360x800)": {
+        "status": "PASSED",
+        "details": "Clean fit (360px <= 360px)"
+      },
+      "Icon-Only Buttons on Mobile Galaxy/Android (360x800)": {
+        "status": "PASSED",
+        "details": "Desktop labels hidden; compact icon buttons displayed."
+      },
+      "Layout Overflow: Mobile iPhone X/11/12 (375x812)": {
+        "status": "PASSED",
+        "details": "Clean fit (375px <= 375px)"
+      },
+      "Icon-Only Buttons on Mobile iPhone X/11/12 (375x812)": {
+        "status": "PASSED",
+        "details": "Desktop labels hidden; compact icon buttons displayed."
+      },
+      "Layout Overflow: Mobile iPhone 15 Pro (393x852)": {
+        "status": "PASSED",
+        "details": "Clean fit (393px <= 393px)"
+      },
+      "Icon-Only Buttons on Mobile iPhone 15 Pro (393x852)": {
+        "status": "PASSED",
+        "details": "Desktop labels hidden; compact icon buttons displayed."
+      },
+      "Layout Overflow: Mobile Pixel 7 (412x915)": {
+        "status": "PASSED",
+        "details": "Clean fit (412px <= 412px)"
+      },
+      "Icon-Only Buttons on Mobile Pixel 7 (412x915)": {
+        "status": "PASSED",
+        "details": "Desktop labels hidden; compact icon buttons displayed."
+      },
+      "Layout Overflow: Tablet iPad Mini (768x1024)": {
+        "status": "PASSED",
+        "details": "Clean fit (768px <= 768px)"
+      },
+      "Icon-Only Buttons on Tablet iPad Mini (768x1024)": {
+        "status": "PASSED",
+        "details": "Desktop labels hidden; compact icon buttons displayed."
+      },
+      "Layout Overflow: Tablet iPad Air (820x1180)": {
+        "status": "PASSED",
+        "details": "Clean fit (820px <= 820px)"
+      },
+      "Icon-Only Buttons on Tablet iPad Air (820x1180)": {
+        "status": "PASSED",
+        "details": "Desktop labels hidden; compact icon buttons displayed."
+      },
+      "Layout Overflow: Tablet iPad Pro (1024x1366)": {
+        "status": "PASSED",
+        "details": "Clean fit (1024px <= 1024px)"
+      },
+      "Layout Overflow: Desktop 720p (1280x720)": {
+        "status": "PASSED",
+        "details": "Clean fit (1280px <= 1280px)"
+      },
+      "Layout Overflow: Desktop MacBook 14 (1440x900)": {
+        "status": "PASSED",
+        "details": "Clean fit (1440px <= 1440px)"
+      },
+      "Layout Overflow: Desktop 1080p FHD (1920x1080)": {
+        "status": "PASSED",
+        "details": "Clean fit (1920px <= 1920px)"
+      }
+    },
+    "phase9_security": {},
+    "phase10_performance": {},
+    "phase11_browsers": {
+      "Microsoft Edge Compatibility": {
+        "status": "PASSED",
+        "details": "Loaded successfully: \"HireHub \u2014 Career, in Motion\" (HTTP 200)"
+      }
+    },
+    "phase12_workflows": {},
+    "phase13_edge_cases": {},
+    "phase14_accessibility": {
+      "Image Alt Text Compliance": {
+        "status": "PASSED",
+        "details": "All rendered images have descriptive alt or decorative attributes."
+      },
+      "Button Accessible Names": {
+        "status": "PASSED",
+        "details": "All icon-only buttons have aria-label or title attributes."
+      }
+    },
+    "phase15_automated": {}
+  },
+  "console_errors": [],
+  "viewports_tested": [],
+  "screenshots": [
+    "viewport_360x800.png",
+    "viewport_375x812.png",
+    "viewport_393x852.png",
+    "viewport_412x915.png",
+    "viewport_768x1024.png",
+    "viewport_820x1180.png",
+    "viewport_1024x1366.png",
+    "viewport_1280x720.png",
+    "viewport_1440x900.png",
+    "viewport_1920x1080.png"
+  ]
+}
