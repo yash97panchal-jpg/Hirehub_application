@@ -1,201 +1,88 @@
-# HireHub - Enterprise Multi-Company Job Marketplace & ATS Platform
+# HireHub — rebuilt from scratch
 
-HireHub is a modern, full-stack multi-company job marketplace and Applicant Tracking System (ATS) built with **React 19**, **Vite**, **TypeScript**, **Tailwind CSS v4**, **Zustand**, **Supabase** (PostgreSQL, Auth, Storage, Row-Level Security), and wrapped for iOS & Android with **Capacitor**.
+A clean React + TypeScript + Vite application foundation for a multi-role job marketplace. This project is a new implementation; it does not reuse the previous HireHub frontend code. The earlier project is used only as a product requirements reference.
 
----
+## Product direction
 
-## 🌟 Architecture & Core Capabilities
+- **Visual system:** midnight navy `#101B2D`, brushed gold `#C5A15B`, warm ivory `#F7F4ED`, off-white surfaces, restrained depth, glass-style 3D hero treatment.
+- **Responsive targets:** 360 / 375 / 393 / 412 px phones, 768 / 820 px tablets, 1024 px small laptops, 1366 / 1536 / 1920 px desktop.
+- **Roles:** job seeker, recruiter/employer, administrator.
+- **Web/mobile strategy:** one responsive web app, installable PWA, with Capacitor configuration for Android and iOS packaging.
 
-### 1. Multi-Company Marketplace with Flexible Apply Modes
-Every job listing in HireHub supports one of three configurable application modes:
-- **Easy Apply (`easy`)**: 4-step in-app application flow (resume upload with signed storage URL, cover letter note, dynamic screening questions, final review & submission) with duplicate application prevention (`unique(job_id, user_id)`).
-- **Apply on Company Website (`external`)**: Secure redirect to the employer's official ATS/careers page (`rel="noopener noreferrer"`). When the candidate returns to the app, a confirmation dialog (*"Did you finish applying to {company}?"*) allows self-reporting to the Application Tracker.
-- **Both (`both`)**: Displays both in-app Easy Apply and direct external ATS link, empowering candidate choice.
+## Current implementation in this starter
 
-### 2. Company Onboarding & Admin Moderation
-- Recruiters register and establish their company profile (default state: `status = 'pending'`, `verified = false`).
-- Platform administrators review companies in the **Admin Dashboard** (`/admin`), with powers to approve, reject, block, and grant the official **Verified Employer** badge.
-- Only approved companies can publish active listings to the public marketplace.
-- Recruiters can invite teammates with role designations (`owner`, `recruiter`, `member`).
-- Public company profile page (`/companies/:slug`) displays verified branding, metadata, GIS office map, and all open positions.
+- Landing page and responsive navigation.
+- Job board with keyword/category/employment filters and sample listing data.
+- Job detail page, saved-job interactions and preview apply confirmation.
+- Sign-in / registration screens; Supabase Auth integration when environment keys are configured; browser-only preview sign-in when not configured.
+- Job-seeker workspace, application overview, saved roles and profile form.
+- Recruiter workspace and job-posting form.
+- Admin overview and moderation queue presentation.
+- Responsive mobile bottom navigation, tablet/desktop layouts, reduced-motion support and accessible focus styles.
+- New Supabase schema foundation for profiles, companies, company memberships, jobs, applications, status history, screening questions/answers, interviews, feedback, recruiter notes, saved jobs, job alerts, notifications, reports and audit logs.
 
-### 3. Server-Side Authentication & Row-Level Security (RLS)
-- Powered by Supabase Auth (Email + Password and Google OAuth).
-- Server-side role enforcement (`job_seeker`, `recruiter`, `admin`).
-- PostgreSQL Row-Level Security policies strictly isolate tenant data:
-  - Candidates view only their own applications.
-  - Recruiters view only applications for jobs posted by their own company.
-  - Non-admins cannot verify companies or approve pending employers.
-  - Zero-config local development fallback ensures full functionality in offline or local preview mode.
+**Important:** This is the first clean-codebase milestone, not a production-complete marketplace. Several dashboard counts and applicant rows are illustrative preview data. Job creation, application submission, file storage, notifications, recruiter pipelines, moderation actions, analytics, email delivery and all end-to-end role permissions still require their service-layer wiring and integration tests before launch. Do not publish this build as a live service yet.
 
-### 4. Interactive GIS Map View & Location Discovery
-- Integrated OpenStreetMap GIS views across `JobDetail` (`/jobs/:id`) and `CompanyPage` (`/companies/:slug`).
-- Coordinates and physical addresses plotted on high-resolution interactive maps.
+## Requirements
 
-### 5. AI Career Help Bot & Resume Matcher
-- Floating conversational career assistant available across all pages.
-- Real-time customer support Q&A handling application guidelines and account support.
-- **Intelligent Resume-to-Job Matcher**: Candidates upload or paste their resume; the bot parses core competencies, calculates match percentages (e.g., 94% Match), highlights matching skills, and provides tailored recommendations.
+- Node.js 20.19+ or 22.12+
+- npm 10+
+- Supabase project for live authentication and database operations
+- Android Studio / Android SDK for Android packaging
+- macOS + Xcode for iOS packaging
 
-### 6. Official Job Board API Importer (Feature Flagged)
-- Connects to official public job board APIs (**Greenhouse**, **Lever**, **Workable**).
-- Deduplicates listings via `(company_id, external_id)`.
-- Automatically assigns `apply_mode = 'external'` with original ATS tracking URLs.
-- Built without web scraping in compliance with platform terms of service.
-
-### 7. Mobile First (iOS & Android via Capacitor)
-- Configured with `@capacitor/core`, `@capacitor/cli`, `@capacitor/browser`, and `@capacitor/app`.
-- Full synchronization via `npx cap sync`.
-
----
-
-## 🗄️ Database Setup & SQL Migrations
-
-Database definitions and security policies are located in `/supabase`:
-
-```
-supabase/
-├── migrations/
-│   └── 20261104000000_hirehub_init.sql  # Full schema, types, tables, storage, and RLS policies
-└── seed.sql                             # Seed data (Meta, Stripe, Spotify, Google, jobs, and applications)
-```
-
-### Applying Migrations via Supabase CLI
-```bash
-# Login to your Supabase project
-supabase login
-
-# Link your remote project
-supabase link --project-ref <your-project-ref>
-
-# Push the schema migration
-supabase db push
-
-# Apply sample seed data
-supabase db reset
-# or execute seed.sql directly via Supabase SQL Editor
-```
-
----
-
-## ⚙️ Environment Variables
-
-Create a `.env.local` file inside `Job Portal Web App/`:
-
-```env
-# Supabase Configuration (Get from Supabase Dashboard > Project Settings > API)
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-
-# Feature Flags
-VITE_ENABLE_JOB_IMPORT=true
-```
-
-> **Zero-Config Development Notice:** If `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are omitted, HireHub automatically boots with an in-memory/localStorage seed store, allowing full UI and workflow testing without mandatory cloud credentials.
-
----
-
-## 📦 Manual Configuration Checklist
-
-To connect production third-party services:
-
-1. **Supabase Storage Bucket**:
-   - Create a private bucket named `resumes`.
-   - Set max file size limit to `5 MB`.
-   - Allowed MIME types: `application/pdf`, `application/msword`, `application/vnd.openxmlformats-officedocument.wordprocessingml.document`.
-   - Policies defined in `20261104000000_hirehub_init.sql` grant seekers read/write on their folder and recruiters read access for submitted applications.
-
-2. **Google OAuth Provider**:
-   - Go to **Supabase Dashboard > Authentication > Providers > Google**.
-   - Input your Google Cloud OAuth Client ID and Secret.
-   - Add `https://<your-project>.supabase.co/auth/v1/callback` to Authorized redirect URIs in Google Cloud Console.
-
-3. **Transactional Email Provider (Pluggable)**:
-   - Configure SMTP or Resend/SendGrid in Supabase Auth settings to dispatch verification emails and application status updates.
-
-4. **In-App Mobile Purchases (iOS / Android)**:
-   - In accordance with App Store Review Guideline 3.1.1, online web checkout is suspended in the mobile wrapper in favor of native Apple In-App Purchase (IAP) products.
-
----
-
-## 🧪 Testing & Quality Assurance
-
-Run the test suite and verify type safety:
+## Run locally
 
 ```bash
-# Navigate to the app directory
-cd "Job Portal Web App"
-
-# 1. Run Unit & RLS Policy Tests (Vitest)
-npm test
-
-# 2. Run TypeScript Verification
-npm run typecheck
-
-# 3. Run Production Build (Vite)
-npm run build
-
-# 4. Synchronize Native Mobile Shell
-npx cap sync
-```
-
----
-
-## 🚀 Local Development
-
-```bash
-cd "Job Portal Web App"
 npm install
+cp .env.example .env.local
 npm run dev
 ```
 
-Visit `http://localhost:8443` or the configured local dev port.
+Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `.env.local`. Only the Supabase anon/public key belongs in the client. Never put a service-role key in frontend environment variables.
 
----
+## Supabase setup
 
-## 🏢 Company Ecosystem & Logo Upload Guide
+1. Create a new Supabase project.
+2. Open SQL Editor and run `supabase/migrations/0001_hirehub_schema.sql`.
+3. Configure Auth email confirmation and password recovery URLs for your local and production domains.
+4. Create private Storage buckets for `resumes` and `avatars`; do not make resumes public. Serve resume downloads through short-lived signed URLs after authorization.
+5. Create an initial admin profile using a controlled server-side process. Never let a user choose or self-assign the admin role during public registration.
+6. Review every RLS policy against real candidate, recruiter, company-member and admin accounts before importing production data.
 
-### Key Company Features
-1. **Company Directory (`#/companies`)**:
-   - Comprehensive searchable directory supporting **Grid** and **List** view modes.
-   - Granular multi-filter: Search by name/keyword/tagline, Industry, Company Size, Work Mode (Remote, Hybrid, On-site), and Location.
-   - Sort by Most Open Roles, Name A–Z, or Newest Founded.
-   - Badges: `✓ Verified Employer`, `Hiring fast` (2+ open listings), `Featured`.
-   - **Quick Snapshot Preview**: Click "Snapshot" / "Preview" on any card for an instant modal summary of company stats, perks, and latest openings without navigating away.
+## Build and mobile packaging
 
-2. **Rich Company Profile (`#/company/:name` or `#/company/:id`)**:
-   - **Uncropped High-Resolution Logo**: Preserved with natural aspect ratio (`object-fit: contain`) across all viewport sizes (desktop and mobile), with graceful monogram avatar fallback.
-   - **Cover Banner & Verified Badge**: Real-time follower counter with live follow/unfollow toggle.
-   - **4 Tabbed Views** (zero-jump smooth animation):
-     - **Overview**: In-depth company narrative, tech stack tags, workplace perks/benefits, and interactive photo gallery lightbox.
-     - **Open Roles**: Active job listings with direct Apply CTAs.
-     - **Culture & Values**: Core operating pillars and team principles.
-     - **Office Locations**: Styled headquarters and regional hub addresses.
-   - **Mobile Sticky Sub-Header**: Fixed header with company logo, name, and 1-tap Follow button on small screens.
+```bash
+npm run typecheck
+npm run build
+npx cap add android
+npx cap add ios
+npx cap sync
+```
 
-3. **Job Seeker Engagement & Automated Alerts**:
-   - Follow companies to receive immediate notification alerts in `#/alerts` whenever that company posts a new job or internship.
-   - **Followed Companies Tab (`#/dash?t=following`)**: Dedicated tracker in Seeker Dashboard.
-   - **Company Comparison Tool (`#/compare-companies`)**: Side-by-side attribute comparison for up to 3 companies.
+Open Android in Android Studio and generate a signed Android App Bundle (`.aab`). Open iOS in Xcode on macOS to configure signing and archive. A valid production release also needs privacy policy, terms, account deletion, store listing assets, data safety declarations, reviewer credentials and device testing. Capacitor config alone does not mean store-ready native apps exist.
 
-4. **Recruiter Company Management & Logo Upload (`#/dash?t=company`)**:
-   - Dedicated tab in Recruiter Dashboard with live real-time card preview panel.
-   - **How to Upload Company Logos**:
-     1. Log in with a Recruiter account (e.g. `recruiter@hirehub.app`).
-     2. Navigate to **Dashboard > My Company** (`#/dash?t=company`).
-     3. Under "Company Logo Upload", click the dropzone or drag and drop an image.
-     4. Supported formats: **PNG, JPG, SVG, WebP** (Maximum size: **2MB**).
-     5. Strict client-side security scanner rejects malicious SVGs containing `<script>`, `onload=`, `onerror=`, or inline javascript.
-     6. Logos are rendered **uncropped** with their natural aspect ratio intact.
-     7. Click "Remove Logo & Use Monogram" at any time to revert to a clean 2-letter monogram.
-     8. Click "Save Company Profile" to commit changes.
+## Quality gate before release
 
+- Configure Supabase and replace preview data with database-backed queries/mutations.
+- Verify RLS with separate job seeker, recruiter, company owner and admin accounts.
+- Add automated unit, integration and browser E2E tests.
+- Test resume upload/download permissions, file type/size validation and signed URL expiry.
+- Verify all job application status transitions, interview notifications and withdrawal behavior.
+- Test keyboard navigation, screen readers, contrast, reduced motion and mobile safe areas.
+- Test responsive widths listed above and confirm no horizontal overflow.
+- Add production monitoring, backups, rate limits, abuse reporting and operational support.
 
+## Project layout
 
-## 🎨 UI refresh — Midnight Navy / Brushed Gold / Warm Ivory
-
-The current interface uses the midnight navy, brushed gold and warm ivory palette across the primary web experience. The home hero includes a subtle 3D treatment, layered cards, responsive spacing, and reduced-motion support. The React source also includes the Three.js hero scene, with the scene placed behind the hero feature cards. The PWA manifest and service-worker cache were refreshed for the updated icons and visual assets.
-
-### Before publishing to app stores
-
-The project is prepared as a responsive web/PWA and includes Capacitor configuration, but this ZIP is not a signed Play Store or App Store release. Before submission, configure production Supabase credentials through your deployment environment (do not commit `.env.local`), verify the production domain and OAuth redirect URLs, run the test/typecheck/build commands on a machine with dependencies installed, generate and sign the Android App Bundle, and complete the store listing, privacy policy, Data safety, content rating, screenshots, and testing requirements. iOS distribution additionally requires the Apple developer account and signing/provisioning setup.
+```text
+src/
+  App.tsx             routes, layouts and first-pass screens
+  main.tsx            React entry point
+  styles.css          design tokens and responsive visual system
+  lib/data.ts         Supabase client and typed preview data
+supabase/
+  migrations/         clean database schema and RLS baseline
+public/
+  manifest.webmanifest
+```

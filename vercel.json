@@ -1,7 +1,7 @@
 {
   "buildCommand": "npm run build",
   "installCommand": "npm install",
-  "outputDirectory": "Job Portal Web App/dist",
+  "outputDirectory": "dist",
   "headers": [
     {
       "source": "/(.*)",

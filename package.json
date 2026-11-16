@@ -1,15 +1,9 @@
 {
-  "name": "hirehub-root",
-  "version": "1.0.0",
+  "name": "hirehub-from-scratch",
   "private": true,
-  "scripts": {
-    "build": "npm --prefix \"Job Portal Web App\" run build",
-    "dev": "npm --prefix \"Job Portal Web App\" run dev",
-    "typecheck": "npm --prefix \"Job Portal Web App\" run typecheck",
-    "test": "npm --prefix \"Job Portal Web App\" run test",
-    "assets": "npm --prefix \"Job Portal Web App\" run assets",
-    "android": "npm --prefix \"Job Portal Web App\" run android",
-    "ios": "npm --prefix \"Job Portal Web App\" run ios",
-    "cap": "npm --prefix \"Job Portal Web App\" run cap"
-  }
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {"dev":"vite --host 0.0.0.0", "build":"tsc -b && vite build", "preview":"vite preview --host 0.0.0.0", "typecheck":"tsc -b", "cap:sync":"cap sync", "android":"cap open android", "ios":"cap open ios"},
+  "dependencies": {"@capacitor/android":"^8.6.0", "@capacitor/core":"^8.6.0", "@capacitor/ios":"^8.6.0", "@supabase/supabase-js":"^2.118.0", "framer-motion":"^12.23.0", "lucide-react":"^0.468.0", "react":"^19.0.0", "react-dom":"^19.0.0", "react-router-dom":"^7.1.0"},
+  "devDependencies": {"@capacitor/cli":"^8.6.0", "@types/react":"^19.0.0", "@types/react-dom":"^19.0.0", "@vitejs/plugin-react":"^4.3.4", "typescript":"~5.7.2", "vite":"^6.0.5"}
 }
