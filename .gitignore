@@ -11,3 +11,4 @@ ios/Pods
 hirehub-older-design-backup/
 screenshots/
 test_suite.py
+*.tsbuildinfo

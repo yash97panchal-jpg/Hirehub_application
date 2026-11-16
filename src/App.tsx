@@ -10,12 +10,14 @@ import {
   BarChart3,
   Check,
   Compass,
+  Eye,
   FileText,
   Heart,
   LayoutDashboard,
   LogOut,
   Menu,
   Search,
+  Send,
   ShieldCheck,
   Sparkles,
   Users,
@@ -52,6 +54,7 @@ import {
 import { HireHubLogo } from './components/HireHubLogo';
 import { CompanyLogo } from './components/CompanyLogo';
 import { FloatingDock } from './components/FloatingDock';
+import { HelpChatbot } from './components/HelpChatbot';
 
 // Import our rich new pages
 import Companies from './pages/Companies';
@@ -228,6 +231,9 @@ function App() {
 
       {/* Floating macOS-Style Navigation Dock */}
       <FloatingDock />
+
+      {/* AI Help Bot / Application Assistant */}
+      <HelpChatbot />
     </div>
   );
 }
@@ -554,6 +560,28 @@ function JobCard({ job, compact = false }: { job: Job; compact?: boolean }) {
     return list.includes(job.id);
   });
 
+  const [applied, setApplied] = useState(() => {
+    const apps: string[] = JSON.parse(
+      localStorage.getItem('hirehub_applied') || '[]'
+    );
+    return apps.includes(job.id);
+  });
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const apps: string[] = JSON.parse(
+        localStorage.getItem('hirehub_applied') || '[]'
+      );
+      setApplied(apps.includes(job.id));
+    };
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('hirehub-application-submitted', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('hirehub-application-submitted', handleStorageChange);
+    };
+  }, [job.id]);
+
   const toggleSave = (e: React.MouseEvent) => {
     e.preventDefault();
     const list: string[] = JSON.parse(
@@ -564,6 +592,12 @@ function JobCard({ job, compact = false }: { job: Job; compact?: boolean }) {
     else next = [...list, job.id];
     localStorage.setItem('hirehub_saved', JSON.stringify(next));
     setSaved(!saved);
+  };
+
+  const handleApplyClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (applied) return;
+    window.dispatchEvent(new CustomEvent('open-hirebot-apply', { detail: { job } }));
   };
 
   return (
@@ -591,6 +625,9 @@ function JobCard({ job, compact = false }: { job: Job; compact?: boolean }) {
       <p className="job-desc">{job.description}</p>
       <div className="job-card-bottom">
         <div className="chip-row">
+          <span className="chip transparent-team-chip">
+            <Users size={11} color="#6B7682" /> {job.category} Team
+          </span>
           <span className="chip" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
             <Briefcase size={11} color="#3B82F6" /> {job.type}
           </span>
@@ -598,9 +635,36 @@ function JobCard({ job, compact = false }: { job: Job; compact?: boolean }) {
             <Wallet size={11} color="#9E7428" /> {job.salary}
           </span>
         </div>
-        <Link className="apply-link" to={`/jobs/${job.id}`}>
-          Details <ArrowRight size={13} />
-        </Link>
+        <div className="job-card-actions">
+          <Link
+            className="job-card-btn job-details-btn"
+            to={`/jobs/${job.id}`}
+            title="View job details"
+            aria-label="View details"
+          >
+            <Eye size={13} />
+            <span className="btn-label-desktop">Details</span>
+          </Link>
+          <button
+            type="button"
+            className={`job-card-btn job-apply-btn ${applied ? 'applied' : ''}`}
+            onClick={handleApplyClick}
+            title={applied ? 'Already applied' : `Apply for ${job.title}`}
+            aria-label={applied ? 'Applied' : 'Apply now'}
+          >
+            {applied ? (
+              <>
+                <Check size={13} />
+                <span className="btn-label-desktop">Applied</span>
+              </>
+            ) : (
+              <>
+                <Send size={13} />
+                <span className="btn-label-desktop">Apply Now</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </article>
   );
